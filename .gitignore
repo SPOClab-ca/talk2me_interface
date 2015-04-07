@@ -1,6 +1,7 @@
 
 # Ignore all compiled files
 *.pyc
+*.js~
 
 # Ignore setup files
 settings.py
