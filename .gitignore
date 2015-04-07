@@ -1,0 +1,10 @@
+
+# Ignore all compiled files
+*.pyc
+
+# Ignore setup files
+settings.py
+
+# Ignore deployment-related files
+wsgi.py
+

@@ -1,0 +1,42 @@
+{% extends "datacollector/base.html" %}
+
+{% block title %}Data Collector - Login{% endblock%}
+
+{% block auth_user %}
+    <a href="/datacollector/login">Login</a> | <a href="/datacollector/register">New User</a>
+{% endblock %}
+
+{% block content %}
+
+<h1>Data Collector - Login</h1>
+
+<!-- Form validation errors -->
+{% if form.errors %}
+<p style="color: red;">
+    Please correct the error{{ form.errors|pluralize }} below.
+</p>
+
+{% else %}
+<!-- Authentication errors -->    
+    {% if errors %}
+    Authentication error{{ errors|pluralize }}:
+    <ul>
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+{% endif %}
+
+
+
+<form method='post' action=''>
+    <table>
+        {{ form.as_table }}
+    </table>
+    {% csrf_token %}
+    <input type='submit' value='Submit'>
+</form>
+
+{% endblock %}

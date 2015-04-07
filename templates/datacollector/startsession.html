@@ -1,0 +1,9 @@
+<h1>Data Collector - Start Session page</h1>
+
+<p>Debugging</p>
+
+{% for new_instance in new_task_instances %}
+
+    <li>Task name: {{ new_instance.task_id.name }}, new instance ID: {{ new_instance.session_taskinstance_id }}, session ID: {{ new_instance.session_id.session_id }} (user {{ new_instance.session_id.user_id.user_id }})</li>
+
+{% endfor %}

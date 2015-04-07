@@ -1,0 +1,62 @@
+{% extends "datacollector/base.html" %}
+
+{% block title %}Data Collector - Session {{ session.session_id }}{% endblock%}
+
+{% block auth_user %}
+    Logged in as {{ request.user }} (<a href="/datacollector/logout">logout</a>)
+{% endblock %}
+
+{% block content %}
+<h1>Data Collector - Session {{ session.session_id }}</h1>
+
+{% if session %}
+    <!-- If the session is active (still has unanswered questions),display the next pending question -->
+    {% if active_task %}
+    
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="{{ num_current_task }}" aria-valuemin="0" aria-valuemax="{{ num_tasks }}" style="width: {{ percentage_completion }}%;">
+            {{ percentage_completion }}%
+          </div>
+        </div>
+
+        {% for val in post_values %}
+            POST value: {{ val }}<br/>
+        {% endfor %}
+
+        <form method="post" action="">
+        {% csrf_token %}
+        <h2>{{ active_task.name }}</h2>    
+        <p>{{ active_task.instruction }}</p>
+
+        <ol>
+        {% for instance in active_instances %}
+            <li>
+                {% autoescape off %}{{ instance }}{% endautoescape %}            
+            </li>
+        {% endfor %}
+        </ol>
+
+        <input type="submit" value="Submit">
+        </form>
+
+    <!-- Otherwise, show results -->
+    {% else %}
+    Completed session
+
+    {% endif %}
+    
+{% else %}
+    <p>Invalid session</p>
+    <p><a href="/datacollector/">Index</a></p>
+{% endif %}
+
+{% endblock %}
+
+{% if requires_audio %}
+    {% block page_js %}
+        <!-- Audio libraries for wav recording -->
+        <script src="{{ STATIC_URL }}js/recorder.js"></script>
+        <script src="{{ STATIC_URL }}js/audiocapture_main.js"></script>
+        <script src="{{ STATIC_URL }}js/audiodisplay.js"></script>
+    {% endblock %}
+{% endif %}

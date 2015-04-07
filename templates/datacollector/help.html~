@@ -1,0 +1,24 @@
+{% extends "datacollector/base.html" %}
+
+{% block title %}Data Collector - Help{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ request.user }} (<a href="/datacollector/logout">logout</a>)
+    {% else %}
+        <a href="/datacollector/login">Login</a> | <a href="{{ request.path }}register">New User</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h1>Data Collector - Help</h1>
+
+<p>Contact Information</p>
+
+<ul>
+    <li>Maria Yancheva (yancheva at cs dot toronto dot edu)</li>
+    <li>Frank Rudzicz (frank at cs dot toronto dot edu)</li>
+</ul>
+
+{% endblock %}
