@@ -1,9 +1,11 @@
 
 # Ignore all compiled files
 *.pyc
+./*/*.pyc
 
 # Ignore all temporary (backup) files created by the file editor
 *~
+./*/*~
 
 # Ignore setup files
 settings.py
