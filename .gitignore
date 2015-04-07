@@ -1,7 +1,9 @@
 
 # Ignore all compiled files
 *.pyc
-*.js~
+
+# Ignore all temporary (backup) files created by the file editor
+*~
 
 # Ignore setup files
 settings.py
