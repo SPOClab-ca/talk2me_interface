@@ -127,7 +127,7 @@
             <thead><tr><th style='width: 20%;'>Session ID</th><th style='width: 30%;'>Start Date</th><th style='width: 30%;'>End Date</th></tr></thead>
             <tbody>
             {% for session in completed_sessions %}
-                <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td>{{ session.end_date }}</td></tr>
+                <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td>{{ session.end_date }} (<a href="{{ request.path }}session/{{ session.session_id }}">View</a>)</td></tr>
             {% endfor %}
             </tbody>
             </table>
