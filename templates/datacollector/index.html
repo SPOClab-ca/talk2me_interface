@@ -4,7 +4,7 @@
 
 {% block auth_user %}
     {% if is_authenticated %}
-        Logged in as {{ request.user }} (<a href="/datacollector/logout">logout</a>)
+        Logged in as {{ user.username }} (<a href="/datacollector/logout">logout</a>)
     {% else %}
         <a href="{{ request.path }}login">Login</a> | <a href="{{ request.path }}register">New User</a>
     {% endif %}
@@ -61,13 +61,41 @@
     {% csrf_token %}
     <input type='hidden' id='form_type' name='form_type' value='demographic' />
     <ol>
-        <li>Gender</li>
-        <li>Date of birth</li>
-        <li>Spoken languages</li>
-        <li>Country</li>
-        <li>Education level (highest completed, or currently being completed)</li>
-        <li>Have you ever been diagnosed with dementia? If yes, please select all applicable types:</li>
-        <li>Ethnicity</li>
+        <li><span>Gender</span><br />
+            {% for opt in gender_options %}
+            <input type="radio" name="gender" value="{{ opt.gender_id }}"> {{ opt.name }}<br />            
+            {% endfor %}
+        </li>
+        
+        <!--
+        <li><span>Date of birth</span><br />
+            <input type='text' class='datefield' value="" />
+        </li>
+        -->
+        
+        <li>Spoken languages<br />
+            {% for opt in language_options %}
+            <input type="checkbox" name="language" value="{{ opt.language_id }}"> {{ opt.name }}<br />            
+            {% endfor %}
+        </li>
+        
+        <!--
+        <li>Country
+        
+        </li>
+        
+        <li>Education level (highest completed, or currently being completed)
+        
+        </li>
+        
+        <li>Have you ever been diagnosed with dementia? If yes, please select all applicable types:
+        
+        </li>
+        
+        <li>Ethnicity
+        
+        </li>
+        -->
     </ol>
     
     <input class='button' type='submit' value='Submit' />
