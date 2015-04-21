@@ -444,7 +444,7 @@ def session(request, session_id):
                     session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                     counter += 1
                     
-            return render_to_response('datacollector/session.html', {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary}, context_instance=RequestContext(request))
+            return render_to_response('datacollector/session.html', {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'user': request.user}, context_instance=RequestContext(request))
         else:
             return HttpResponseRedirect('/datacollector/')
     else:
@@ -491,4 +491,4 @@ def help(request):
     is_authenticated = False
     if request.user.is_authenticated():
         is_authenticated = True
-    return render_to_response('datacollector/help.html', {'is_authenticated': is_authenticated}, context_instance=RequestContext(request))
+    return render_to_response('datacollector/help.html', {'is_authenticated': is_authenticated, 'user': request.user}, context_instance=RequestContext(request))

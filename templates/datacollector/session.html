@@ -3,7 +3,7 @@
 {% block title %}Data Collector - Session {{ session.session_id }}{% endblock%}
 
 {% block auth_user %}
-    Logged in as {{ request.user }} (<a href="/datacollector/logout">logout</a>)
+    Logged in as {{ user.username }} (<a href="/datacollector/logout">logout</a>)
 {% endblock %}
 
 {% block content %}
