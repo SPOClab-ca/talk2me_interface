@@ -202,6 +202,8 @@ class Task_Field(models.Model):
     field_type = models.ForeignKey(Field_Type)
     field_data_type = models.ForeignKey(Field_Data_Type)
     embedded_response = models.IntegerField(default=0)
+    keep_visible = models.IntegerField(default=1)
+    generate_value = models.IntegerField(default=0)
 
 class Task_Field_Data_Attribute(models.Model):
     # For every task field, there can be multiple style attributes
@@ -230,7 +232,9 @@ class Task_Field_Value(models.Model):
     task_field_value_id = models.AutoField(primary_key=True)
     task_field = models.ForeignKey(Task_Field)
     value = models.TextField()
+    value_display = models.TextField(null=True, blank=True)
     difficulty = models.ForeignKey(Value_Difficulty)
+    assoc = models.ForeignKey("self", null=True, blank=True)
 
 class Session(models.Model):
 
@@ -296,6 +300,7 @@ class Session_Task_Instance_Value(models.Model):
     session_task_instance = models.ForeignKey(Session_Task_Instance)
     task_field = models.ForeignKey(Task_Field)
     value = models.TextField()
+    value_display = models.TextField(null=True, blank=True)
     difficulty = models.ForeignKey(Value_Difficulty)
 
 class Session_Response(models.Model):
