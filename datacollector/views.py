@@ -25,6 +25,8 @@ def index(request):
     active_sessions = []
     consent_submitted = False
     demographic_submitted = False
+    gender_options = []
+    language_options = []
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -90,8 +92,6 @@ def index(request):
         demographic_submitted = subject.demographic_submitted
         
         # Demographic survey options/dropdowns
-        gender_options = []
-        language_options = []
         if not demographic_submitted:
             gender_options = Gender.objects.all().order_by('name')
             language_options = Language.objects.all().order_by('name')
