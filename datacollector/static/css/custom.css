@@ -1,0 +1,20 @@
+
+ol li {
+    margin-bottom: 20px;
+}
+
+ol li img {
+    vertical-align: top;
+}
+
+.task-instance {
+    margin-bottom: 20px;
+}  
+
+.task-instance img {
+    margin-bottom: 20px;
+}
+
+.invisible {
+    display: none;
+}
