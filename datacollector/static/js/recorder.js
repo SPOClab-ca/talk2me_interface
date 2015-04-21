@@ -110,6 +110,7 @@ DEALINGS IN THE SOFTWARE.
     var fd = new FormData();
     fd.append('fname', 'test.wav');
     fd.append('data', blob);
+    fd.append('instanceid', $('[name=instanceid]').val());
     $.ajax({
         type: 'POST',
         url: '/datacollector/audiotest',
@@ -122,6 +123,8 @@ DEALINGS IN THE SOFTWARE.
         },
         success: function(data, textStatus, jqXHR) {
             console.log('OK!');
+            // Re-enable submit button
+            $("input[type=submit]").prop('disabled',false);
         }
     });
   }

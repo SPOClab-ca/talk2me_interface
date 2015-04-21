@@ -34,3 +34,16 @@ $(document).ajaxSend(function(event, xhr, settings) {
         xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
     }
 });
+
+$(function () {
+    
+    // Add date picker to date fields
+    $(".datefield").each(function() {
+        $(this).datetimepicker();
+    });
+});
+
+function hideDisplay(btn) {
+    record_btn = $(btn).closest("li").find("#record-btn");
+    $(btn).closest("li").html("Click the \"Start recording\" button below to begin recording. Tell the story in your own words, as you remember it. Try to speak for at least a minute. When done, click the \"Stop recording\" button.<p>" + record_btn.html() + "</p>");
+}
