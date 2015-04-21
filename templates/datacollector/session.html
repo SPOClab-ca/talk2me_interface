@@ -23,26 +23,40 @@
             POST value: {{ val }}<br/>
         {% endfor %}
 
-        <form method="post" action="">
+        <form id='session_form' method="post" action="">
         {% csrf_token %}
         <h2>{{ active_task.name }}</h2>    
         <p>{{ active_task.instruction }}</p>
 
         <ol>
         {% for instance in active_instances %}
-            <li>
-                {% autoescape off %}{{ instance }}{% endautoescape %}            
+            <li class='task-instance'>
+                {% autoescape off %}{{ instance }}{% endautoescape %}    
             </li>
         {% endfor %}
         </ol>
-
-        <input type="submit" value="Submit">
+        
+        {% if requires_audio and not existing_responses %}
+        <input type="submit" value="Submit" disabled />
+        {% else %}
+        <input type="submit" value="Submit" />
+        {% endif %}
         </form>
 
     <!-- Otherwise, show results -->
     {% else %}
-    Completed session
-
+    <h2>Session completed on {{ completed_date }}</h2>
+    
+    {% if session_summary %}
+        <h3>Summary</h3>
+        <table class='table table-striped'>
+            <thead><tr><th>No.</th><th>Task</th><th>Number of responses</th></tr></thead>
+            <tbody>
+            {% autoescape off %}{{ session_summary|safe }}{% endautoescape %}
+            </tbody>
+        </table>
+    {% endif %}
+    
     {% endif %}
     
 {% else %}
