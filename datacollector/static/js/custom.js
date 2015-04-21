@@ -38,9 +38,10 @@ $(document).ajaxSend(function(event, xhr, settings) {
 $(function () {
     
     // Add date picker to date fields
-    $(".datefield").each(function() {
-        $(this).datetimepicker();
-    });
+    //$(".datefield").each(function() {
+    //    $(this).datetimepicker();
+    //});
+    
 });
 
 function hideDisplay(btn) {
