@@ -12,10 +12,11 @@
 
 {% block content %}
 
-<h1>Index</h1>
 
-<p>
+
 {% if is_authenticated %}
+    <h1>Index</h1>
+    <p>
     
     <hr/>
 
@@ -136,9 +137,39 @@
     </ul>
     {% endif %}
     {% endif %}
+    </p>
 {% else %}
-    <a href="{{ request.path }}login">Login</a> | <a href="{{ request.path }}register">New User</a>
+
+    <div class="jumbotron">
+      <div class="container">
+        <h1>DementiaWeb</h1>
+        <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study analyzing the differences in longitudinal progression of linguistic markers between healthy older adults and those with dementia. We are interested in assessing the validity and usability of an automated web-based system, <em>DementiaWeb</em>, for linguistic data acquisition, as a means of monitoring changes in language ability.</p>
+        <p><a class="btn btn-primary btn-lg" role="button" onClick="javascript: location.href='{{ request.path }}help';">Learn more &raquo;</a></p>
+      </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <h2>Step 1: Sign up</h2>
+            <p>Register for a new user account if this is your first visit, or login if you already have one.</p>
+            <p><button class='btn btn-default' onClick="javascript: location.href='{{ request.path }}login';">Login</button> <button class='btn btn-default' onClick="javascript: location.href='{{ request.path }}register';">New User</button></p>
+        </div>
+        
+        <div class="col-md-4">
+            <h2>Step 2: Language data</h2>
+            <p>Register for a new user account if this is your first visit, or login if you already have one.</p>
+            
+        </div>
+        
+        <div class="col-md-4">
+            <h2>Step 3: Spread the word</h2>
+            <p>Register for a new user account if this is your first visit, or login if you already have one.</p>
+            
+        </div>
+    </div>
+    
+    
+    </p>
 {% endif %}
-</p>
 
 {% endblock %}
