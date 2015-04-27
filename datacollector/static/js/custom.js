@@ -1,3 +1,15 @@
+/* 
+ * Run on page load
+ */
+$(function () {
+    
+    // Add date picker to date fields
+    //$(".datefield").each(function() {
+    //    $(this).datetimepicker();
+    //});
+    
+});
+
 $(document).ajaxSend(function(event, xhr, settings) {
     function getCookie(name) {
         var cookieValue = null;
@@ -35,15 +47,11 @@ $(document).ajaxSend(function(event, xhr, settings) {
     }
 });
 
-$(function () {
-    
-    // Add date picker to date fields
-    //$(".datefield").each(function() {
-    //    $(this).datetimepicker();
-    //});
-    
-});
 
+/* Use in tasks where the task instance has to be hidden while the user 
+ * is responding (e.g., hiding the story while the user attempts to 
+ * re-tell it in their own words) 
+ */
 function hideDisplay(btn) {
     record_btn = $(btn).closest("li").find("#record-btn");
     $(btn).closest("li").html("Click the \"Start recording\" button below to begin recording. Tell the story in your own words, as you remember it. Try to speak for at least a minute. When done, click the \"Stop recording\" button.<p>" + record_btn.html() + "</p>");
