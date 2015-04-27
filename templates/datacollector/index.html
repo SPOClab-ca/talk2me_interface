@@ -103,21 +103,30 @@
     </form>
 
     {% else %}
-    <h4><a href="{{ request.path }}startsession">Start a new session</a></h4>
     
+    <div class="support_html5 bs-callout bs-callout-danger invisible">
+        {{ website_name }} requires a modern browser which supports HTML5. You are using a browser which does not support this technology. <strong>To use {{ website_name }}, please download the latest version of <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank">Chrome</a> or <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank">Firefox</a></strong>. You cannot continue existing sessions, or create new ones, until you update your browser.<br />
+        <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank"><img src="{{ STATIC_URL }}img/chrome.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
+        <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank"><img src="{{ STATIC_URL }}img/firefox.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
+    </div>
+    
+    <div class="unsupported_html5">
+        <h4><a href="{{ request.path }}startsession">Start a new session</a></h4>
+    </div>
     
         {% if active_sessions %}
-        <hr/>        
-        <h4>Active sessions:</h4>
-            <table class='table table-striped' style='width: 100%;'>
-            <thead><tr><th style='width: 20%;'>Session ID</th><th style='width: 30%;'>Start Date</th><th style='width: 30%;'></th></tr></thead>
-            <tbody>
-            {% for session in active_sessions %}
-                <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td><a href="{{ request.path }}session/{{ session.session_id }}">Continue session</a></td></tr>
-            {% endfor %}
-            </tbody>
-            </table>
-        </li>
+        <div class="unsupported_html5">
+            <hr/>        
+            <h4>Active sessions:</h4>
+                <table class='table table-striped' style='width: 100%;'>
+                <thead><tr><th style='width: 20%;'>Session ID</th><th style='width: 30%;'>Start Date</th><th style='width: 30%;'></th></tr></thead>
+                <tbody>
+                {% for session in active_sessions %}
+                    <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td><a href="{{ request.path }}session/{{ session.session_id }}">Continue session</a></td></tr>
+                {% endfor %}
+                </tbody>
+                </table>
+        </div>
         {% endif %}
         
 
@@ -132,7 +141,6 @@
             {% endfor %}
             </tbody>
             </table>
-        </li>
         {% endif %}
     </ul>
     {% endif %}

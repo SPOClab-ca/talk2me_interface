@@ -24,6 +24,9 @@ $(function () {
         $(".support_html5").each(function() {
             $(this).removeClass("invisible");
         });
+        $(".unsupported_html5").each(function() {
+            $(this).addClass("invisible");
+        });
     }
 });
 
