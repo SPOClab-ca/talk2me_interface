@@ -17,6 +17,9 @@ import random
 import re
 
 
+# Globals
+website_name = "DementiaWeb"
+
 def index(request):
 
     # Authenticate current user. If no user logged in, redirect to login page.
@@ -100,7 +103,7 @@ def index(request):
         completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False).order_by('-start_date')
         active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True).order_by('-start_date')
         
-    return render_to_response('datacollector/index.html', {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options }, context_instance=RequestContext(request))
+    return render_to_response('datacollector/index.html', {'website_name': website_name, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options }, context_instance=RequestContext(request))
 
 def login(request):
 
