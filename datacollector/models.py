@@ -268,6 +268,7 @@ class Session_Task(models.Model):
     embedded_delay = models.IntegerField(default=0)
     instruction_viewed = models.IntegerField(default=0)
     date_completed = models.DateField(null=True,blank=True)
+    total_time = models.IntegerField(default=0)
 
 class Session_Task_Instance(models.Model):
     
