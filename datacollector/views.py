@@ -403,7 +403,7 @@ def session(request, session_id):
                             display_field = "<button onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />"
                             
                             # Associated textarea where the user will type out the RIG response
-                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea name='response' disabled='disabled' style=\"width: 500px; height: 120px;" + style_attributes + "\"></textarea><input name='instanceid' type='hidden' value='" + instance_id + "' />"
+                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea name='response' readonly='readonly' style=\"width: 500px; height: 120px;" + style_attributes + "\"></textarea><input name='instanceid' type='hidden' value='" + instance_id + "' />"
                         else:
                             display_field = instance_value.value
                         

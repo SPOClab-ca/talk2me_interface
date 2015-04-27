@@ -90,7 +90,7 @@ function startTimerRig(start_btn, instance_id) {
     // Disable the Start button, and enable the response field
     $(start_btn).prop('disabled', true);
     $(start_btn).parent().find("[name=response]").each(function() {
-        $(this).prop('disabled', false);
+        $(this).prop('readonly', false);
     });
     $(start_btn).text("Started timer...");
 }
@@ -117,7 +117,7 @@ function updateTimerDisplay(start_btn, instance_id) {
         
         // Disable the response field
         $(start_btn).parent().find("[name=response]").each(function() {
-            $(this).prop('disabled', true);
+            $(this).prop('readonly', true);
         });
     }
 }
