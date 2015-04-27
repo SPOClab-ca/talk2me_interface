@@ -1,5 +1,6 @@
 /* Global variables */
 var support_html5 = true;
+var timer_rig = false;
 
 /* 
  * Run on page load
@@ -75,4 +76,49 @@ $(document).ajaxSend(function(event, xhr, settings) {
 function hideDisplay(btn) {
     record_btn = $(btn).closest("li").find("#record-btn");
     $(btn).closest("li").html("Click the \"Start recording\" button below to begin recording. Tell the story in your own words, as you remember it. Try to speak for at least a minute. When done, click the \"Stop recording\" button.<p>" + record_btn.html() + "</p>");
+}
+
+
+/* Use to update timer in timed tasks.
+ * Update display every second.
+ */
+function startTimerRig(start_btn, instance_id) {
+    timer_rig = setInterval(function(){ 
+        updateTimerDisplay(instance_id); 
+    }, 1000);
+    
+    // Disable the Start button, and enable the response field
+    $(start_btn).prop('disabled', true);
+    $(start_btn).parent().find("[name=response]").each(function() {
+        $(this).prop('disabled', false);
+    });
+    $(start_btn).text("Started timer...");
+}
+
+/* Pad a number 'n' with character 'z' to a given 'width'.
+ * If character 'z' is empty, pad with '0'.
+ */
+function pad(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
+function updateTimerDisplay(instance_id) {
+    var new_value = parseInt($("#timer_val_" + instance_id).val()) - 1;
+    $("#timer_val_" + instance_id).val(new_value);
+    var display_min = Math.floor(new_value / 60);
+    var display_sec = new_value - display_min * 60;
+    
+    $("#timer_display_" + instance_id).html(pad(display_min,2,'0') + ":" + pad(display_sec,2,'0'));
+    
+    if (new_value <= 0) {
+        stopTimerRig();
+    }
+}
+
+function stopTimerRig() {
+    if (timer_rig) {
+        window.clearInterval(timer_rig);
+    }
 }
