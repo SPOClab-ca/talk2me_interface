@@ -12,9 +12,9 @@
 
 <!-- Form validation errors -->
 {% if form.errors %}
-<p style="color: red;">
-    Please correct the error{{ form.errors|pluralize }} below.
-</p>
+<div class="bs-callout bs-callout-danger">
+    Login error{{ form.errors|pluralize }}: please correct the error{{ form.errors|pluralize }} in red below.
+</div>
 
 {% else %}
 <!-- Authentication errors -->    
