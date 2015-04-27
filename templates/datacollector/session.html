@@ -41,6 +41,11 @@
         {% else %}
         <input type="submit" value="Submit" />
         {% endif %}
+        
+        {% if requires_audio %}
+        <!-- Display ajax indicator while the audio data is being uploaded to server -->
+        <span id="ajax_loader" class="invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> Saving audio...</span>
+        {% endif %}
         </form>
 
     <!-- Otherwise, show results -->

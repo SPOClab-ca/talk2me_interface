@@ -107,6 +107,7 @@ DEALINGS IN THE SOFTWARE.
   Recorder.sendToServer = function(blob) {
 
     console.log("sending blob to server...");
+    $("#ajax_loader").removeClass("invisible");
     var fd = new FormData();
     fd.append('fname', 'test.wav');
     fd.append('data', blob);
@@ -120,11 +121,13 @@ DEALINGS IN THE SOFTWARE.
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) { 
             console.log('Error: ' + textStatus + ", " + errorThrown);
+            $("#ajax_loader").addClass("invisible");
         },
         success: function(data, textStatus, jqXHR) {
             console.log('OK!');
             // Re-enable submit button
             $("input[type=submit]").prop('disabled',false);
+            $("#ajax_loader").addClass("invisible");
         }
     });
   }
