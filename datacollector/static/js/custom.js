@@ -84,7 +84,7 @@ function hideDisplay(btn) {
  */
 function startTimerRig(start_btn, instance_id) {
     timer_rig = setInterval(function(){ 
-        updateTimerDisplay(instance_id); 
+        updateTimerDisplay(start_btn, instance_id); 
     }, 1000);
     
     // Disable the Start button, and enable the response field
@@ -104,7 +104,7 @@ function pad(n, width, z) {
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
-function updateTimerDisplay(instance_id) {
+function updateTimerDisplay(start_btn, instance_id) {
     var new_value = parseInt($("#timer_val_" + instance_id).val()) - 1;
     $("#timer_val_" + instance_id).val(new_value);
     var display_min = Math.floor(new_value / 60);
@@ -114,6 +114,11 @@ function updateTimerDisplay(instance_id) {
     
     if (new_value <= 0) {
         stopTimerRig();
+        
+        // Disable the response field
+        $(start_btn).parent().find("[name=response]").each(function() {
+            $(this).prop('disabled', true);
+        });
     }
 }
 
