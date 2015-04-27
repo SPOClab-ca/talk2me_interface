@@ -1,6 +1,6 @@
 {% extends "datacollector/base.html" %}
 
-{% block title %}DementiaWeb - Session {{ session.session_id }}{% endblock%}
+{% block title %}{{ website_name }} - Session {{ session.session_id }}{% endblock%}
 
 {% block auth_user %}
     Logged in as {{ user.username }} (<a href="/datacollector/logout">logout</a>)

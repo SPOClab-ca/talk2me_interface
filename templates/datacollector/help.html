@@ -1,6 +1,6 @@
 {% extends "datacollector/base.html" %}
 
-{% block title %}DementiaWeb - Help{% endblock%}
+{% block title %}{{ website_name }} - Help{% endblock%}
 
 {% block auth_user %}
     {% if is_authenticated %}
@@ -52,7 +52,7 @@
 
 <h3>Overview of study</h3>
 
-<p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study to analyze the differences in longitudinal progression of linguistic markers between healthy older adults and ones with dementia. We are interested in assessing the validity and usability of an automated web-based system (DementiaWeb) for linguistic data acquisition, as means for longitudinal monitoring of changes in language ability.</p>
+<p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study to analyze the differences in longitudinal progression of linguistic markers between healthy older adults and ones with dementia. We are interested in assessing the validity and usability of an automated web-based system ({{ website_name }}) for linguistic data acquisition, as means for longitudinal monitoring of changes in language ability.</p>
 
 <h3>Purpose – Why are we doing this study?</h3>
 
