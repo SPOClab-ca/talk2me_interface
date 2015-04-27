@@ -18,8 +18,8 @@ import re
 
 
 # Globals
-global website_name
-website_name = "DementiaWeb"
+global global_passed_vars
+global_passed_vars = { "website_name": "DementiaWeb" }
 
 def index(request):
     
@@ -103,8 +103,10 @@ def index(request):
         # For the currently logged on user, find all previous sessions in the system
         completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False).order_by('-start_date')
         active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True).order_by('-start_date')
-        
-    return render_to_response('datacollector/index.html', {'website_name': website_name, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options }, context_instance=RequestContext(request))
+    
+    passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options }
+    passed_vars.update(global_passed_vars)
+    return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
 
 def login(request):
 
@@ -133,7 +135,10 @@ def login(request):
     else:
         form = LoginForm()
     
-    return render_to_response('datacollector/login.html', {'form': form, 'errors': errors}, context_instance=RequestContext(request))
+    passed_vars = {'form': form, 'errors': errors}
+    passed_vars.update(global_passed_vars)
+    
+    return render_to_response('datacollector/login.html', passed_vars, context_instance=RequestContext(request))
 
 
 def logout(request):
@@ -162,10 +167,15 @@ def register(request):
     else:
         form = UserCreationForm()
 
-    return render_to_response('datacollector/register.html', {'form': form}, context_instance=RequestContext(request))
+    passed_vars = {'form': form}
+    passed_vars.update(global_passed_vars)
+    
+    return render_to_response('datacollector/register.html', passed_vars, context_instance=RequestContext(request))
 
 def question(request, session_id, instance_id):
-    return render_to_response('datacollector/question.html', {'session': session, 'subject': subject, 'task_instance': instance})
+    passed_vars = {'session': session, 'subject': subject, 'task_instance': instance}
+    passed_vars.update(global_passed_vars)
+    return render_to_response('datacollector/question.html', passed_vars)
 
 
 def startsession(request):
@@ -448,7 +458,10 @@ def session(request, session_id):
                     session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                     counter += 1
                     
-            return render_to_response('datacollector/session.html', {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'user': request.user}, context_instance=RequestContext(request))
+            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'user': request.user}
+            passed_vars.update(global_passed_vars)
+                    
+            return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))
         else:
             return HttpResponseRedirect('/datacollector/')
     else:
@@ -459,7 +472,11 @@ def results(request, subject_id):
     subject = get_object_or_404(Subject, pk=subject_id)
     # Get all associated responses from the database
     # TODO
-    return render_to_response('datacollector/result.html', {'subject': subject})
+    
+    passed_vars = {'subject': subject}
+    passed_vars.update(global_passed_vars)
+    
+    return render_to_response('datacollector/result.html', passed_vars)
 
 def audiotest(request):
     if request.method == "POST":
@@ -495,4 +512,8 @@ def help(request):
     is_authenticated = False
     if request.user.is_authenticated():
         is_authenticated = True
-    return render_to_response('datacollector/help.html', {'is_authenticated': is_authenticated, 'user': request.user}, context_instance=RequestContext(request))
+        
+    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user}
+    passed_vars.update(global_passed_vars)
+    
+    return render_to_response('datacollector/help.html', passed_vars, context_instance=RequestContext(request))
