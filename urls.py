@@ -25,11 +25,11 @@ urlpatterns = patterns('',
 
     # Testing
     url(r'^datacollector/audiotest$', 'datacollector.views.audiotest'),
-    url(r'^datacollector/(?P<session_id>\d+)/tasks/(?P<instance_id>\d+)/$', 'datacollector.views.question'),
     url(r'^datacollector/results/(?P<subject_id>\d+)/$', 'datacollector.views.results'),
     
     # Miscellaneous
     url(r'^datacollector/help/$', 'datacollector.views.help'),
+    url(r'^datacollector/error/(?P<error_id>\d{3})/$', 'datacollector.views.error'),
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 
     # Uncomment the admin/doc line below to enable admin documentation:

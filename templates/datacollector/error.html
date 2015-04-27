@@ -1,0 +1,21 @@
+{% extends "datacollector/base.html" %}
+
+{% block title %}{{ website_name }} - Error{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ user.username }} (<a href="/datacollector/logout">logout</a>)
+    {% else %}
+        <a href="/datacollector/login">Login</a> | <a href="/datacollector/register">New User</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h1>Error</h1>
+
+<p>The website has encountered an internal error (error code {{ error_id }}). For assistance, please email <a href="mailto:{{ website_email}}?subject=DementiaWeb - error code {{ error_id }}">{{ website_email }}</a>.</p>
+
+<button class="btn btn-primary" onClick="javascript: location.href='/datacollector/';">Go to index page</button>
+
+{% endblock %}
