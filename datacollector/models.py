@@ -326,7 +326,8 @@ class Session_Response(models.Model):
         
         return "Response value " + str(response_value) + " for Instance of Task " +\
             str(self.session_task_instance.session_task.task.name) + \
-            " (order: " + str(self.session_task_instance.session_task.order) + \
+            " (expected value: '" + str(self.value_expected) + \
+            "', order: " + str(self.session_task_instance.session_task.order) + \
              ", instruction viewed: " + \
              str(self.session_task_instance.session_task.instruction_viewed) + \
              ") in Session for User " + \
@@ -346,4 +347,4 @@ class Session_Response(models.Model):
                             str(instance.session_task_instance.session_task.session.session_id) + "_" + \
                             str(instance.session_task_instance.session_task_instance_id) + ".wav")
     value_multiselect = models.CommaSeparatedIntegerField(max_length=100, null=True, blank=True)
-
+    value_expected = models.TextField(null=True, blank=True)
