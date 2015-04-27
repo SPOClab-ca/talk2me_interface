@@ -283,6 +283,7 @@ def session(request, session_id):
             active_task = None
             active_instances = []   
             active_session_task_id = None
+            display_thankyou = False
             
             # Initialize global vars for session page
             requires_audio = False
@@ -346,7 +347,9 @@ def session(request, session_id):
                 num_tasks = Session_Task.objects.filter(session=session).count()  
                 active_task = Session_Task.objects.filter(session=session,date_completed__isnull=True).order_by('order')
                 if not active_task:
-                    # All tasks in the current session have been completed - mark the session as complete with an end date stamp, and display summary
+                    # All tasks in the current session have been completed - mark the session as complete with an end date stamp, and display acknowledgement. Display summary.
+                    display_thankyou = True
+                    
                     completed_date = datetime.datetime.now()
                     Session.objects.filter(session_id=session.session_id).update(end_date=completed_date)
                     
@@ -482,7 +485,7 @@ def session(request, session_id):
                     session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                     counter += 1
                     
-            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'user': request.user}
+            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'display_thankyou': display_thankyou, 'user': request.user}
             passed_vars.update(global_passed_vars)
                     
             return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))

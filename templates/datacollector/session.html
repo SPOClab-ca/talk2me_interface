@@ -54,6 +54,10 @@
     {% else %}
     <h2>Session completed on {{ completed_date }}</h2>
     
+    {% if display_thankyou %}
+        <div class="bs-callout bs-callout-info"><strong>Thank you for completing this session!</strong></div>
+    {% endif %}
+    
     {% if session_summary %}
         <h3>Summary</h3>
         <table class='table table-striped'>
