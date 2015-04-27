@@ -1,13 +1,13 @@
 {% extends "datacollector/base.html" %}
 
-{% block title %}Data Collector - Session {{ session.session_id }}{% endblock%}
+{% block title %}DementiaWeb - Session {{ session.session_id }}{% endblock%}
 
 {% block auth_user %}
     Logged in as {{ user.username }} (<a href="/datacollector/logout">logout</a>)
 {% endblock %}
 
 {% block content %}
-<h1>Data Collector - Session {{ session.session_id }}</h1>
+<h1>Session {{ session.session_id }}</h1>
 
 {% if session %}
     <!-- If the session is active (still has unanswered questions),display the next pending question -->

@@ -1,13 +1,13 @@
 {% extends "datacollector/base.html" %}
 
-{% block title %}Data Collector - Register New User{% endblock%}
+{% block title %}DementiaWeb - Register New User{% endblock%}
 
 {% block auth_user %}
     <a href="/datacollector/login">Login</a> | <a href="/datacollector/register">New User</a>
 {% endblock %}
 
 {% block content %}
-<h1>Data Collector - Register New User</h1>
+<h1>Register New User</h1>
 
 <form action="" method="POST">
     {{ form.as_p }}
