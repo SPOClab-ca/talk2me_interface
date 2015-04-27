@@ -19,7 +19,7 @@ import re
 
 # Globals
 global global_passed_vars
-global_passed_vars = { "website_name": "DementiaWeb" }
+global_passed_vars = { "website_name": "DementiaWeb", "website_email": "dementiaweb.toronto@gmail.com" }
 
 def index(request):
     
@@ -186,7 +186,7 @@ def startsession(request):
         
         subject = Subject.objects.get(user_id=request.user.id)
 
-        default_tasks = [1,2,7,8,10,11]     
+        default_tasks = [1,2,7,8,10,11,12]     
         startdate = datetime.datetime.now()
         new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None)
         
@@ -237,6 +237,10 @@ def startsession(request):
                             field_values = Task_Field_Value.objects.filter(task_field=field)
                             if field_values:
                                 selected_values += [field_values[0]]
+                            else:
+                                # The database doesn't contain any entries for this task field.
+                                # Fail, display an error page.
+                                return HttpResponseRedirect('/datacollector/error/501')
                     
                     # Build limit query with Q objects
                     selected_assoc_ids = [item.assoc_id for item in selected_values]
@@ -382,6 +386,24 @@ def session(request, session_id):
                             display_field = "<img src='/static/img/" + instance_value.value + "' " + style_attributes + ">"
                         elif field_data_type == "text_withblanks":
                             display_field = (instance_value.value).replace("[BLANK]", "<input name='response' type='text' value='' /><input name='instanceid' type='hidden' value='" + instance_id + "' />")
+                        elif field_data_type == "timer_rig":
+                        
+                            # Parse out the duration of the timer
+                            timer_duration = re.compile(r"\[timer_([0-9]+)(min|sec)\]")
+                            instance_duration = timer_duration.findall(instance_value.value)
+                            if instance_duration:
+                                dur_sec = instance_duration[0][0]
+                                dur_unit = instance_duration[0][1]
+                                if dur_unit is 'min':
+                                    dur_sec = dur_sec * 60
+                            else:
+                                # Default duration
+                                dur_sec = 60
+                                
+                            display_field = "<button onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />"
+                            
+                            # Associated textarea where the user will type out the RIG response
+                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea name='response' disabled='disabled' style=\"width: 500px; height: 120px;" + style_attributes + "\"></textarea><input name='instanceid' type='hidden' value='" + instance_id + "' />"
                         else:
                             display_field = instance_value.value
                         
@@ -517,3 +539,13 @@ def help(request):
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/help.html', passed_vars, context_instance=RequestContext(request))
+
+def error(request, error_id):
+    is_authenticated = False
+    if request.user.is_authenticated():
+        is_authenticated = True
+    
+    passed_vars = {'error_id': error_id, 'is_authenticated': is_authenticated, 'user': request.user}
+    passed_vars.update(global_passed_vars)
+    
+    return render_to_response('datacollector/error.html', passed_vars, context_instance=RequestContext(request))
