@@ -19,12 +19,14 @@
 {% else %}
 <!-- Authentication errors -->    
     {% if errors %}
-    Authentication error{{ errors|pluralize }}:
-    <ul>
-        {% for error in errors %}
-        <li>{{ error }}</li>
-        {% endfor %}
-    </ul>
+    <div class="bs-callout bs-callout-danger">
+        Authentication error{{ errors|pluralize }}:
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
     {% endif %}
 
 {% endif %}
@@ -32,11 +34,12 @@
 
 
 <form method='post' action=''>
-    <table>
+    <table class='table'>
         {{ form.as_table }}
     </table>
     {% csrf_token %}
-    <input type='submit' value='Submit'>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <!--<input type='submit' value='Submit'>-->
 </form>
 
 {% endblock %}
