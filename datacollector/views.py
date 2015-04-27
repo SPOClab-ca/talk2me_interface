@@ -18,10 +18,11 @@ import re
 
 
 # Globals
+global website_name
 website_name = "DementiaWeb"
 
 def index(request):
-
+    
     # Authenticate current user. If no user logged in, redirect to login page.
     is_authenticated = False
     completed_sessions = []
