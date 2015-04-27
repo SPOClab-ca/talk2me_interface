@@ -227,7 +227,8 @@ class Task_Field_Value(models.Model):
     def __unicode__(self):
         return "Task " + str(self.task_field.task.name) + ", Field " + \
         str(self.task_field.name) + ", Value: " + str(self.value) + \
-        " (Difficulty level: " + str(self.difficulty) + ")"
+        " (Expected response: '" + str(self.response_expected) + \
+        "', Difficulty level: " + str(self.difficulty) + ")"
     
     task_field_value_id = models.AutoField(primary_key=True)
     task_field = models.ForeignKey(Task_Field)
@@ -235,6 +236,7 @@ class Task_Field_Value(models.Model):
     value_display = models.TextField(null=True, blank=True)
     difficulty = models.ForeignKey(Value_Difficulty)
     assoc = models.ForeignKey("self", null=True, blank=True)
+    response_expected = models.TextField(null=True, blank=True)
 
 class Session(models.Model):
 
