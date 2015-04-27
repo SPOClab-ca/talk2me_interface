@@ -1,3 +1,6 @@
+/* Global variables */
+var support_html5 = true;
+
 /* 
  * Run on page load
  */
@@ -8,6 +11,20 @@ $(function () {
     //    $(this).datetimepicker();
     //});
     
+    // Check browser for HTML5 support of:
+    // (1) getUserMedia() API for capturing raw audio
+    // (2) FormData used to send raw audio stream back to server
+    support_getUserMedia = navigator.getUserMedia !== undefined || 
+                           navigator.webkitGetUserMedia !== undefined || 
+                           navigator.mozGetUserMedia !== undefined;
+    support_FormData = window.FormData !== undefined;
+    if (!support_getUserMedia || !support_FormData) {
+        // Notify the user to switch browsers
+        support_html5 = false;
+        $(".support_html5").each(function() {
+            $(this).removeClass("invisible");
+        });
+    }
 });
 
 $(document).ajaxSend(function(event, xhr, settings) {

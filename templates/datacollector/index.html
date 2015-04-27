@@ -1,6 +1,6 @@
 {% extends "datacollector/base.html" %}
 
-{% block title %}DementiaWeb{% endblock%}
+{% block title %}{{ website_name }}{% endblock%}
 
 {% block auth_user %}
     {% if is_authenticated %}
@@ -140,14 +140,20 @@
     </p>
 {% else %}
 
-    <h1>DementiaWeb</h1>
+    <h1>{{ website_name }}</h1>
     <a href="{{ request.path }}login">Login</a> | <a href="{{ request.path }}register">New User</a>
 
+    <div class="support_html5 bs-callout bs-callout-danger invisible">
+        {{ website_name }} requires a modern browser which supports HTML5. You are using a browser which does not support this technology. <strong>To use {{ website_name }}, please download the latest version of <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank">Chrome</a> or <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank">Firefox</a></strong>.<br />
+        <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank"><img src="{{ STATIC_URL }}img/chrome.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
+        <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank"><img src="{{ STATIC_URL }}img/firefox.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
+    </div>
+    
     <!--
     <div class="jumbotron">
       <div class="container">
-        <h1>DementiaWeb</h1>
-        <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study analyzing the differences in longitudinal progression of linguistic markers between healthy older adults and those with dementia. We are interested in assessing the validity and usability of an automated web-based system, <em>DementiaWeb</em>, for linguistic data acquisition, as a means of monitoring changes in language ability.</p>
+        <h1>{{ website_name }}</h1>
+        <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study analyzing the differences in longitudinal progression of linguistic markers between healthy older adults and those with dementia. We are interested in assessing the validity and usability of an automated web-based system, <em>{{ website_name }}</em>, for linguistic data acquisition, as a means of monitoring changes in language ability.</p>
         <p><a class="btn btn-primary btn-lg" role="button" onClick="javascript: location.href='{{ request.path }}help';">Learn more &raquo;</a></p>
       </div>
     </div>
