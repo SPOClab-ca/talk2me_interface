@@ -19,6 +19,15 @@ ol li img {
     display: none;
 }
 
+/* Form errors - these are handled outside of the form, so hide the inline errors in the form html */
+.errorlist {
+    list-style-type: none;
+    color: #ff0044;
+    font-weight: bold;
+    padding-left: 0;
+}
+
+
 /* Side notes for calling out things
 -------------------------------------------------- */
  
