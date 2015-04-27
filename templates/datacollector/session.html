@@ -25,6 +25,7 @@
 
         <form id='session_form' method="post" action="">
         {% csrf_token %}
+        <input type='hidden' id='session_task_id' value='{{ active_session_task_id }}' />
         <h2>{{ active_task.name }}</h2>    
         <p>{{ active_task.instruction }}</p>
 
@@ -37,9 +38,9 @@
         </ol>
         
         {% if requires_audio and not existing_responses %}
-        <input type="submit" value="Submit" disabled />
+        <input id='submit_btn' type="button" onClick="javascript: formSubmit(this);" value="Submit" disabled />
         {% else %}
-        <input type="submit" value="Submit" />
+        <input id='submit_btn' type="button" onClick="javascript: formSubmit(this);" value="Submit" />
         {% endif %}
         
         {% if requires_audio %}
@@ -47,6 +48,7 @@
         <span id="ajax_loader" class="invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> Saving audio...</span>
         {% endif %}
         </form>
+        
 
     <!-- Otherwise, show results -->
     {% else %}

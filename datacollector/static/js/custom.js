@@ -1,16 +1,18 @@
 /* Global variables */
 var support_html5 = true;
 var timer_rig = false;
+var page_start_time = false;
 
 /* 
  * Run on page load
  */
-$(function () {
+$(document).ready(function () {
     
     // Add date picker to date fields
     //$(".datefield").each(function() {
     //    $(this).datetimepicker();
     //});
+    
     
     // Check browser for HTML5 support of:
     // (1) getUserMedia() API for capturing raw audio
@@ -29,7 +31,42 @@ $(function () {
             $(this).addClass("invisible");
         });
     }
+    
+    // Measure time spent on page
+    page_start_time = new Date().getTime();
 });
+
+
+/*
+ * Run when window is closed/left
+ */
+$(window).unload(function() {
+    
+    var session_task_id = $("#session_task_id").val();
+    if (session_task_id !== undefined) {
+        // By default, store the time elapsed in seconds in db
+        var page_time_elapsed = Math.round((new Date().getTime() - page_start_time) / 1000);
+        
+        $.ajax({
+            async: false,
+            type: 'POST',
+            url: '/datacollector/pagetime',
+            data: {'timeelapsed': page_time_elapsed, 'sessiontaskid': session_task_id },
+            dataType: 'json',
+            error: function(jqXHR, textStatus, errorThrown) { 
+                console.log('Page time error: ' + textStatus + ", " + errorThrown);
+            },
+            success: function(data, textStatus, jqXHR) {
+                console.log('Sent page time!');
+            }
+        });
+    }
+    
+});
+
+function formSubmit(submit_btn) {
+    $(submit_btn).closest("form").submit();
+}
 
 $(document).ajaxSend(function(event, xhr, settings) {
     function getCookie(name) {

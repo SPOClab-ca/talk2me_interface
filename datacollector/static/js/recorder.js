@@ -126,7 +126,7 @@ DEALINGS IN THE SOFTWARE.
         success: function(data, textStatus, jqXHR) {
             console.log('OK!');
             // Re-enable submit button
-            $("input[type=submit]").prop('disabled',false);
+            $("#submit_btn").prop('disabled',false);
             $("#ajax_loader").addClass("invisible");
         }
     });

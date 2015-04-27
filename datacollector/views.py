@@ -282,6 +282,7 @@ def session(request, session_id):
             # If the session is active, find the first unanswered task instance to display
             active_task = None
             active_instances = []   
+            active_session_task_id = None
             
             # Initialize global vars for session page
             requires_audio = False
@@ -357,6 +358,7 @@ def session(request, session_id):
                         counter += 1
                     
                 else:
+                    active_session_task_id = active_task[0].session_task_id
                     active_task = active_task[0].task
                     responses_dict = {}
                     active_task_responses = Session_Response.objects.filter(session_task_instance__session_task__session=session, session_task_instance__session_task__task=active_task).order_by('session_task_instance__session_task__order')
@@ -480,7 +482,7 @@ def session(request, session_id):
                     session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                     counter += 1
                     
-            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'user': request.user}
+            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'user': request.user}
             passed_vars.update(global_passed_vars)
                     
             return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))
@@ -549,3 +551,22 @@ def error(request, error_id):
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/error.html', passed_vars, context_instance=RequestContext(request))
+    
+    
+def pagetime(request):
+    
+    if request.method == "POST":
+        
+        session_task_id = request.POST['sessiontaskid']
+        time_elapsed = request.POST['timeelapsed']
+        
+        # Save to db
+        current_task = Session_Task.objects.filter(session_task_id=session_task_id)
+        if current_task:
+            current_time_elapsed = current_task[0].total_time
+            current_task.update(total_time=int(current_time_elapsed) + int(time_elapsed))
+        
+        return_dict = {"status": "success"}
+        json = simplejson.dumps(return_dict)
+        return HttpResponse(json, mimetype="application/x-javascript")
+    return HttpResponseRedirect('/datacollector/')
