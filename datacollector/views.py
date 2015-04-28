@@ -252,6 +252,9 @@ def startsession(request):
                 for index_instance in range(num_instances):
                     instance_value = selected_values[index_instance]
                     new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
+                    
+                    # Using the task field value ("instance_value"), update the expected session response
+                    Session_Response.objects.filter(session_task_instance=new_task_instances[index_instance]).update(value_expected=instance_value.response_expected)
 
                     # If there are any associated fields (e.g., answer field instances associated with the currently selected question field instances), add them to the session as well.
                     # Note that for select options, all options must be added, not just the one that is the correct response.
@@ -390,7 +393,7 @@ def session(request, session_id):
                         elif field_data_type == "image":
                             display_field = "<img src='/static/img/" + instance_value.value + "' " + style_attributes + ">"
                         elif field_data_type == "text_withblanks":
-                            display_field = (instance_value.value).replace("[BLANK]", "<input name='response' type='text' value='' /><input name='instanceid' type='hidden' value='" + instance_id + "' />")
+                            display_value = (instance_value.value).replace("[BLANK]", "<input name='response' type='text' value='' /><input name='instanceid' type='hidden' value='" + instance_id + "' />")
                         elif field_data_type == "timer_rig":
                         
                             # Parse out the duration of the timer
