@@ -383,7 +383,7 @@ def session(request, session_id):
                         
                         # Construct style attributes string from the specified field data attributes
                         field_data_attributes = Task_Field_Data_Attribute.objects.filter(task_field=instance_value.task_field)
-                        style_attributes = ";".join([str(attr.name) + "='" + str(attr.value) + "'" for attr in field_data_attributes])
+                        style_attributes = ";".join([str(attr.name) + ": " + str(attr.value) for attr in field_data_attributes])
 
                         session_task_instance = instance_value.session_task_instance
                         instance_id = str(instance_value.session_task_instance.session_task_instance_id)
@@ -391,9 +391,9 @@ def session(request, session_id):
                         if field_data_type == "text":
                             display_field = instance_value.value.replace('\n', '<br>')
                         elif field_data_type == "image":
-                            display_field = "<img src='/static/img/" + instance_value.value + "' " + style_attributes + ">"
+                            display_field = "<img src='/static/img/" + instance_value.value + "' style=\"" + style_attributes + "\" />"
                         elif field_data_type == "text_withblanks":
-                            display_value = (instance_value.value).replace("[BLANK]", "<input name='response' type='text' value='' /><input name='instanceid' type='hidden' value='" + instance_id + "' />")
+                            display_field = (instance_value.value).replace("[BLANK]", "<input name='response' type='text' value='' /><input name='instanceid' type='hidden' value='" + instance_id + "' />")
                         elif field_data_type == "timer_rig":
                         
                             # Parse out the duration of the timer
@@ -408,12 +408,13 @@ def session(request, session_id):
                                 # Default duration
                                 dur_sec = 60
                                 
-                            display_field = "<button onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />"
+                            display_field = re.sub(timer_duration, "<br /><button onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />", instance_value.value)
                             
                             # Associated textarea where the user will type out the RIG response
-                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea name='response' readonly='readonly' style=\"width: 500px; height: 120px;" + style_attributes + "\"></textarea><input name='instanceid' type='hidden' value='" + instance_id + "' />"
+                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input name='instanceid' type='hidden' value='" + instance_id + "' />"
                         else:
                             display_field = instance_value.value
+                        
                         
                         # Find associated response field data type
                         
