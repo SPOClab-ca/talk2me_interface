@@ -217,7 +217,8 @@ def startsession(request):
             # For each display field, select random <num_instances> which the user hasn't seen before
             for field in task_fields_display:
                 
-                existing_values = Session_Task_Instance_Value.objects.filter(task_field=field, session_task_instance__session_task__session__subject=subject)
+                existing_instances = Session_Task_Instance_Value.objects.filter(task_field=field, session_task_instance__session_task__session__subject=subject)
+                existing_values = [v.value for v in existing_instances]
                 
                 # Add to selected values. Make sure not to add field values that are associated with each other, or are already selected, or have been seen by the subject before in previous sessions. NB: here we are assuming that the total number of values for each field in the db is at least as big as the default number of instances for the field.
                 selected_values = []
