@@ -31,6 +31,12 @@ def index(request):
     demographic_submitted = False
     gender_options = []
     language_options = []
+    language_other = []
+    language_fluency_options = []
+    ethnicity_options = []
+    education_options = []
+    dementia_options = []
+    country_res_options = []
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -81,6 +87,29 @@ def index(request):
                         selected_gender = selected_gender[0]
                         Subject.objects.filter(user_id=request.user.id).update(gender=selected_gender)
                 
+                # DOB
+                if 'dob' in request.POST:
+                    selected_dob = request.POST['dob']
+                    
+                    # TODO: check that date is within range -150:-18 (i.e., at least 18 years old)
+                    Subject.objects.filter(user_id=request.user.id).update(dob=selected_dob)
+                
+                # Ethnicity
+                if 'ethnicity' in request.POST:
+                    response_ethnicity = request.POST.getlist('ethnicity')
+                    for i in range(len(response_ethnicity)):
+                        selected_ethnicity = Ethnicity.objects.filter(ethnicity_id=response_ethnicity[i])
+                        if selected_ethnicity:
+                            selected_ethnicity = selected_ethnicity[0]
+                        
+                        subject = Subject.objects.filter(user_id=request.user.id)
+                        if subject:
+                            subject = subject[0]
+                        
+                        ethnicity_exists = Subject_Ethnicity.objects.filter(subject=subject, ethnicity=selected_ethnicity)
+                        if not ethnicity_exists:
+                            Subject_Ethnicity.objects.create(subject=subject, ethnicity=selected_ethnicity)
+                
                 # Languages
                 if 'language' in request.POST:
                     response_languages = request.POST.getlist('language')
@@ -95,11 +124,101 @@ def index(request):
                             subject = subject[0]
                         
                         lang_exists = Subject_Language.objects.filter(subject=subject, language=selected_language)
-                        if not lang_exists:
+                        
+                        lang_level = None
+                        if 'language_fluency_' + str(response_languages[i]) in request.POST:
+                            lang_level = Language_Level.objects.filter(language_level_id=request.POST['language_fluency_' + str(response_languages[i])])
+                            if lang_level:
+                                lang_level = lang_level[0]
+                        
+                        # TODO: raise an error if lang level not selected
+                        if not lang_level:
                             lang_level = Language_Level.objects.filter(name='native')
                             if lang_level:
                                 lang_level = lang_level[0]
+                        
+                        if not lang_exists:
                             Subject_Language.objects.create(subject=subject, language=selected_language, level=lang_level)
+                        else:
+                            Subject_Language.objects.filter(subject=subject, language=selected_language).update(level=lang_level)
+                
+                if 'language_other' in request.POST:
+                    response_languages = request.POST.getlist('language_other')
+                    for i in range(len(response_languages)):
+                        
+                        sel_response_language = response_languages[i]
+                        if sel_response_language:
+                            selected_language = Language.objects.filter(language_id=sel_response_language)
+                            if selected_language:
+                                selected_language = selected_language[0]
+                            
+                            subject = Subject.objects.filter(user_id=request.user.id)
+                            if subject:
+                                subject = subject[0]
+                            
+                            lang_exists = Subject_Language.objects.filter(subject=subject, language=selected_language)
+                            
+                            lang_level = None
+                            if 'other_fluency_' + str(i) in request.POST:
+                                lang_level = Language_Level.objects.filter(language_level_id=request.POST['other_fluency_' + str(i)])
+                                if lang_level:
+                                    lang_level = lang_level[0]
+                            
+                            # TODO: raise an error if lang level not selected
+                            if not lang_level:
+                                lang_level = Language_Level.objects.filter(name='native')
+                                if lang_level:
+                                    lang_level = lang_level[0]
+                            
+                            if not lang_exists:
+                                Subject_Language.objects.create(subject=subject, language=selected_language, level=lang_level)
+                            else:
+                                Subject_Language.objects.filter(subject=subject, language=selected_language).update(level=lang_level)
+                                
+                
+                # Education level
+                if 'education_level' in request.POST:
+                    response_education_level = request.POST['education_level']
+                    selected_education_level = Education_Level.objects.filter(education_level_id=response_education_level)
+                    if selected_education_level:
+                        selected_education_level = selected_education_level[0]
+                        Subject.objects.filter(user_id=request.user.id).update(education_level=selected_education_level)
+                
+                # Dementia type
+                if 'dementia_type' in request.POST:
+                    response_dementia_type = request.POST.getlist('dementia_type')
+                    for i in range(len(response_dementia_type)):
+                        selected_dementia_type = Dementia_Type.objects.filter(dementia_type_id=response_dementia_type[i])
+                        selected_dementia_name = ""
+                        if selected_dementia_type:
+                            selected_dementia_type = selected_dementia_type[0]
+                            if selected_dementia_type.requires_detail:
+                                if 'dementia_type_detail_' + str(response_dementia_type[i]) in request.POST:
+                                    selected_dementia_name = request.POST['dementia_type_detail_' + str(response_dementia_type[i])]
+                        
+                        subject = Subject.objects.filter(user_id=request.user.id)
+                        if subject:
+                            subject = subject[0]
+                        
+                        dementia_type_exists = Subject_Dementia_Type.objects.filter(subject=subject, dementia_type=selected_dementia_type)
+                        if not dementia_type_exists:
+                            Subject_Dementia_Type.objects.create(subject=subject, dementia_type=selected_dementia_type, dementia_type_name=selected_dementia_name)
+                
+                # Dementia meds 
+                if 'dementia_med' in request.POST:
+                    response_dementia_med = request.POST['dementia_med']
+                    map_response_to_id = { 'yes': 1, 'no': 0}
+                    if response_dementia_med in map_response_to_id:
+                        response_dementia_med_id = map_response_to_id[response_dementia_med]
+                        Subject.objects.filter(user_id=request.user.id).update(dementia_med=response_dementia_med_id)
+                        
+                # Smoking 
+                if 'smoking' in request.POST:
+                    response_smoking = request.POST['smoking']
+                    map_response_to_id = { 'yes': 1, 'no': 0}
+                    if response_smoking in map_response_to_id:
+                        response_smoking_id = map_response_to_id[response_smoking]
+                        Subject.objects.filter(user_id=request.user.id).update(smoker_recent=response_smoking_id)
                 
                 # Set the demographic flag to 1
                 Subject.objects.filter(user_id=request.user.id).update(demographic_submitted=1)
@@ -117,14 +236,20 @@ def index(request):
         
         # Demographic survey options/dropdowns
         if not demographic_submitted:
-            gender_options = Gender.objects.all().order_by('name')
-            language_options = Language.objects.all().order_by('name')
+            gender_options = Gender.objects.all().order_by('ranking')
+            language_options = Language.objects.all().exclude(is_official=0).order_by('name')
+            language_other = Language.objects.all().exclude(is_official=1).order_by('name')
+            language_fluency_options = Language_Level.objects.all().order_by('ranking')
+            ethnicity_options = Ethnicity.objects.all().order_by('ranking')
+            education_options = Education_Level.objects.all().order_by('-ranking')
+            dementia_options = Dementia_Type.objects.all().order_by('ranking')
+            country_res_options = Country.objects.all().order_by('name')
     
         # For the currently logged on user, find all previous sessions in the system
         completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False).order_by('-start_date')
         active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True).order_by('-start_date')
     
-    passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options }
+    passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options }
     passed_vars.update(global_passed_vars)
     return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
 

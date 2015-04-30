@@ -88,7 +88,7 @@
         </div>
         <div id="detail_preference_email_reminders" class="invisible" style="margin-left: 20px;">
             <div style="margin-bottom: 15px;">E-mail address: 
-            <input id='preference_email_reminders' name='preference_email_reminders' style='width: 200px;' type='text' value=''></div>
+            <input id='preference_email_reminders' name='preference_email_reminders' class="form-control" style='width: 250px;' type='text' value=''></div>
             Frequency: 
             <div class="radio" style="display: inline; margin-left: 10px; margin-bottom: 15px;">
                 <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="7"> Weekly</label>
@@ -100,7 +100,7 @@
             <label><input id='cb_preference_email_updates' name='cb_preference_email_updates' type='checkbox' onClick="javascript: showCbDetails(this);">&nbsp;<strong>I wish to receive electronic communication regarding study outcomes, updates and research publications</strong> based on the data collected as part of this study. I understand that I can unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to this e-mail address, which will not be shared with any third parties or used for commercial purposes.</label>
         </div>
         <div id="detail_preference_email_updates" class="invisible" style="margin-left: 20px;">
-            E-mail address: <input id='preference_email_updates' name='preference_email_updates' style='width: 200px;' type='text' value=''>
+            E-mail address: <input class="form-control" id='preference_email_updates' name='preference_email_updates' style='width: 250px;' type='text' value=''>
         </div>
         <br />
 
@@ -119,44 +119,117 @@
         {% csrf_token %}
         <input type='hidden' id='form_type' name='form_type' value='demographic' />
         <ol>
-            <li><span>Gender</span><br />
+            <li><strong>Gender:</strong><br />
                 {% for opt in gender_options %}
-                <input type="radio" name="gender" value="{{ opt.gender_id }}"> {{ opt.name }}<br />            
+                <div class="radio">
+                    <label class="radio"><input type="radio" name="gender" value="{{ opt.gender_id }}"> {{ opt.name }}</label>
+                </div>
                 {% endfor %}
             </li>
             
-            <!--
-            <li><span>Date of birth</span><br />
-                <input type='text' class='datefield' value="" />
-            </li>
-            -->
+            <li><strong>Date of birth (YYYY-MM-DD):</strong><br />
             
-            <li>Spoken languages<br />
+                <input id="dob" class="form-control datefield" name="dob" type='text' value="" style="width: 150px; margin-top: 5px;" placeholder="YYYY-MM-DD" />
+                
+            </li>
+            
+            <li><strong>People in Canada come from many racial or cultural groups. You may belong to more than one group on the following list. Are you:</strong><br />
+                {% for opt in ethnicity_options %}
+                <div class="checkbox">
+                    <label class="checkbox"><input type="checkbox" name="ethnicity" value="{{ opt.ethnicity_id }}"> {{ opt.name }}</label>
+                </div>
+                {% endfor %}
+            </li>
+            
+            <li><strong>Select all languages you can communicate in (speak, understand, read, and write), along with the level of fluency for each:</strong><br />
+                <table class="table" id="language_selection">
+                <thead><tr><th style="width: 40%;">Language</th><th style="width: 60%;">Fluency</th></tr></thead>
+                <tbody>
                 {% for opt in language_options %}
-                <input type="checkbox" name="language" value="{{ opt.language_id }}"> {{ opt.name }}<br />            
+                <tr>
+                    <td><div class="checkbox">
+                        <label><input type="checkbox" name="language" value="{{ opt.language_id }}"> {{ opt.name }}</label>
+                    </div></td>
+                    <td>
+                    {% for detail_opt in language_fluency_options %}
+                        <div class="radio">
+                            <label><input type="radio" name="language_fluency_{{ opt.language_id }}" value="{{ detail_opt.language_level_id }}"> {{ detail_opt.name }}</label>
+                        </div>
+                    {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td>
+                        <select name="language_other" class="form-control">
+                        <option value="">Select another language...</option>
+                        {% for other_opt in language_other %}
+                            <option value="{{ other_opt.language_id }}">{{ other_opt.name }}</option>
+                        {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                    {% for detail_opt in language_fluency_options %}
+                        <div class="radio">
+                            <label><input type="radio" name="other_fluency_1" value="{{ detail_opt.language_level_id }}"> {{ detail_opt.name }}</label>
+                        </div>
+                    {% endfor %}
+                    </td>
+                </tr>
+                </tbody></table>
+                <a href="javascript: void(0);" onClick="javascript: demographicsAddLanguage(this);">Add Another Language</a>
+            </li>
+            
+            <li><strong>Education level (highest completed, or currently being completed)</strong><br />
+                {% for opt in education_options %}
+                <div class="radio">
+                    <label class="radio"><input type="radio" name="education_level" value="{{ opt.education_level_id }}"> {{ opt.name }}</label>
+                </div>
                 {% endfor %}
             </li>
             
-            <!--
-            <li>Country
-            
+            <li><strong>Have you ever been diagnosed with dementia? If yes, please select all applicable types:</strong><br />
+                {% for opt in dementia_options %}
+                <div class="checkbox">
+                    <label class="checkbox"><input type="checkbox" name="dementia_type" value="{{ opt.dementia_type_id }}"> {{ opt.name }}
+                    {% if opt.requires_detail %}
+                    : <input name="dementia_type_detail_{{ opt.dementia_type_id }}" type="text" value="" />
+                    {% endif %}
+                    </label>
+                </div>
+                {% endfor %}
             </li>
             
-            <li>Education level (highest completed, or currently being completed)
-            
+            <li class="detail_dementia"><strong>Do you currently take any medications for dementia?</strong><br />
+                <div class="radio">
+                    <label class="radio"><input type="radio" name="dementia_med" value="yes"> Yes</label>
+                </div>
+                <div class="radio">
+                    <label class="radio"><input type="radio" name="dementia_med" value="no"> No</label>
+                </div>
             </li>
             
-            <li>Have you ever been diagnosed with dementia? If yes, please select all applicable types:
-            
+            <li><strong>Have you been a regular smoker (of tobacco) within the last 3 years?</strong><br />
+                <div class="radio">
+                    <label class="radio"><input type="radio" name="smoking" value="yes"> Yes</label>
+                </div>
+                <div class="radio">
+                    <label class="radio"><input type="radio" name="smoking" value="no"> No</label>
+                </div>
             </li>
             
-            <li>Ethnicity
-            
+            <li><strong>Country you currently reside in:</strong><br />
+                <select name="country_res" class="form-control" style="width: 300px; margin-top: 5px;">
+                    <option value="">Select country...</option>
+                    {% for opt in country_res_options %}
+                        <option value="{{ opt.country_id }}">{{ opt.name }}</option>
+                    {% endfor %}
+                </select>
             </li>
-            -->
+            
         </ol>
         
-        <input class='button' type='submit' value='Submit' />
+        <button class="btn btn-primary" type="submit">Submit</button>
         </form>
 
     {% else %}

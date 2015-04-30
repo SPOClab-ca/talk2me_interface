@@ -8,10 +8,17 @@ var page_start_time = false;
  */
 $(document).ready(function () {
     
-    // Add date picker to date fields
-    //$(".datefield").each(function() {
-    //    $(this).datetimepicker();
-    //});
+    // Add date picker to date fields. The subject has to be at least 18 years old.
+    $(".datefield").each(function() {
+        $(this).datepicker({ 
+            dateFormat: "yy-mm-dd",
+            changeMonth: true,
+            changeYear: true,
+            minDate: "-150Y",
+            maxDate: "-18Y",
+            yearRange: "-150:-18"
+        });
+    });
     
     
     // Check browser for HTML5 support of:
@@ -176,5 +183,30 @@ function showCbDetails(cb) {
         } else {
             $("#" + cb_details_id).addClass("invisible");
         }
+    }
+}
+
+function demographicsAddLanguage(link) {
+    if ($("#language_selection").length > 0) {
+        var tbl = $("#language_selection")[0];
+        
+        // Clone last row, and update all IDs and field names, reset select
+        var tr_last = $(tbl).find("tr:last");
+        var tr_clone = $(tr_last).clone();
+        $(tr_clone).find("input[type=radio]").each(function() {
+            $(this).prop("checked",false);
+            var radio_name = $(this).attr("name");
+            var patt_name = /other_fluency_([0-9]+)/;
+            if (patt_name.test(radio_name)) {
+                var prev_name = patt_name.exec(radio_name)[0];
+                var prev_id = patt_name.exec(radio_name)[1];
+                var new_id = parseInt(prev_id) + 1;
+                $(this).attr("name", prev_name + new_id.toString());
+            }
+        });
+        $(tr_clone).find("select").prop("selectedIndex",0);
+        
+        // Insert the cloned row last in the table
+        $(tr_last).after($(tr_clone));
     }
 }
