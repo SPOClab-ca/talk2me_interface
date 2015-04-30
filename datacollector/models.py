@@ -23,6 +23,7 @@ class Gender(models.Model):
     
     gender_id = models.CharField(max_length=1, primary_key=True)
     name = models.CharField(max_length=20)
+    ranking = models.IntegerField()
 
 class Language(models.Model):
     # the possible values for the spoken languages by the subject
@@ -62,6 +63,7 @@ class Ethnicity(models.Model):
 
     ethnicity_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
+    ranking = models.IntegerField()
 
 class Country(models.Model):
     # the possible values for country of origin
