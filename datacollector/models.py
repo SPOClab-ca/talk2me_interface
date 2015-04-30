@@ -130,6 +130,7 @@ class Subject(models.Model):
 
     user_id = models.IntegerField(primary_key=True)
     consent_submitted = models.IntegerField(default=0)
+    consent_alternate = models.IntegerField(default=0)
     demographic_submitted = models.IntegerField(default=0)
     preference_email_reminders = models.IntegerField(default=0)
     preference_email_reminders_freq = models.IntegerField(null=True,blank=True)
