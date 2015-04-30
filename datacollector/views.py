@@ -540,7 +540,7 @@ def audiotest(request):
         return HttpResponse(json, mimetype="application/x-javascript")
     return render_to_response('datacollector/audiotest.html', context_instance=RequestContext(request))
 
-def help(request):
+def about(request):
     is_authenticated = False
     if request.user.is_authenticated():
         is_authenticated = True
@@ -548,7 +548,7 @@ def help(request):
     passed_vars = {'is_authenticated': is_authenticated, 'user': request.user}
     passed_vars.update(global_passed_vars)
     
-    return render_to_response('datacollector/help.html', passed_vars, context_instance=RequestContext(request))
+    return render_to_response('datacollector/about.html', passed_vars, context_instance=RequestContext(request))
 
 def error(request, error_id):
     is_authenticated = False

@@ -29,7 +29,7 @@ urlpatterns = patterns('',
     
     # Miscellaneous
     url(r'^datacollector/pagetime$', 'datacollector.views.pagetime'),
-    url(r'^datacollector/help/$', 'datacollector.views.help'),
+    url(r'^datacollector/about/$', 'datacollector.views.about'),
     url(r'^datacollector/error/(?P<error_id>\d{3})/$', 'datacollector.views.error'),
     url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
 

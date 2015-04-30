@@ -42,7 +42,7 @@
     
 </head>
 
-<body>
+<body id="top">
     
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
@@ -61,7 +61,7 @@
           </p>
           <ul class="nav navbar-nav">
             <li {% if request.path == "/datacollector/" %}class="active"{% endif %}><a href="/datacollector/">Index</a></li>
-            <li {% if request.path == "/datacollector/help/" %}class="active"{% endif %}><a href="/datacollector/help/">Help</a></li>
+            <li {% if request.path == "/datacollector/about/" %}class="active"{% endif %}><a href="/datacollector/about/">About</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
