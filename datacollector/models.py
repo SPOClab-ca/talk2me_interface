@@ -150,8 +150,12 @@ class Subject(models.Model):
     ethnicity = models.ForeignKey(Ethnicity,null=True, blank=True)
     origin_country = models.ForeignKey(Country,null=True, blank=True)
     origin_country_province = models.ForeignKey(Country_Province,null=True, blank=True)
+    residence_country = models.ForeignKey(Country,null=True,blank=True)
     education_level = models.ForeignKey(Education_Level,null=True, blank=True)
+    dementia_med = models.IntegerField(null=True,blank=True)
+    smoker_recent = models.IntegerField(null=True,blank=True)
 
+    
 class Subject_Language(models.Model):
     # demographic data collected for the subject: the spoken languages, with 
     # ability in each
