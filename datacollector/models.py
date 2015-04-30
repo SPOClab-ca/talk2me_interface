@@ -56,6 +56,7 @@ class Dementia_Type(models.Model):
     dementia_type_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     ranking = models.IntegerField()
+    requires_detail = models.IntegerField(default=0)
 
 
 class Ethnicity(models.Model):
