@@ -34,6 +34,7 @@ class Language(models.Model):
     language_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     iso_code = models.CharField(max_length=2)
+    is_official = models.IntegerField(default=0)
 
 class Language_Level(models.Model):
     # the possible values for spoken language level
