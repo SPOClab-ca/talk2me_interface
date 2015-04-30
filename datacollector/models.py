@@ -43,6 +43,7 @@ class Language_Level(models.Model):
     
     language_level_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
+    ranking = models.IntegerField()
 
 
 class Dementia_Type(models.Model):
