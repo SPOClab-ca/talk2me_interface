@@ -179,6 +179,16 @@ class Subject_Dementia_Type(models.Model):
     dementia_type_id = models.IntegerField(null=True, blank=True)
     dementia_type_name = models.CharField(max_length=200)
 
+class Subject_Ethnicity(models.Model):
+    # data collected for user regarding their ethnicity
+    # The ethnicity ID exists in Ethnicity table.
+
+    def __unicode__(self):
+        return "User " + str(self.subject.user_id) + " - " + str(self.ethnicity.name)
+    
+    subject = models.ForeignKey(Subject)
+    ethnicity = models.ForeignKey(Ethnicity)
+    
 
 class Task(models.Model):
     # represents every type of question the subjects have to answer
