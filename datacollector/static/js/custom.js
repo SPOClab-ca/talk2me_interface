@@ -164,3 +164,17 @@ function stopTimerRig() {
         window.clearInterval(timer_rig);
     }
 }
+
+/* When a consent checkbox has additional details (e.g., email address prompt), only show them when the checkbox is selected */
+function showCbDetails(cb) {
+    var cb_id = $(cb).attr("id");
+    var patt = /cb_([a-zA-Z_]+)/;
+    if (patt.test(cb_id)) {
+        var cb_details_id = "detail_" + patt.exec(cb_id)[1];
+        if ($(cb).is(":checked")) {
+            $("#" + cb_details_id).removeClass("invisible");
+        } else {
+            $("#" + cb_details_id).addClass("invisible");
+        }
+    }
+}

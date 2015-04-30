@@ -40,18 +40,38 @@ def index(request):
             if form_type == 'consent':
                 # If consent has been provided, update the database for the subject
                 # and reload the page
-                if 'cb_consent' in request.POST:
-                    Subject.objects.filter(user_id=request.user.id).update(consent_submitted=1,preference_public_release=1)
+                if 'radio_consent' in request.POST:
+                    Subject.objects.filter(user_id=request.user.id).update(consent_submitted=1)
+                    if request.POST['radio_consent'] == 'alternate':
+                        Subject.objects.filter(user_id=request.user.id).update(consent_alternate=1)
                 
-                if 'cb_preference_email' in request.POST:
+                # Preference for allowing public release of collected data
+                if 'cb_preference_public_release' in request.POST:
+                    Subject.objects.filter(user_id=request.user.id).update(preference_public_release=1)
+                    
+                # Preference for receiving email reminders about completing sessions
+                if 'cb_preference_email_reminders' in request.POST:
                     
                     user_email = ""
-                    if 'preference_email' in request.POST:
-                        user_email = request.POST['preference_email']
+                    if 'preference_email_reminders' in request.POST:
+                        user_email = request.POST['preference_email_reminders']
+                        reminders_freq = request.POST['radio_email_reminders_freq']
+                        
+                        # TODO: some kind of email validation
+                        if user_email:
+                            Subject.objects.filter(user_id=request.user.id).update(preference_email_reminders=1,preference_email_reminders_freq=reminders_freq,email_reminders=user_email)
                     
-                    Subject.objects.filter(user_id=request.user.id).update(preference_email_updates=1)
-                    User.objects.filter(id=request.user.id).update(email=user_email)
-
+                # Preference for receiving email updates about related future research/publications
+                if 'cb_preference_email_updates' in request.POST:
+                    
+                    user_email = ""
+                    if 'preference_email_updates' in request.POST:
+                        user_email = request.POST['preference_email_updates']
+                        
+                        # TODO: some kind of email validation
+                        if user_email:
+                            Subject.objects.filter(user_id=request.user.id).update(preference_email_updates=1,email_updates=user_email)
+            
             elif form_type == 'demographic':
                 # Gender 
                 if 'gender' in request.POST:

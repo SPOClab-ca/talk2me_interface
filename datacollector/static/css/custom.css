@@ -61,11 +61,6 @@ ol li img {
     line-height: 0.8;
 }
 
-.toc ul {
-    list-style: none;
-    padding: 0;
-}
-
 .toc a {
     font-size: 22px;
 }
@@ -91,6 +86,16 @@ ol li img {
 
 .anchor-title a {
     margin-left: 5px;
+}
+
+/* Consent form styling of main selections */
+.consent-main {
+    background-color: #f0f7fd;
+    border: 1px solid #d0e3f0;
+}
+
+.consent-main .consent-container {
+    margin: 10px;
 }
 
 /* Side notes for calling out things
