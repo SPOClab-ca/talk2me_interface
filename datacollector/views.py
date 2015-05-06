@@ -42,12 +42,13 @@ def index(request):
         is_authenticated = True
 
         if request.method == 'POST':
+            date_submitted = datetime.datetime.now()
             form_type = request.POST['form_type']
             if form_type == 'consent':
                 # If consent has been provided, update the database for the subject
                 # and reload the page
                 if 'radio_consent' in request.POST:
-                    Subject.objects.filter(user_id=request.user.id).update(consent_submitted=1)
+                    Subject.objects.filter(user_id=request.user.id).update(date_consent_submitted=date_submitted)
                     if request.POST['radio_consent'] == 'alternate':
                         Subject.objects.filter(user_id=request.user.id).update(consent_alternate=1)
                 
@@ -221,18 +222,19 @@ def index(request):
                         Subject.objects.filter(user_id=request.user.id).update(smoker_recent=response_smoking_id)
                 
                 # Set the demographic flag to 1
-                Subject.objects.filter(user_id=request.user.id).update(demographic_submitted=1)
+                Subject.objects.filter(user_id=request.user.id).update(date_demographics_submitted=date_submitted)
                 
         # Assume that every authenticated user exists in datacollector subject. If they don't, add them with the appropriate ID, and all flags initialized to null/false.
         subject = Subject.objects.filter(user_id=request.user.id)
         if subject:
             subject = subject[0]
         else:
-            subject = Subject.objects.create(user_id=request.user.id, consent_submitted=0, demographic_submitted=0, preference_email_updates=0, preference_public_release=0)
+            date_submitted = datetime.datetime.now()
+            subject = Subject.objects.create(user_id=request.user.id, date_created=date_submitted, consent_alternate=0, preference_email_reminders=0, preference_email_updates=0, preference_public_release=0, preference_prizes=0)
         
         # If first time logging in, display Consent Form, and ask for consent
-        consent_submitted = subject.consent_submitted
-        demographic_submitted = subject.demographic_submitted
+        consent_submitted = subject.date_consent_submitted
+        demographic_submitted = subject.date_demographics_submitted
         
         # Demographic survey options/dropdowns
         if not demographic_submitted:
@@ -428,6 +430,10 @@ def session(request, session_id):
         if session:
             session = session[0]
 
+            # Update the date_last_session_access for the user (this drives reminder emails)
+            date_access = datetime.datetime.now()
+            Subject.objects.filter(user_id=request.user.id).update(date_last_session_access=date_access)
+            
             # If the session is active, find the first unanswered task instance to display
             active_task = None
             active_instances = []   
