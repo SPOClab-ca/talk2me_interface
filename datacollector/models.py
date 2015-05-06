@@ -132,22 +132,25 @@ class Subject(models.Model):
 
     def __unicode__(self):
         return "User " + str(self.user_id) + " (" + str(User.objects.get(id=self.user_id).username) + "), Gender: " + str(self.gender) + \
-                ", DOB: " + str(self.dob) + ", Consent: " + str(self.consent_submitted) + \
-                ", demographic submitted: " + str(self.demographic_submitted)
+                ", DOB: " + str(self.dob) + ", Consent: " + str(self.date_consent_submitted) + \
+                ", demographic submitted: " + str(self.date_demographics_submitted)
 
     user_id = models.IntegerField(primary_key=True)
-    consent_submitted = models.IntegerField(default=0)
+    date_created = models.DateField()
+    date_consent_submitted = models.DateField(null=True,blank=True)
+    date_demographics_submitted = models.DateField(null=True,blank=True)
+    date_last_session_access = models.DateField(null=True,blank=True)
     consent_alternate = models.IntegerField(default=0)
-    demographic_submitted = models.IntegerField(default=0)
     preference_email_reminders = models.IntegerField(default=0)
     preference_email_reminders_freq = models.IntegerField(null=True,blank=True)
     email_reminders = models.CharField(max_length=100,null=True,blank=True)
     preference_email_updates = models.IntegerField(default=0)
     email_updates = models.CharField(max_length=100,null=True,blank=True)
     preference_public_release = models.IntegerField(default=0)
+    preference_prizes = models.IntegerField(default=0)
+    email_prizes = models.CharField(max_length=100,null=True,blank=True)
     gender = models.ForeignKey(Gender,null=True,blank=True)
     dob = models.DateField(null=True,blank=True)
-    ethnicity = models.ForeignKey(Ethnicity,null=True, blank=True)
     origin_country = models.ForeignKey(Country,null=True, blank=True, related_name='subject_origin_country')
     origin_country_province = models.ForeignKey(Country_Province,null=True, blank=True)
     residence_country = models.ForeignKey(Country,null=True,blank=True, related_name='subject_residence_country')
@@ -156,12 +159,27 @@ class Subject(models.Model):
     smoker_recent = models.IntegerField(null=True,blank=True)
 
     
+class Subject_Emails(models.Model):
+    # Records all emails sent by the system to a given user
+    
+    def __unicode__(self):
+        return "Email (" + str(self.email_type) + ") sent on " + str(self.date_sent) + " from " + str(self.email_from) + " to " + str(self.email_to) + " (username: " + str(User.objects.get(id=self.subject.user_id).username) + ")"
+    
+    email_id = models.IntegerField(primary_key=True)
+    date_sent = models.DateField()
+    subject = models.ForeignKey(Subject)
+    email_from = models.CharField(max_length=100)
+    email_to = models.CharField(max_length=100)
+    email_type = models.CharField(max_length=50)
+    prize_amt = models.DecimalField(max_digits=6, decimal_places=2)
+    
+        
 class Subject_Language(models.Model):
     # demographic data collected for the subject: the spoken languages, with 
     # ability in each
 
     def __unicode__(self):
-        return "User " + str(self.subject.user_id) + " - " + str(self.language.name) + \
+        return "User " + str(self.subject.user_id) + " (" + str(User.objects.get(id=self.subject.user_id).username) + ") - " + str(self.language.name) + \
                 " (" + str(self.level.name) + ")"
 
     subject = models.ForeignKey(Subject)
