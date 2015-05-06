@@ -29,3 +29,7 @@ admin.site.register(Task_Field_Data_Attribute)
 
 # Subject classes
 admin.site.register(Subject)
+admin.site.register(Subject_Emails)
+admin.site.register(Subject_Language)
+admin.site.register(Subject_Ethnicity)
+admin.site.register(Subject_Dementia_Type)
