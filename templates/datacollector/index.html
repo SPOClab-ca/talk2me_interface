@@ -1,4 +1,5 @@
 {% extends "datacollector/base.html" %}
+{% load dict_extras %}
 
 {% block title %}{{ website_name }}{% endblock%}
 
@@ -18,13 +19,24 @@
     
     {% if not consent_submitted %}
 
+        <h1>Informed Consent</h1>
+        <hr />
+        
+        {% if form_errors %}
+        <div class="bs-callout bs-callout-danger">
+            <strong>The form could not be submitted. Please correct the following error{{ form_errors|pluralize }}:</strong>
+            <ul>
+            {% for err in form_errors %}
+                <li>{{ err }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
         <form action="" method="POST">
         {% csrf_token %}
         <input type='hidden' id='form_type' name='form_type' value='consent' />
-
-        <h1>Informed Consent</h1>
-        <hr />
-
+        
         <h3>Research Project</h3>
         <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study to analyze the differences in longitudinal progression of linguistic markers between healthy older adults and ones with dementia. We are interested in assessing the validity and usability of an automated web-based system ({{ website_name }}) for linguistic data acquisition, as means for longitudinal monitoring of changes in language ability. To familiarize yourself with the purpose, procedures, and risks of the project, please <a target="_blank" href="{{ request.path }}about">click here</a>. When you have carefully read the linked document, you can proceed with the consent form below.</p>
 
@@ -69,10 +81,10 @@
         <div class="consent-main">
             <div class="consent-container">
                 <div class="radio">
-                    <label><input name='radio_consent' type='radio' value="participant">&nbsp;<strong>I am the participant, I have read the entire consent form, and I consent to participate in this study</strong></label>
+                    <label><input name='radio_consent' type='radio' value="participant"{% if form_values.radio_consent == 'participant' %} checked="checked"{% endif %} />&nbsp;<strong>I am the participant, I have read the entire consent form, and I consent to participate in this study</strong></label>
                 </div>
                 <div class="radio">
-                    <label><input name='radio_consent' type='radio' value="alternate">&nbsp;<strong>I am an alternate decision maker who has read the entire consent form, and I provide consent on behalf of the participant. The participant has read the entire consent form and assents to participate in this study</strong></label>
+                    <label><input name='radio_consent' type='radio' value="alternate"{% if form_values.radio_consent == 'alternate' %} checked="checked"{% endif %} />&nbsp;<strong>I am an alternate decision maker who has read the entire consent form, and I provide consent on behalf of the participant. The participant has read the entire consent form and assents to participate in this study</strong></label>
                 </div>
             </div>
         </div>
@@ -80,39 +92,50 @@
         <br />
         <p>The following selections are optional, but would greatly benefit research outcomes:</p>
         <div class="checkbox">
-            <label><input id='cb_preference_public_release' name='cb_preference_public_release' type='checkbox'>&nbsp;<strong>In the event that the data recorded in this study is made public for research purposes, I agree to include my data, provided that all data is presented anonymously (i.e., my username and email address are not disclosed).</strong> I understand that the nature of the language data I provide during the study (e.g., audio recordings) may itself be used to discover my identity.</label>
+            <label><input id='cb_preference_public_release' name='cb_preference_public_release' type='checkbox'{% if 'cb_preference_public_release' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>In the event that the data recorded in this study is made public for research purposes, I agree to include my data, provided that all data is presented anonymously (i.e., my username and email address are not disclosed).</strong> I understand that the nature of the language data I provide during the study (e.g., audio recordings) may itself be used to discover my identity.</label>
         </div>
         
         <div class="checkbox">
-            <label><input id='cb_preference_email_reminders' name='cb_preference_email_reminders' type='checkbox' onClick="javascript: showCbDetails(this);">&nbsp;<strong>I wish to receive scheduled e-mail reminders (e.g., monthly) to complete new sessions on the website (each session takes approximately 15 minutes).</strong> I understand that I can unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to this e-mail address, which will not be shared with any third parties or used for commercial purposes.</label>
+            <label><input id='cb_preference_email_reminders' name='cb_preference_email_reminders' type='checkbox'{% if 'cb_preference_email_reminders' in form_values %} checked='checked'{% endif %} onClick="javascript: showCbDetails(this);">&nbsp;<strong>I wish to receive scheduled e-mail reminders (e.g., monthly) to complete new sessions on the website (each session takes approximately 15 minutes).</strong> I understand that I can unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to this e-mail address, which will not be shared with any third parties or used for commercial purposes.</label>
         </div>
-        <div id="detail_preference_email_reminders" class="invisible" style="margin-left: 20px;">
-            <div style="margin-bottom: 15px;">E-mail address: 
-            <input id='preference_email_reminders' name='preference_email_reminders' class="form-control" style='width: 250px;' type='text' value=''></div>
+        <div id="detail_preference_email_reminders"{% if 'cb_preference_email_reminders' not in form_values %} class="invisible"{% endif %} style="margin-left: 20px;">
             Frequency: 
             <div class="radio" style="display: inline; margin-left: 10px; margin-bottom: 15px;">
-                <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="7"> Weekly</label>
-                <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="30" checked="checked"> Monthly</label>
-                <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="365"> Annually</label>
+                <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="7"{% if form_values.radio_email_reminders_freq == '7' %} checked="checked"{% endif %} /> Weekly</label>
+                <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="30"{% if form_values.radio_email_reminders_freq == '30' %} checked="checked"{% endif %}{% if 'radio_email_reminders_freq' not in form_values %} checked="checked"{% endif %} /> Monthly</label>
+                <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="365"{% if form_values.radio_email_reminders_freq == '365' %} checked="checked"{% endif %} /> Annually</label>
             </div>
         </div>
         
         <div class="checkbox">
-            <label><input id='cb_preference_email_updates' name='cb_preference_email_updates' type='checkbox' onClick="javascript: showCbDetails(this);">&nbsp;<strong>I wish to receive electronic communication regarding study outcomes, updates and research publications</strong> based on the data collected as part of this study. I understand that I can unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to this e-mail address, which will not be shared with any third parties or used for commercial purposes.</label>
+            <label><input id='cb_preference_email_updates' name='cb_preference_email_updates' type='checkbox'{% if 'cb_preference_email_updates' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>I wish to receive electronic communication regarding study outcomes, updates and research publications</strong> based on the data collected as part of this study. I understand that I can unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to this e-mail address, which will not be shared with any third parties or used for commercial purposes.</label>
         </div>
-        <div id="detail_preference_email_updates" class="invisible" style="margin-left: 20px;">
-            E-mail address: <input class="form-control" id='preference_email_updates' name='preference_email_updates' style='width: 250px;' type='text' value=''>
+        <br />
+        
+        <div>
+            E-mail address: <input class="form-control" id='email_address' name='email_address' style='width: 250px;' type='text' value="{{ form_values.email_address }}">
         </div>
         <br />
 
         <button type="submit" class="btn btn-primary">Submit</button>
         </form>
-
+        
     {% else %}
     {% if not demographic_submitted %}
     
         <h1>Demographic Data</h1>
         <hr />
+        
+        {% if form_errors %}
+        <div class="bs-callout bs-callout-danger">
+            <strong>The form could not be submitted. Please correct the following error{{ form_errors|pluralize }}:</strong>
+            <ul>
+            {% for err in form_errors %}
+                <li>{{ err }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
         
         <p>Please provide the following anonymous demographic data, which will aid the analysis of your results.</p>
         
@@ -123,21 +146,21 @@
             <li><strong>Gender:</strong><br />
                 {% for opt in gender_options %}
                 <div class="radio">
-                    <label class="radio"><input type="radio" name="gender" value="{{ opt.gender_id }}"> {{ opt.name }}</label>
+                    <label class="radio"><input type="radio" name="gender" value="{{ opt.gender_id }}"{% ifequal form_values.gender opt.gender_id %} checked="checked"{% endifequal %}> {{ opt.name }}</label>
                 </div>
                 {% endfor %}
             </li>
             
             <li><strong>Date of birth (YYYY-MM-DD):</strong><br />
             
-                <input id="dob" class="form-control datefield" name="dob" type='text' value="" style="width: 150px; margin-top: 5px;" placeholder="YYYY-MM-DD" />
+                <input id="dob" class="form-control datefield" name="dob" type='text' value="{{ form_values.dob }}" style="width: 150px; margin-top: 5px;" placeholder="YYYY-MM-DD" />
                 
             </li>
             
             <li><strong>People in Canada come from many racial or cultural groups. You may belong to more than one group on the following list. Are you:</strong><br />
                 {% for opt in ethnicity_options %}
                 <div class="checkbox">
-                    <label class="checkbox"><input type="checkbox" name="ethnicity" value="{{ opt.ethnicity_id }}"> {{ opt.name }}</label>
+                    <label class="checkbox"><input type="checkbox" name="ethnicity" value="{{ opt.ethnicity_id }}"{% if opt.ethnicity_id in form_ethnicity %} checked="checked"{% endif %}> {{ opt.name }}</label>
                 </div>
                 {% endfor %}
             </li>
@@ -149,17 +172,38 @@
                 {% for opt in language_options %}
                 <tr>
                     <td><div class="checkbox">
-                        <label><input type="checkbox" name="language" value="{{ opt.language_id }}"> {{ opt.name }}</label>
+                        <label><input type="checkbox" name="language" value="{{ opt.language_id }}"{% if opt.language_id in dict_language.keys %} checked="checked"{% endif %}> {{ opt.name }}</label>
                     </div></td>
                     <td>
                     {% for detail_opt in language_fluency_options %}
                         <div class="radio">
-                            <label><input type="radio" name="language_fluency_{{ opt.language_id }}" value="{{ detail_opt.language_level_id }}"> {{ detail_opt.name }}</label>
+                            <label><input type="radio" name="language_fluency_{{ opt.language_id }}" value="{{ detail_opt.language_level_id }}"{% ifequal dict_language|hash:opt.language_id|add:"0" detail_opt.language_level_id|add:"0" %} checked="checked"{% endifequal %}> {{ detail_opt.name }}</label>
                         </div>
                     {% endfor %}
                     </td>
                 </tr>
                 {% endfor %}
+                
+                {% for lang_id, level_id in dict_language_other.items %}
+                <tr>
+                    <td>
+                        <select name="language_other" class="form-control">
+                        <option value="">Select another language...</option>
+                        {% for other_opt in language_other %}
+                            <option value="{{ other_opt.language_id }}"{% ifequal lang_id|add:"0" other_opt.language_id|add:"0" %} selected="selected"{% endifequal %}>{{ other_opt.name }}</option>
+                        {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        {% for detail_opt in language_fluency_options %}
+                            <div class="radio">
+                                <label><input type="radio" name="other_fluency_{{ forloop.parentloop.counter }}" value="{{ detail_opt.language_level_id }}"{% ifequal level_id|add:"0" detail_opt.language_level_id|add:"0" %} checked="checked"{% endifequal %}> {{ detail_opt.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+                
                 <tr>
                     <td>
                         <select name="language_other" class="form-control">
@@ -172,7 +216,7 @@
                     <td>
                     {% for detail_opt in language_fluency_options %}
                         <div class="radio">
-                            <label><input type="radio" name="other_fluency_1" value="{{ detail_opt.language_level_id }}"> {{ detail_opt.name }}</label>
+                            <label><input type="radio" name="other_fluency_{{ dict_language_other|length|add:'1' }}" value="{{ detail_opt.language_level_id }}"> {{ detail_opt.name }}</label>
                         </div>
                     {% endfor %}
                     </td>
@@ -184,7 +228,7 @@
             <li><strong>Education level (highest completed, or currently being completed)</strong><br />
                 {% for opt in education_options %}
                 <div class="radio">
-                    <label class="radio"><input type="radio" name="education_level" value="{{ opt.education_level_id }}"> {{ opt.name }}</label>
+                    <label class="radio"><input type="radio" name="education_level" value="{{ opt.education_level_id }}"{% ifequal form_values.education_level|add:"0" opt.education_level_id|add:"0" %} checked="checked"{% endifequal %}> {{ opt.name }}</label>
                 </div>
                 {% endfor %}
             </li>
@@ -192,9 +236,11 @@
             <li><strong>Have you ever been diagnosed with dementia? If yes, please select all applicable types:</strong><br />
                 {% for opt in dementia_options %}
                 <div class="checkbox">
-                    <label class="checkbox"><input type="checkbox" name="dementia_type" value="{{ opt.dementia_type_id }}"> {{ opt.name }}
+                    <label class="checkbox"><input type="checkbox" name="dementia_type" value="{{ opt.dementia_type_id }}"{% if opt.dementia_type_id|to_int in form_values|getlist:'dementia_type'|to_int %} checked="checked"{% endif %}> {{ opt.name }}
                     {% if opt.requires_detail %}
-                    : <input name="dementia_type_detail_{{ opt.dementia_type_id }}" type="text" value="" />
+                    {% with det='dementia_type_detail_'|str_concat:opt.dementia_type_id %}
+                    : <input name="dementia_type_detail_{{ opt.dementia_type_id }}" type="text" value="{{ form_values|hash:det }}" />
+                    {% endwith %}
                     {% endif %}
                     </label>
                 </div>
@@ -203,19 +249,19 @@
             
             <li class="detail_dementia"><strong>Do you currently take any medications for dementia?</strong><br />
                 <div class="radio">
-                    <label class="radio"><input type="radio" name="dementia_med" value="yes"> Yes</label>
+                    <label class="radio"><input type="radio" name="dementia_med" value="yes"{% ifequal form_values.dementia_med "yes" %} checked="checked"{% endifequal %}> Yes</label>
                 </div>
                 <div class="radio">
-                    <label class="radio"><input type="radio" name="dementia_med" value="no"> No</label>
+                    <label class="radio"><input type="radio" name="dementia_med" value="no"{% ifequal form_values.dementia_med "no" %} checked="checked"{% endifequal %}> No</label>
                 </div>
             </li>
             
             <li><strong>Have you been a regular smoker (of tobacco) within the last 3 years?</strong><br />
                 <div class="radio">
-                    <label class="radio"><input type="radio" name="smoking" value="yes"> Yes</label>
+                    <label class="radio"><input type="radio" name="smoking" value="yes"{% ifequal form_values.smoking "yes" %} checked="checked"{% endifequal %}> Yes</label>
                 </div>
                 <div class="radio">
-                    <label class="radio"><input type="radio" name="smoking" value="no"> No</label>
+                    <label class="radio"><input type="radio" name="smoking" value="no"{% ifequal form_values.smoking "no" %} checked="checked"{% endifequal %}> No</label>
                 </div>
             </li>
             
@@ -223,7 +269,7 @@
                 <select name="country_res" class="form-control" style="width: 300px; margin-top: 5px;">
                     <option value="">Select country...</option>
                     {% for opt in country_res_options %}
-                        <option value="{{ opt.country_id }}">{{ opt.name }}</option>
+                        <option value="{{ opt.country_id }}"{% ifequal form_values.country_res|add:"0" opt.country_id|add:"0" %} selected="selected"{% endifequal %}>{{ opt.name }}</option>
                     {% endfor %}
                 </select>
             </li>

@@ -19,7 +19,13 @@ import re
 
 # Globals
 global global_passed_vars
-global_passed_vars = { "website_name": "DementiaWeb", "website_email": "dementiaweb.toronto@gmail.com" }
+global_passed_vars = { "website_name": "Talk2Me", "website_email": "talk2me.toronto@gmail.com" }
+
+date_format = "%Y-%m-%d"
+age_limit = 18
+regex_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
+regex_date = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+
 
 def index(request):
     
@@ -37,6 +43,9 @@ def index(request):
     education_options = []
     dementia_options = []
     country_res_options = []
+    form_languages_fluency = []
+    form_languages_other_fluency = []
+    form_errors = []
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -45,58 +54,157 @@ def index(request):
             date_submitted = datetime.datetime.now()
             form_type = request.POST['form_type']
             if form_type == 'consent':
-                # If consent has been provided, update the database for the subject
-                # and reload the page
-                if 'radio_consent' in request.POST:
+                
+                # Perform form validation first
+                # - check that consent has been provided
+                if 'radio_consent' not in request.POST:
+                    form_errors += ['You did not provide consent by selecting the appropriate option. If you do not consent to this form, you cannot use ' + str(global_passed_vars['website_name']) + "." ]
+                
+                # - check that if any of the email-related options has been selected, the email address is provided
+                user_email = ""
+                if 'email_address' in request.POST:
+                    user_email = request.POST['email_address']
+                    
+                    if user_email:
+                        # Validate user email if provided
+                        if not regex_email.match(user_email):
+                            form_errors += ['The e-mail address you provided does not appear to be valid.']
+                    
+                # Dictionary of options which require a user email
+                options_req_email = {'cb_preference_email_reminders': 'scheduled e-mail reminders', 
+                                     'cb_preference_email_updates': 'electronic communication regarding study outcomes'}
+                options_selected = set(options_req_email.keys()).intersection(set(request.POST.keys()))
+                if options_selected and not user_email:
+                    connector = " || "
+                    plur_s = ""
+                    if len(options_selected) > 1: plur_s = "s"
+                    options_selected_str = connector.join([options_req_email[opt] for opt in options_selected])
+                    num_conn = options_selected_str.count(connector)
+                    options_selected_str = options_selected_str.replace(connector, ", ", num_conn-1)
+                    options_selected_str = options_selected_str.replace(connector, ", and ")
+                        
+                    form_errors += ['You did not provide an e-mail address. An e-mail address is required since you selected the following option' + plur_s + ': ' + options_selected_str + "."]
+                    
+                # - check that an email reminder frequency is specified, if reminders are requested
+                if 'cb_preference_email_reminders' in request.POST and 'radio_email_reminders_freq' not in request.POST:
+                    form_errors += ['You have not selected a frequency for the scheduled e-mail reminders.']
+                    
+                    
+                if not form_errors:
+                    
+                    # Record user email, if provided
+                    if user_email:
+                        User.objects.filter(id=request.user.id).update(email=user_email)
+                    
+                    # Update consent details
                     Subject.objects.filter(user_id=request.user.id).update(date_consent_submitted=date_submitted)
                     if request.POST['radio_consent'] == 'alternate':
                         Subject.objects.filter(user_id=request.user.id).update(consent_alternate=1)
-                
-                # Preference for allowing public release of collected data
-                if 'cb_preference_public_release' in request.POST:
-                    Subject.objects.filter(user_id=request.user.id).update(preference_public_release=1)
                     
-                # Preference for receiving email reminders about completing sessions
-                if 'cb_preference_email_reminders' in request.POST:
-                    
-                    user_email = ""
-                    if 'preference_email_reminders' in request.POST:
-                        user_email = request.POST['preference_email_reminders']
+                    # Preference for allowing public release of collected data
+                    if 'cb_preference_public_release' in request.POST:
+                        Subject.objects.filter(user_id=request.user.id).update(preference_public_release=1)
+                        
+                    # Preference for receiving email reminders about completing sessions
+                    if 'cb_preference_email_reminders' in request.POST:
                         reminders_freq = request.POST['radio_email_reminders_freq']
-                        
-                        # TODO: some kind of email validation
-                        if user_email:
-                            Subject.objects.filter(user_id=request.user.id).update(preference_email_reminders=1,preference_email_reminders_freq=reminders_freq,email_reminders=user_email)
+                        Subject.objects.filter(user_id=request.user.id).update(preference_email_reminders=1,preference_email_reminders_freq=reminders_freq,email_reminders=user_email)
                     
-                # Preference for receiving email updates about related future research/publications
-                if 'cb_preference_email_updates' in request.POST:
-                    
-                    user_email = ""
-                    if 'preference_email_updates' in request.POST:
-                        user_email = request.POST['preference_email_updates']
-                        
-                        # TODO: some kind of email validation
-                        if user_email:
-                            Subject.objects.filter(user_id=request.user.id).update(preference_email_updates=1,email_updates=user_email)
+                    # Preference for receiving email updates about related future research/publications
+                    if 'cb_preference_email_updates' in request.POST:
+                        Subject.objects.filter(user_id=request.user.id).update(preference_email_updates=1,email_updates=user_email)
             
             elif form_type == 'demographic':
-                # Gender 
-                if 'gender' in request.POST:
+            
+                # Perform form validation first
+                # - check that consent has been provided
+                if 'gender' not in request.POST:
+                    form_errors += ['You did not specify your gender.']
+                
+                selected_dob = ""
+                if 'dob' not in request.POST or not request.POST['dob']:
+                    form_errors += ['You did not specify your date of birth.']
+                else:
+                    selected_dob = request.POST['dob']
+                    if not regex_date.match(selected_dob):
+                        form_errors += ['The date of birth you specified is invalid (please enter in the format YYYY-MM-DD).']
+                    else:
+                        d1 = datetime.datetime.strptime(selected_dob, date_format)
+                        d2 = datetime.datetime(d1.year + age_limit, d1.month, d1.day)
+                        today = datetime.datetime.now()
+                        delta = today - d2
+                        if delta.days < 0:
+                            form_errors += ['To participate in this study you must be at least 18 years of age.']
+                
+                if 'ethnicity' not in request.POST:
+                    form_errors += ['You did not specify your ethnicity.']
+                
+                if 'language' not in request.POST and ('language_other' not in request.POST or not request.POST['language_other']):
+                    form_errors += ['You did not specify any languages you can communicate in.']
+                else:
+                    response_languages = request.POST.getlist('language')
+                    for i in range(len(response_languages)):
+                        # - check that the selected languages are valid
+                        selected_language = Language.objects.filter(language_id=response_languages[i])
+                        if not selected_language:
+                            form_errors += ['The language you have selected (' + str(response_languages[i]) + ') is invalid.']
+                        else:
+                            selected_language = selected_language[0]
+                            # - check that level of fluency has been selected for each language
+                            if 'language_fluency_' + str(response_languages[i]) not in request.POST:
+                                form_errors += ['You did not specify your level of fluency in ' + selected_language.name + '.']
+                                form_languages_fluency += [""]
+                            else:
+                                form_languages_fluency += [request.POST['language_fluency_' + str(response_languages[i])] ]
+                        
+                    response_languages_other = request.POST.getlist('language_other')
+                    for i in range(len(response_languages_other)):
+                        if response_languages_other[i]:
+                            # - check that the selected languages are valid
+                            selected_language = Language.objects.filter(language_id=response_languages_other[i])
+                            if not selected_language:
+                                form_errors += ['The language you have selected (' + str(response_languages_other[i]) + ') is invalid.']
+                            else:
+                                selected_language = selected_language[0]
+                                # - check that level of fluency has been selected for each language
+                                if 'other_fluency_' + str(i+1) not in request.POST:
+                                    form_errors += ['You did not specify your level of fluency in ' + selected_language.name + '.']
+                                    form_languages_other_fluency += [""]
+                                else:
+                                    form_languages_other_fluency += [request.POST['other_fluency_' + str(i+1)]]
+                    
+                if 'education_level' not in request.POST:
+                    form_errors += ['You did not specify your education level.']
+                
+                if 'dementia_med' not in request.POST:
+                    form_errors += ['You did not specify whether you are currently take any medications for dementia.']
+                
+                if 'smoking' not in request.POST:
+                    form_errors += ['You did not specify whether you are a regular smoker.']
+                
+                response_country_res = ""
+                if 'country_res' not in request.POST or not request.POST['country_res']:
+                    form_errors += ['You did not specify the country you currently reside in.']
+                else:
+                    response_country_res = Country.objects.filter(country_id=request.POST['country_res'])
+                    if not response_country_res:
+                        form_errors += ['You specified an invalid country of residence.']
+                    else:
+                        response_country_res = response_country_res[0]
+                        
+                        
+                if not form_errors:
+                    # Gender 
                     response_gender = request.POST['gender']
                     selected_gender = Gender.objects.filter(gender_id=response_gender)
                     if selected_gender:
                         selected_gender = selected_gender[0]
                         Subject.objects.filter(user_id=request.user.id).update(gender=selected_gender)
-                
-                # DOB
-                if 'dob' in request.POST:
-                    selected_dob = request.POST['dob']
                     
-                    # TODO: check that date is within range -150:-18 (i.e., at least 18 years old)
+                    # DOB
                     Subject.objects.filter(user_id=request.user.id).update(dob=selected_dob)
-                
-                # Ethnicity
-                if 'ethnicity' in request.POST:
+                    
+                    # Ethnicity
                     response_ethnicity = request.POST.getlist('ethnicity')
                     for i in range(len(response_ethnicity)):
                         selected_ethnicity = Ethnicity.objects.filter(ethnicity_id=response_ethnicity[i])
@@ -110,119 +218,98 @@ def index(request):
                         ethnicity_exists = Subject_Ethnicity.objects.filter(subject=subject, ethnicity=selected_ethnicity)
                         if not ethnicity_exists:
                             Subject_Ethnicity.objects.create(subject=subject, ethnicity=selected_ethnicity)
-                
-                # Languages
-                if 'language' in request.POST:
-                    response_languages = request.POST.getlist('language')
-                    for i in range(len(response_languages)):
-                        
-                        selected_language = Language.objects.filter(language_id=response_languages[i])
-                        if selected_language:
-                            selected_language = selected_language[0]
-                        
-                        subject = Subject.objects.filter(user_id=request.user.id)
-                        if subject:
-                            subject = subject[0]
-                        
-                        lang_exists = Subject_Language.objects.filter(subject=subject, language=selected_language)
-                        
-                        lang_level = None
-                        if 'language_fluency_' + str(response_languages[i]) in request.POST:
-                            lang_level = Language_Level.objects.filter(language_level_id=request.POST['language_fluency_' + str(response_languages[i])])
-                            if lang_level:
-                                lang_level = lang_level[0]
-                        
-                        # TODO: raise an error if lang level not selected
-                        if not lang_level:
-                            lang_level = Language_Level.objects.filter(name='native')
-                            if lang_level:
-                                lang_level = lang_level[0]
-                        
-                        if not lang_exists:
-                            Subject_Language.objects.create(subject=subject, language=selected_language, level=lang_level)
-                        else:
-                            Subject_Language.objects.filter(subject=subject, language=selected_language).update(level=lang_level)
-                
-                if 'language_other' in request.POST:
-                    response_languages = request.POST.getlist('language_other')
-                    for i in range(len(response_languages)):
-                        
-                        sel_response_language = response_languages[i]
-                        if sel_response_language:
-                            selected_language = Language.objects.filter(language_id=sel_response_language)
-                            if selected_language:
-                                selected_language = selected_language[0]
+                    
+                    # Languages
+                    if 'language' in request.POST:
+                        response_languages = request.POST.getlist('language')
+                        for i in range(len(response_languages)):
                             
+                            selected_language = Language.objects.get(language_id=response_languages[i])
                             subject = Subject.objects.filter(user_id=request.user.id)
                             if subject:
                                 subject = subject[0]
                             
                             lang_exists = Subject_Language.objects.filter(subject=subject, language=selected_language)
                             
-                            lang_level = None
-                            if 'other_fluency_' + str(i) in request.POST:
-                                lang_level = Language_Level.objects.filter(language_level_id=request.POST['other_fluency_' + str(i)])
-                                if lang_level:
-                                    lang_level = lang_level[0]
-                            
-                            # TODO: raise an error if lang level not selected
-                            if not lang_level:
-                                lang_level = Language_Level.objects.filter(name='native')
-                                if lang_level:
-                                    lang_level = lang_level[0]
-                            
+                            lang_level = Language_Level.objects.filter(language_level_id=request.POST['language_fluency_' + str(response_languages[i])])
+                            if lang_level:
+                                lang_level = lang_level[0]
+                        
                             if not lang_exists:
                                 Subject_Language.objects.create(subject=subject, language=selected_language, level=lang_level)
                             else:
                                 Subject_Language.objects.filter(subject=subject, language=selected_language).update(level=lang_level)
+                    
+                    if 'language_other' in request.POST:
+                        response_languages = request.POST.getlist('language_other')
+                        for i in range(len(response_languages)):
+                            
+                            sel_response_language = response_languages[i]
+                            if sel_response_language:
+                                selected_language = Language.objects.get(language_id=sel_response_language)
+                                subject = Subject.objects.filter(user_id=request.user.id)
+                                if subject:
+                                    subject = subject[0]
                                 
-                
-                # Education level
-                if 'education_level' in request.POST:
+                                lang_exists = Subject_Language.objects.filter(subject=subject, language=selected_language)
+                                
+                                lang_level = None
+                                lang_level = Language_Level.objects.filter(language_level_id=request.POST['other_fluency_' + str(i+1)])
+                                if lang_level:
+                                    lang_level = lang_level[0]
+                            
+                                if not lang_exists:
+                                    Subject_Language.objects.create(subject=subject, language=selected_language, level=lang_level)
+                                else:
+                                    Subject_Language.objects.filter(subject=subject, language=selected_language).update(level=lang_level)
+                                    
+                    
+                    # Education level
                     response_education_level = request.POST['education_level']
                     selected_education_level = Education_Level.objects.filter(education_level_id=response_education_level)
                     if selected_education_level:
                         selected_education_level = selected_education_level[0]
                         Subject.objects.filter(user_id=request.user.id).update(education_level=selected_education_level)
-                
-                # Dementia type
-                if 'dementia_type' in request.POST:
-                    response_dementia_type = request.POST.getlist('dementia_type')
-                    for i in range(len(response_dementia_type)):
-                        selected_dementia_type = Dementia_Type.objects.filter(dementia_type_id=response_dementia_type[i])
-                        selected_dementia_name = ""
-                        if selected_dementia_type:
-                            selected_dementia_type = selected_dementia_type[0]
-                            if selected_dementia_type.requires_detail:
-                                if 'dementia_type_detail_' + str(response_dementia_type[i]) in request.POST:
-                                    selected_dementia_name = request.POST['dementia_type_detail_' + str(response_dementia_type[i])]
-                        
-                        subject = Subject.objects.filter(user_id=request.user.id)
-                        if subject:
-                            subject = subject[0]
-                        
-                        dementia_type_exists = Subject_Dementia_Type.objects.filter(subject=subject, dementia_type=selected_dementia_type)
-                        if not dementia_type_exists:
-                            Subject_Dementia_Type.objects.create(subject=subject, dementia_type=selected_dementia_type, dementia_type_name=selected_dementia_name)
-                
-                # Dementia meds 
-                if 'dementia_med' in request.POST:
+                    
+                    # Dementia type
+                    if 'dementia_type' in request.POST:
+                        response_dementia_type = request.POST.getlist('dementia_type')
+                        for i in range(len(response_dementia_type)):
+                            selected_dementia_type = Dementia_Type.objects.filter(dementia_type_id=response_dementia_type[i])
+                            selected_dementia_name = ""
+                            if selected_dementia_type:
+                                selected_dementia_type = selected_dementia_type[0]
+                                if selected_dementia_type.requires_detail:
+                                    if 'dementia_type_detail_' + str(response_dementia_type[i]) in request.POST:
+                                        selected_dementia_name = request.POST['dementia_type_detail_' + str(response_dementia_type[i])]
+                            
+                            subject = Subject.objects.filter(user_id=request.user.id)
+                            if subject:
+                                subject = subject[0]
+                            
+                            dementia_type_exists = Subject_Dementia_Type.objects.filter(subject=subject, dementia_type=selected_dementia_type)
+                            if not dementia_type_exists:
+                                Subject_Dementia_Type.objects.create(subject=subject, dementia_type=selected_dementia_type, dementia_type_name=selected_dementia_name)
+                    
+                    # Dementia meds 
                     response_dementia_med = request.POST['dementia_med']
                     map_response_to_id = { 'yes': 1, 'no': 0}
                     if response_dementia_med in map_response_to_id:
                         response_dementia_med_id = map_response_to_id[response_dementia_med]
                         Subject.objects.filter(user_id=request.user.id).update(dementia_med=response_dementia_med_id)
-                        
-                # Smoking 
-                if 'smoking' in request.POST:
+                            
+                    # Smoking 
                     response_smoking = request.POST['smoking']
                     map_response_to_id = { 'yes': 1, 'no': 0}
                     if response_smoking in map_response_to_id:
                         response_smoking_id = map_response_to_id[response_smoking]
                         Subject.objects.filter(user_id=request.user.id).update(smoker_recent=response_smoking_id)
-                
-                # Set the demographic flag to 1
-                Subject.objects.filter(user_id=request.user.id).update(date_demographics_submitted=date_submitted)
+                    
+                    # Country of residence
+                    Subject.objects.filter(user_id=request.user.id).update(residence_country=response_country_res)
+                    
+                    # Set the demographic flag to 1
+                    Subject.objects.filter(user_id=request.user.id).update(date_demographics_submitted=date_submitted)
                 
         # Assume that every authenticated user exists in datacollector subject. If they don't, add them with the appropriate ID, and all flags initialized to null/false.
         subject = Subject.objects.filter(user_id=request.user.id)
@@ -230,7 +317,7 @@ def index(request):
             subject = subject[0]
         else:
             date_submitted = datetime.datetime.now()
-            subject = Subject.objects.create(user_id=request.user.id, date_created=date_submitted, consent_alternate=0, preference_email_reminders=0, preference_email_updates=0, preference_public_release=0, preference_prizes=0)
+            subject = Subject.objects.create(user_id=request.user.id, date_created=date_submitted, consent_alternate=0, email_validated=0, preference_email_reminders=0, preference_email_updates=0, preference_public_release=0, preference_prizes=0)
         
         # If first time logging in, display Consent Form, and ask for consent
         consent_submitted = subject.date_consent_submitted
@@ -251,7 +338,20 @@ def index(request):
         completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False).order_by('-start_date')
         active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True).order_by('-start_date')
     
-    passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options }
+    
+    dict_language = {}
+    dict_language_other = {}
+    
+    form_languages = [int(sel_lang) for sel_lang in request.POST.getlist('language') ]
+    form_languages_other = [int(sel_lang) for sel_lang in request.POST.getlist('language_other') if sel_lang ]
+    
+    for i in range(len(form_languages)):
+        dict_language[form_languages[i]] = form_languages_fluency[i]
+    for i in range(len(form_languages_other)):
+        dict_language_other[form_languages_other[i]] = form_languages_other_fluency[i]
+    
+    # , 'form_languages': form_languages, 'form_languages_other': form_languages_other, 'form_languages_fluency': form_languages_fluency
+    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options }
     passed_vars.update(global_passed_vars)
     return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
 

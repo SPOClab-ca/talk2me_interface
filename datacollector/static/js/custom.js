@@ -196,10 +196,10 @@ function demographicsAddLanguage(link) {
         $(tr_clone).find("input[type=radio]").each(function() {
             $(this).prop("checked",false);
             var radio_name = $(this).attr("name");
-            var patt_name = /other_fluency_([0-9]+)/;
+            var patt_name = /(other_fluency_)([0-9]+)/;
             if (patt_name.test(radio_name)) {
-                var prev_name = patt_name.exec(radio_name)[0];
-                var prev_id = patt_name.exec(radio_name)[1];
+                var prev_name = patt_name.exec(radio_name)[1];
+                var prev_id = patt_name.exec(radio_name)[2];
                 var new_id = parseInt(prev_id) + 1;
                 $(this).attr("name", prev_name + new_id.toString());
             }
