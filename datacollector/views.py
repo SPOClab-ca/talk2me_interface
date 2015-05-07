@@ -118,8 +118,13 @@ def index(request):
             
                 # Perform form validation first
                 # - check that consent has been provided
+                selected_gender = ""
                 if 'gender' not in request.POST:
                     form_errors += ['You did not specify your gender.']
+                else:
+                    selected_gender = Gender.objects.filter(gender_id=request.POST['gender'])
+                    if selected_gender:
+                        selected_gender = selected_gender[0]
                 
                 selected_dob = ""
                 if 'dob' not in request.POST or not request.POST['dob']:
@@ -138,6 +143,13 @@ def index(request):
                 
                 if 'ethnicity' not in request.POST:
                     form_errors += ['You did not specify your ethnicity.']
+                else:
+                    response_ethnicity = request.POST.getlist('ethnicity')
+                    for i in range(len(response_ethnicity)):
+                        selected_ethnicity = Ethnicity.objects.filter(ethnicity_id=response_ethnicity[i])
+                        if not selected_ethnicity:
+                            form_errors += ['You have specified an invalid category for ethnicity.']
+                        
                 
                 if 'language' not in request.POST and ('language_other' not in request.POST or not request.POST['language_other']):
                     form_errors += ['You did not specify any languages you can communicate in.']
@@ -195,11 +207,7 @@ def index(request):
                         
                 if not form_errors:
                     # Gender 
-                    response_gender = request.POST['gender']
-                    selected_gender = Gender.objects.filter(gender_id=response_gender)
-                    if selected_gender:
-                        selected_gender = selected_gender[0]
-                        Subject.objects.filter(user_id=request.user.id).update(gender=selected_gender)
+                    Subject.objects.filter(user_id=request.user.id).update(gender=selected_gender)
                     
                     # DOB
                     Subject.objects.filter(user_id=request.user.id).update(dob=selected_dob)
@@ -207,10 +215,7 @@ def index(request):
                     # Ethnicity
                     response_ethnicity = request.POST.getlist('ethnicity')
                     for i in range(len(response_ethnicity)):
-                        selected_ethnicity = Ethnicity.objects.filter(ethnicity_id=response_ethnicity[i])
-                        if selected_ethnicity:
-                            selected_ethnicity = selected_ethnicity[0]
-                        
+                        selected_ethnicity = Ethnicity.objects.get(ethnicity_id=response_ethnicity[i])
                         subject = Subject.objects.filter(user_id=request.user.id)
                         if subject:
                             subject = subject[0]
@@ -234,7 +239,7 @@ def index(request):
                             lang_level = Language_Level.objects.filter(language_level_id=request.POST['language_fluency_' + str(response_languages[i])])
                             if lang_level:
                                 lang_level = lang_level[0]
-                        
+                            
                             if not lang_exists:
                                 Subject_Language.objects.create(subject=subject, language=selected_language, level=lang_level)
                             else:
