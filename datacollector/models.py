@@ -123,6 +123,14 @@ class Value_Difficulty(models.Model):
     value_difficulty_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
 
+class Settings(models.Model):
+    def __unicode__(self):
+        return "Setting: " + str(self.name) + " = " + str(self.value)
+    
+    name = models.CharField(max_length=50, primary_key=True)
+    value = models.CharField(max_length=50)
+    
+    
 # END HELPER CLASSES -------------------------------------------------------
 
 class Subject(models.Model):
