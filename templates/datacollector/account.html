@@ -1,0 +1,18 @@
+{% extends "datacollector/base.html" %}
+
+{% block title %}{{ website_name }} - Account Settings{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ user.username }} (<a href="/datacollector/logout">logout</a>)
+    {% else %}
+        <a href="/datacollector/login">Login</a> | <a href="/datacollector/register">New User</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h1>Account Settings</h1>
+<hr />
+
+{% endblock %}

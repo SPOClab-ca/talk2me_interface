@@ -63,6 +63,9 @@
           <ul class="nav navbar-nav">
             <li {% if request.path == "/datacollector/" %}class="active"{% endif %}><a href="/datacollector/">Index</a></li>
             <li {% if request.path == "/datacollector/about/" %}class="active"{% endif %}><a href="/datacollector/about/">About</a></li>
+            {% if is_authenticated and consent_submitted and demographic_submitted %}
+            <li {% if request.path == "/datacollector/account/" %}class="active"{% endif %}><a href="/datacollector/account/">Account Settings</a></li>
+            {% endif %}
           </ul>
         </div><!--/.nav-collapse -->
       </div>
