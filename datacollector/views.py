@@ -812,6 +812,9 @@ def account(request):
     is_authenticated = False
     consent_submitted = False
     demographic_submitted = False
+    form_values = {}
+    form_errors = []
+    save_confirm = False
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -821,7 +824,76 @@ def account(request):
             consent_submitted = subject.date_consent_submitted
             demographic_submitted = subject.date_demographics_submitted
         
-    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
+            if request.method == "POST":
+                form_values = request.POST
+                if 'btn-save' in request.POST:
+                    
+                    # Perform form validation first
+                    # - check that if any of the email-related options has been selected, the email address is provided
+                    user_email = ""
+                    if 'email_address' in request.POST:
+                        user_email = request.POST['email_address']
+                        
+                        if user_email:
+                            # Validate user email if provided
+                            if not regex_email.match(user_email):
+                                form_errors += ['The e-mail address you provided does not appear to be valid.']
+                        
+                    # Dictionary of options which require a user email
+                    options_req_email = {'cb_preference_prizes': 'prize draws',
+                                         'cb_preference_email_reminders': 'scheduled e-mail reminders', 
+                                         'cb_preference_email_updates': 'electronic communication regarding study outcomes'}
+                    options_selected = set(options_req_email.keys()).intersection(set(request.POST.keys()))
+                    if options_selected and not user_email:
+                        connector = " || "
+                        plur_s = ""
+                        if len(options_selected) > 1: plur_s = "s"
+                        options_selected_str = connector.join([options_req_email[opt] for opt in options_selected])
+                        num_conn = options_selected_str.count(connector)
+                        options_selected_str = options_selected_str.replace(connector, ", ", num_conn-1)
+                        options_selected_str = options_selected_str.replace(connector, ", and ")
+                            
+                        form_errors += ['You did not provide an e-mail address. An e-mail address is required since you selected the following option' + plur_s + ': ' + options_selected_str + "."]
+                        
+                    # - check that an email reminder frequency is specified, if reminders are requested
+                    if 'cb_preference_email_reminders' in request.POST and 'radio_email_reminders_freq' not in request.POST:
+                        form_errors += ['You have not selected a frequency for the scheduled e-mail reminders.']
+                    
+                    if not form_errors:
+                        if user_email:
+                            User.objects.filter().update(email=user_email)
+                            
+                        if 'cb_preference_prizes' in request.POST:
+                            Subject.objects.filter(user_id=request.user.id).update(preference_prizes=1, email_prizes=user_email)
+                        else:
+                            Subject.objects.filter(user_id=request.user.id).update(preference_prizes=0, email_prizes=None)
+                        
+                        if 'cb_preference_email_reminders' in request.POST:
+                            Subject.objects.filter(user_id=request.user.id).update(preference_email_reminders=1, email_reminders=user_email, preference_email_reminders_freq=request.POST['radio_email_reminders_freq'])
+                        else:
+                            Subject.objects.filter(user_id=request.user.id).update(preference_email_reminders=0, email_reminders=None, preference_email_reminders_freq=None)
+                        
+                        if 'cb_preference_email_updates' in request.POST:
+                            Subject.objects.filter(user_id=request.user.id).update(preference_email_updates=1, email_updates=user_email)
+                        else:
+                            Subject.objects.filter(user_id=request.user.id).update(preference_email_updates=0, email_updates=None)
+                        
+                        save_confirm = True
+                    
+                elif 'btn-withdraw' in request.POST:
+                    form_errors += ['Testing_withdraw']
+            
+            else:
+                # Fill out the form values with the default values from the database (i.e. mimic the way a POST form works - checkboxes only appear in the collection if they are checked).
+                if subject.preference_prizes:
+                    form_values['cb_preference_prizes'] = subject.preference_prizes
+                if subject.preference_email_reminders:
+                    form_values['cb_preference_email_reminders'] = subject.preference_email_reminders
+                if subject.preference_email_updates:
+                    form_values['cb_preference_email_updates'] = subject.preference_email_updates
+                form_values['email_address'] = request.user.email
+                
+    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm}
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
