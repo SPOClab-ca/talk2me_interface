@@ -881,8 +881,16 @@ def account(request):
                         save_confirm = True
                     
                 elif 'btn-withdraw' in request.POST:
-                    form_errors += ['Testing_withdraw']
-            
+                    if 'withdraw_confirm' not in request.POST:
+                        form_errors += ['You did not select the confirmation checkbox which acknowledges that you understand the effects of withdrawing from the study.']
+                    else:
+                        # Delete entire user account, including from auth_user
+                        Subject.objects.filter(user_id=request.user.id).delete()
+                        User.objects.filter(id=request.user.id).delete()
+                        auth_logout(request)
+                        return HttpResponseRedirect('/datacollector/')
+                        
+                        
             else:
                 # Fill out the form values with the default values from the database (i.e. mimic the way a POST form works - checkboxes only appear in the collection if they are checked).
                 if subject.preference_prizes:
