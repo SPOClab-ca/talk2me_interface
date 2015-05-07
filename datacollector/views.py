@@ -529,8 +529,20 @@ def startsession(request):
 
 
 def session(request, session_id):
+
+    is_authenticated = False
+    consent_submitted = False
+    demographic_submitted = False
     
     if request.user.is_authenticated():
+    
+        is_authenticated = True
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
+            
         session = Session.objects.filter(session_id=session_id)
         if session:
             session = session[0]
@@ -746,7 +758,7 @@ def session(request, session_id):
                     session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                     counter += 1
                     
-            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'display_thankyou': display_thankyou, 'user': request.user}
+            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'display_thankyou': display_thankyou, 'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
             passed_vars.update(global_passed_vars)
                     
             return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))
@@ -798,30 +810,54 @@ def audiotest(request):
 
 def account(request):
     is_authenticated = False
+    consent_submitted = False
+    demographic_submitted = False
+    
     if request.user.is_authenticated():
         is_authenticated = True
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
         
-    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user}
+    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
     
 def about(request):
     is_authenticated = False
+    consent_submitted = False
+    demographic_submitted = False
+    
     if request.user.is_authenticated():
         is_authenticated = True
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
         
-    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user}
+    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/about.html', passed_vars, context_instance=RequestContext(request))
 
 def error(request, error_id):
     is_authenticated = False
+    consent_submitted = False
+    demographic_submitted = False
+    
     if request.user.is_authenticated():
         is_authenticated = True
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
     
-    passed_vars = {'error_id': error_id, 'is_authenticated': is_authenticated, 'user': request.user}
+    passed_vars = {'error_id': error_id, 'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/error.html', passed_vars, context_instance=RequestContext(request))
