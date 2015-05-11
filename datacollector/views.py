@@ -19,7 +19,7 @@ import re
 
 # Globals
 global global_passed_vars
-global_passed_vars = { "website_name": "Talk2Me", "website_email": "talk2me.toronto@gmail.com" }
+global_passed_vars = { "website_id": "talk2me", "website_name": "Talk2Me", "website_email": "talk2me.toronto@gmail.com" }
 
 date_format = "%Y-%m-%d"
 age_limit = 18
@@ -292,9 +292,9 @@ def index(request):
                             if subject:
                                 subject = subject[0]
                             
-                            dementia_type_exists = Subject_Dementia_Type.objects.filter(subject=subject, dementia_type=selected_dementia_type)
+                            dementia_type_exists = Subject_Dementia_Type.objects.filter(subject=subject, dementia_type_id=selected_dementia_type.dementia_type_id)
                             if not dementia_type_exists:
-                                Subject_Dementia_Type.objects.create(subject=subject, dementia_type=selected_dementia_type, dementia_type_name=selected_dementia_name)
+                                Subject_Dementia_Type.objects.create(subject=subject, dementia_type_id=selected_dementia_type.dementia_type_id, dementia_type_name=selected_dementia_name)
                     
                     # Dementia meds 
                     response_dementia_med = request.POST['dementia_med']
@@ -316,7 +316,7 @@ def index(request):
                     # Set the demographic flag to 1
                     Subject.objects.filter(user_id=request.user.id).update(date_demographics_submitted=date_submitted)
                 
-        # Assume that every authenticated user exists in datacollector subject. If they don't, add them with the appropriate ID, and all flags initialized to null/false.
+        # Assume that every authenticated user exists in subject. If they don't, add them with the appropriate ID, and all flags initialized to null/false.
         subject = Subject.objects.filter(user_id=request.user.id)
         if subject:
             subject = subject[0]
@@ -364,7 +364,7 @@ def login(request):
 
     # If there is a currently logged in user, just redirect to home page
     if request.user.is_authenticated():
-        return HttpResponseRedirect('/datacollector/')
+        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
     
     # If the form has been submitted, validate the data and 
     errors = []    
@@ -377,7 +377,7 @@ def login(request):
                 if user.is_active:
                     auth_login(request,user)
                     # Success: redirect to the home page
-                    return HttpResponseRedirect('/datacollector/')
+                    return HttpResponseRedirect('/' + global_passed_vars['website_id'])
                 else:
                     # Return a 'disabled account' error message
                     errors.append("Your account is currently disabled. Please contact the website administrator for assistance.")
@@ -395,14 +395,14 @@ def login(request):
 
 def logout(request):
     auth_logout(request)
-    return HttpResponseRedirect('/datacollector/')
+    return HttpResponseRedirect('/' + global_passed_vars['website_id'])
 
 
 def register(request):
 
     # If there is a currently logged in user, just redirect to home page
     if request.user.is_authenticated():
-        return HttpResponseRedirect('/datacollector/')
+        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
     
     # If the form has been submitted, validate the data and 
     errors = []
@@ -412,10 +412,10 @@ def register(request):
             cd = form.cleaned_data
             new_user = form.save()
             
-            # Create a corresponding subject in the datacollector app
+            # Create a corresponding subject in the app
             new_subject = Subject.objects.create(user_id=new_user.id)
 
-            return HttpResponseRedirect('/datacollector/')
+            return HttpResponseRedirect('/' + global_passed_vars['website_id'])
     else:
         form = UserCreationForm()
 
@@ -493,7 +493,7 @@ def startsession(request):
                             else:
                                 # The database doesn't contain any entries for this task field.
                                 # Fail, display an error page.
-                                return HttpResponseRedirect('/datacollector/error/501')
+                                return HttpResponseRedirect('/' + global_passed_vars['website_id'] + '/error/501')
                     
                     # Build limit query with Q objects
                     selected_assoc_ids = [item.assoc_id for item in selected_values]
@@ -523,9 +523,9 @@ def startsession(request):
                         
                         new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=linked_instance.task_field, value=linked_instance.value, value_display=linked_instance.value_display, difficulty=linked_instance.difficulty)
                     
-        return HttpResponseRedirect('/datacollector/session/' + str(new_session.session_id))
+        return HttpResponseRedirect('/' + global_passed_vars['website_id'] + '/session/' + str(new_session.session_id))
     else:
-        return HttpResponseRedirect('/datacollector/')
+        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
 
 
 def session(request, session_id):
@@ -763,9 +763,9 @@ def session(request, session_id):
                     
             return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))
         else:
-            return HttpResponseRedirect('/datacollector/')
+            return HttpResponseRedirect('/' + global_passed_vars['website_id'])
     else:
-        return HttpResponseRedirect('/datacollector/')
+        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
 
 
 def results(request, subject_id):
@@ -888,7 +888,7 @@ def account(request):
                         Subject.objects.filter(user_id=request.user.id).delete()
                         User.objects.filter(id=request.user.id).delete()
                         auth_logout(request)
-                        return HttpResponseRedirect('/datacollector/')
+                        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
                         
                         
             else:
@@ -959,4 +959,4 @@ def pagetime(request):
         return_dict = {"status": "success"}
         json = simplejson.dumps(return_dict)
         return HttpResponse(json, mimetype="application/x-javascript")
-    return HttpResponseRedirect('/datacollector/')
+    return HttpResponseRedirect('/' + global_passed_vars['website_id'])

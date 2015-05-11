@@ -5,9 +5,9 @@
 
 {% block auth_user %}
     {% if is_authenticated %}
-        Logged in as {{ user.username }} (<a href="/datacollector/logout">logout</a>)
+        Logged in as {{ user.username }} (<a href="/{{ website_id }}/logout">logout</a>)
     {% else %}
-        <a href="{{ request.path }}login">Login</a> | <a href="{{ request.path }}register">New User</a>
+        <a href="/{{ website_id }}/login">Login</a> | <a href="/{{ website_id }}/register">New User</a>
     {% endif %}
 {% endblock %}
 
@@ -38,7 +38,7 @@
         <input type='hidden' id='form_type' name='form_type' value='consent' />
         
         <h3>Research Project</h3>
-        <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study to analyze the differences in longitudinal progression of linguistic markers between healthy older adults and ones with dementia. We are interested in assessing the validity and usability of an automated web-based system ({{ website_name }}) for linguistic data acquisition, as means for longitudinal monitoring of changes in language ability. To familiarize yourself with the purpose, procedures, and risks of the project, please <a target="_blank" href="{{ request.path }}about">click here</a>. When you have carefully read the linked document, you can proceed with the consent form below.</p>
+        <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study to analyze the differences in longitudinal progression of linguistic markers between healthy older adults and ones with dementia. We are interested in assessing the validity and usability of an automated web-based system ({{ website_name }}) for linguistic data acquisition, as means for longitudinal monitoring of changes in language ability. To familiarize yourself with the purpose, procedures, and risks of the project, please <a target="_blank" href="/{{ website_id }}/about">click here</a>. When you have carefully read the linked document, you can proceed with the consent form below.</p>
 
         <h3>Contact Information</h3>
         
@@ -292,7 +292,7 @@
         </div>
         
         <div class="unsupported_html5">
-            <h4><a href="{{ request.path }}startsession">Start a new session</a></h4>
+            <h4><a href="/{{ website_id }}/startsession">Start a new session</a></h4>
         </div>
         
             {% if active_sessions %}
@@ -303,7 +303,7 @@
                     <thead><tr><th style='width: 20%;'>Session ID</th><th style='width: 30%;'>Start Date</th><th style='width: 30%;'></th></tr></thead>
                     <tbody>
                     {% for session in active_sessions %}
-                        <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td><a href="{{ request.path }}session/{{ session.session_id }}">Continue session</a></td></tr>
+                        <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td><a href="/{{ website_id }}/session/{{ session.session_id }}">Continue session</a></td></tr>
                     {% endfor %}
                     </tbody>
                     </table>
@@ -318,7 +318,7 @@
                 <thead><tr><th style='width: 20%;'>Session ID</th><th style='width: 30%;'>Start Date</th><th style='width: 30%;'>End Date</th></tr></thead>
                 <tbody>
                 {% for session in completed_sessions %}
-                    <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td>{{ session.end_date }} (<a href="{{ request.path }}session/{{ session.session_id }}">View</a>)</td></tr>
+                    <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td>{{ session.end_date }} (<a href="/{{ website_id }}/session/{{ session.session_id }}">View</a>)</td></tr>
                 {% endfor %}
                 </tbody>
                 </table>
@@ -331,7 +331,7 @@
 {% else %}
 
     <h1>{{ website_name }}</h1>
-    <a href="{{ request.path }}login">Login</a> | <a href="{{ request.path }}register">New User</a>
+    <a href="/{{ website_id }}/login">Login</a> | <a href="/{{ website_id }}/register">New User</a>
 
     <div class="support_html5 bs-callout bs-callout-danger invisible">
         {{ website_name }} requires a modern browser which supports HTML5. You are using a browser which does not support this technology. <strong>To use {{ website_name }}, please download the latest version of <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank">Chrome</a> or <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank">Firefox</a></strong>.<br />
@@ -344,7 +344,7 @@
       <div class="container">
         <h1>{{ website_name }}</h1>
         <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study analyzing the differences in longitudinal progression of linguistic markers between healthy older adults and those with dementia. We are interested in assessing the validity and usability of an automated web-based system, <em>{{ website_name }}</em>, for linguistic data acquisition, as a means of monitoring changes in language ability.</p>
-        <p><a class="btn btn-primary btn-lg" role="button" onClick="javascript: location.href='{{ request.path }}help';">Learn more &raquo;</a></p>
+        <p><a class="btn btn-primary btn-lg" role="button" onClick="javascript: location.href='/{{ website_id }}/about';">Learn more &raquo;</a></p>
       </div>
     </div>
     
@@ -352,7 +352,7 @@
         <div class="col-md-4">
             <h2>Step 1: Sign up</h2>
             <p>Register for a new user account if this is your first visit, or login if you already have one.</p>
-            <p><button class='btn btn-default' onClick="javascript: location.href='{{ request.path }}login';">Login</button> <button class='btn btn-default' onClick="javascript: location.href='{{ request.path }}register';">New User</button></p>
+            <p><button class='btn btn-default' onClick="javascript: location.href='/{{ website_id }}/login';">Login</button> <button class='btn btn-default' onClick="javascript: location.href='/{{ website_id }}/register';">New User</button></p>
         </div>
         
         <div class="col-md-4">

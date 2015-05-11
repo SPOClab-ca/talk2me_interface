@@ -114,7 +114,7 @@ DEALINGS IN THE SOFTWARE.
     fd.append('instanceid', $('[name=instanceid]').val());
     $.ajax({
         type: 'POST',
-        url: '/datacollector/audiotest',
+        url: '/talk2me/audiotest',
         data: fd,
         processData: false,
         contentType: false,        

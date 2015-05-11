@@ -12,31 +12,31 @@ urlpatterns = patterns('',
     # url(r'^csc2518/', include('csc2518.foo.urls')),
     
     # Index page
-    url(r'^datacollector/$', 'datacollector.views.index'),
+    url(r'^' + settings.SUBSITE_ID + '$', 'datacollector.views.index'),
     
-    # Authentication    
-    url(r'^datacollector/login$', 'datacollector.views.login'),
-    url(r'^datacollector/logout$', 'datacollector.views.logout'),
-    url(r'^datacollector/register$', 'datacollector.views.register'),
+    # Authentication
+    url(r'^' + settings.SUBSITE_ID + 'login$', 'datacollector.views.login'),
+    url(r'^' + settings.SUBSITE_ID + 'logout$', 'datacollector.views.logout'),
+    url(r'^' + settings.SUBSITE_ID + 'register$', 'datacollector.views.register'),
 
     # Sessions 
-    url(r'^datacollector/startsession$', 'datacollector.views.startsession'),
-    url(r'^datacollector/session/(?P<session_id>\d+)$', 'datacollector.views.session'),
+    url(r'^' + settings.SUBSITE_ID + 'startsession$', 'datacollector.views.startsession'),
+    url(r'^' + settings.SUBSITE_ID + 'session/(?P<session_id>\d+)$', 'datacollector.views.session'),
 
     # Testing
-    url(r'^datacollector/audiotest$', 'datacollector.views.audiotest'),
-    url(r'^datacollector/results/(?P<subject_id>\d+)/$', 'datacollector.views.results'),
+    url(r'^' + settings.SUBSITE_ID + 'audiotest$', 'datacollector.views.audiotest'),
+    url(r'^' + settings.SUBSITE_ID + 'results/(?P<subject_id>\d+)/$', 'datacollector.views.results'),
     
     # Miscellaneous
-    url(r'^datacollector/pagetime$', 'datacollector.views.pagetime'),
-    url(r'^datacollector/about/$', 'datacollector.views.about'),
-    url(r'^datacollector/account/$', 'datacollector.views.account'),
-    url(r'^datacollector/error/(?P<error_id>\d{3})/$', 'datacollector.views.error'),
-    url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
-
+    url(r'^' + settings.SUBSITE_ID + 'pagetime$', 'datacollector.views.pagetime'),
+    url(r'^' + settings.SUBSITE_ID + 'about/$', 'datacollector.views.about'),
+    url(r'^' + settings.SUBSITE_ID + 'account/$', 'datacollector.views.account'),
+    url(r'^' + settings.SUBSITE_ID + 'error/(?P<error_id>\d{3})/$', 'datacollector.views.error'),
+    url(r'^' + settings.SUBSITE_ID + 'media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+    
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
+    
     # Uncomment the next line to enable the admin:
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^' + settings.SUBSITE_ID + 'admin/', include(admin.site.urls)),
 )
