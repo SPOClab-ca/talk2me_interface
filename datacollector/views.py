@@ -11,6 +11,7 @@ from django.template import RequestContext
 from django.utils import simplejson
 from datacollector.forms import *
 from datacollector.models import *
+from settings import SUBSITE_ID
 
 import datetime
 import random
@@ -20,6 +21,9 @@ import re
 # Globals
 global global_passed_vars
 global_passed_vars = { "website_id": "talk2me", "website_name": "Talk2Me", "website_email": "talk2me.toronto@gmail.com" }
+website_root = '/'
+if SUBSITE_ID: website_root += SUBSITE_ID
+
 
 date_format = "%Y-%m-%d"
 age_limit = 18
@@ -364,7 +368,7 @@ def login(request):
 
     # If there is a currently logged in user, just redirect to home page
     if request.user.is_authenticated():
-        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+        return HttpResponseRedirect(website_root)
     
     # If the form has been submitted, validate the data and 
     errors = []    
@@ -377,7 +381,7 @@ def login(request):
                 if user.is_active:
                     auth_login(request,user)
                     # Success: redirect to the home page
-                    return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+                    return HttpResponseRedirect(website_root)
                 else:
                     # Return a 'disabled account' error message
                     errors.append("Your account is currently disabled. Please contact the website administrator for assistance.")
@@ -395,14 +399,14 @@ def login(request):
 
 def logout(request):
     auth_logout(request)
-    return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+    return HttpResponseRedirect(website_root)
 
 
 def register(request):
 
     # If there is a currently logged in user, just redirect to home page
     if request.user.is_authenticated():
-        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+        return HttpResponseRedirect(website_root)
     
     # If the form has been submitted, validate the data and 
     errors = []
@@ -415,7 +419,7 @@ def register(request):
             # Create a corresponding subject in the app
             new_subject = Subject.objects.create(user_id=new_user.id)
 
-            return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+            return HttpResponseRedirect(website_root)
     else:
         form = UserCreationForm()
 
@@ -493,7 +497,7 @@ def startsession(request):
                             else:
                                 # The database doesn't contain any entries for this task field.
                                 # Fail, display an error page.
-                                return HttpResponseRedirect('/' + global_passed_vars['website_id'] + '/error/501')
+                                return HttpResponseRedirect(website_root + 'error/501')
                     
                     # Build limit query with Q objects
                     selected_assoc_ids = [item.assoc_id for item in selected_values]
@@ -523,9 +527,9 @@ def startsession(request):
                         
                         new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=linked_instance.task_field, value=linked_instance.value, value_display=linked_instance.value_display, difficulty=linked_instance.difficulty)
                     
-        return HttpResponseRedirect('/' + global_passed_vars['website_id'] + '/session/' + str(new_session.session_id))
+        return HttpResponseRedirect(website_root + 'session/' + str(new_session.session_id))
     else:
-        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+        return HttpResponseRedirect(website_root)
 
 
 def session(request, session_id):
@@ -763,9 +767,9 @@ def session(request, session_id):
                     
             return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))
         else:
-            return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+            return HttpResponseRedirect(website_root)
     else:
-        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+        return HttpResponseRedirect(website_root)
 
 
 def results(request, subject_id):
@@ -888,7 +892,7 @@ def account(request):
                         Subject.objects.filter(user_id=request.user.id).delete()
                         User.objects.filter(id=request.user.id).delete()
                         auth_logout(request)
-                        return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+                        return HttpResponseRedirect(website_root)
                         
                         
             else:
@@ -959,4 +963,4 @@ def pagetime(request):
         return_dict = {"status": "success"}
         json = simplejson.dumps(return_dict)
         return HttpResponse(json, mimetype="application/x-javascript")
-    return HttpResponseRedirect('/' + global_passed_vars['website_id'])
+    return HttpResponseRedirect(website_root)
