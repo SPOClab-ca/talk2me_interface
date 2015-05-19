@@ -745,14 +745,16 @@ def session(request, session_id):
                                 sel_options = Session_Task_Instance_Value.objects.filter(session_task_instance=instance_value.session_task_instance,task_field__field_type__name='input').order_by('session_task_instance_value_id')
                                 
                                 for sel_option in sel_options:
-                                    response_field += "<input type='radio' name='response_" + instance_id + "' value='" + sel_option.value + "'"
+                                    response_field += "<div class='radio'>"
+                                    response_field += "<label><input type='radio' name='response_" + instance_id + "' value='" + sel_option.value + "'"
                                     
                                     # Mark any previously-submitted responses as selected
                                     if existing_value == sel_option.value:
                                         response_field += " selected='selected'"
                                         
-                                    response_field += "> " + sel_option.value_display + "<br />"
-                                    
+                                    response_field += "> " + sel_option.value_display + "</label>"
+                                    response_field += "</div>"
+                                
                                 response_field += "<input name='instanceid' type='hidden' value='" + instance_id + "' />"
                             
                             elif regex_scale.findall(field_data_type):
