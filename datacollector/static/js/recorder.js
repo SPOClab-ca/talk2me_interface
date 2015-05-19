@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
     var config = cfg || {};
     var bufferLen = config.bufferLen || 4096;
     this.context = source.context;
+    this.instanceid = null;
     if(!this.context.createScriptProcessor){
        this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
     } else {
@@ -69,6 +70,10 @@ DEALINGS IN THE SOFTWARE.
     this.clear = function(){
       worker.postMessage({ command: 'clear' });
     }
+    
+    this.setInstanceId = function(instance_id) {
+        this.instanceid = instance_id;
+    }
 
     this.getBuffers = function(cb) {
       currCallback = cb || config.callback;
@@ -104,14 +109,14 @@ DEALINGS IN THE SOFTWARE.
     this.node.connect(this.context.destination);   // if the script node is not connected to an output the "onaudioprocess" event is not triggered in chrome.
   };
 
-  Recorder.sendToServer = function(blob) {
+  Recorder.sendToServer = function(blob, instanceid) {
 
     console.log("sending blob to server...");
     $("#ajax_loader").removeClass("invisible");
     var fd = new FormData();
     fd.append('fname', 'test.wav');
     fd.append('data', blob);
-    fd.append('instanceid', $('[name=instanceid]').val());
+    fd.append('instanceid', instanceid);
     $.ajax({
         type: 'POST',
         url: '/talk2me/audiotest',

@@ -49,17 +49,18 @@ function gotBuffers( buffers ) {
 
 function doneEncoding( blob ) {
     //Recorder.setupDownload( blob, "myRecording" + ((recIndex<10)?"0":"") + recIndex + ".wav" );
-    Recorder.sendToServer(blob);
+    Recorder.sendToServer(blob, audioRecorder.instanceid);
     recIndex++;
 }
 
 function toggleRecording( e ) {
+    var instance_id = $(e).siblings("[name=instanceid]").val();
     if (e.classList.contains("recording")) {
         // stop recording
         audioRecorder.stop();
         e.classList.remove("recording");
         $(e).val("Start recording");
-        $("#status_recording").html("");
+        $("#status_recording_" + instance_id).html("");
         audioRecorder.getBuffers( gotBuffers );
     } else {
         // start recording
@@ -67,8 +68,9 @@ function toggleRecording( e ) {
             return;
         e.classList.add("recording");
         $(e).val("Stop recording");
-        $("#status_recording").html("Recording audio...");
+        $("#status_recording_" + instance_id).html("Recording audio...");
         audioRecorder.clear();
+        audioRecorder.setInstanceId(instance_id);
         audioRecorder.record();
     }
 }

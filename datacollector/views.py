@@ -747,10 +747,10 @@ def session(request, session_id):
                                 response_field = ""
                                 if not keep_visible:
                                     response_field += "<p><input type='button' onClick='javascript: hideDisplay(this);' value='Continue'></p>"
-                                response_field += "<p id='record-btn'"
+                                response_field += "<p id='record-btn_" + instance_id + "'"
                                 if not keep_visible:
                                     response_field += " class='invisible'"
-                                response_field += "><input type='button' onClick='javascript: toggleRecording(this);' value='Start recording'>&nbsp;<span id='status_recording'></span><input name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
+                                response_field += "><input type='button' onClick='javascript: toggleRecording(this);' value='Start recording'>&nbsp;<span id='status_recording_" + instance_id + "'></span><input name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
                                     
                             elif field_data_type == "select":
                                 existing_value = ""
