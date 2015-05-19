@@ -442,7 +442,7 @@ def startsession(request):
         
         subject = Subject.objects.get(user_id=request.user.id)
 
-        default_tasks = [1,2,7,8,10,11,12]     
+        default_tasks = [1,2,7,8,10,11,12,13]     
         startdate = datetime.datetime.now()
         new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None)
         
@@ -686,7 +686,7 @@ def session(request, session_id):
                             # Associated textarea where the user will type out the RIG response
                             display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input name='instanceid' type='hidden' value='" + instance_id + "' />"
                         else:
-                            display_field = instance_value.value
+                            display_field = instance_value.value.replace('\n', '<br>')
                         
                         
                         # Find associated response field data type
@@ -701,7 +701,10 @@ def session(request, session_id):
                             
                             # Construct style attributes string from the specified field data attributes
                             field_data_attributes = Task_Field_Data_Attribute.objects.filter(task_field=input_field)
-                            style_attributes = ";".join([str(attr.name) + ": '" + str(attr.value) + "'" for attr in field_data_attributes])
+                            style_attributes = ";".join([str(attr.name) + ": " + str(attr.value) for attr in field_data_attributes])
+                            
+                            # regex for field data type 'scale' (scale_{from}_{to})
+                            regex_scale = re.compile(r'scale\_([0-9]+)\_([0-9]+)')
          
                             if field_data_type == "multiselect":
                                 existing_value = ""
@@ -750,7 +753,14 @@ def session(request, session_id):
                                     response_field += "> " + sel_option.value_display + "<br />"
                                     
                                 response_field += "<input name='instanceid' type='hidden' value='" + instance_id + "' />"
-                        
+                            
+                            elif regex_scale.findall(field_data_type):
+                                matches = regex_scale.findall(field_data_type)
+                                scale_start = matches[0][0]
+                                scale_end = matches[0][1]
+                                
+                                response_field = "<div><div class='scale_" + str(scale_start) + "_" + str(scale_end) + "' style=\"" + style_attributes + "\"></div><div class='scale_display' style='font-size: 20px;'></div><input name='response' type='hidden' value='' /></div><input name='instanceid' type='hidden' value='" + instance_id + "' />" 
+                                
                         active_instances += [display_field + "<br/>" + response_field]
                         
             else:

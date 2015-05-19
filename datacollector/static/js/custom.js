@@ -20,6 +20,33 @@ $(document).ready(function () {
         });
     });
     
+    // Add "scale" slider (jquery UI element for selecting a value on a scale)
+    $("[class^='scale_']").each(function() {
+        var regex_scale = /scale[_]([0-9]+)[_]([0-9]+)/i;
+        var matches = regex_scale.exec($(this).attr("class"));
+        if (matches && matches.length >= 3) {
+            var slider_min = parseInt(matches[1]);
+            var slider_max = parseInt(matches[2]);
+            
+            var default_val = median(range(slider_min, slider_max));
+            // Math.round((slider_max-slider_min+1)/2);
+            $(this).slider({
+                min: slider_min,
+                max: slider_max,
+                value: default_val,
+                range: "min",
+                step: 0.5,
+                slide: function(event, ui) {
+                    $(this).siblings(".scale_display").html(ui.value);
+                    $(this).siblings("[name=response]").val(ui.value);
+                }
+            });
+            
+            // Update the label with the default value for the slider
+            $(this).siblings(".scale_display").html(default_val);
+            $(this).siblings("[name=response]").val(default_val);
+        }
+    });
     
     // Check browser for HTML5 support of:
     // (1) getUserMedia() API for capturing raw audio
@@ -70,6 +97,25 @@ $(window).unload(function() {
     }
     
 });
+
+function range(start, end) {
+    var foo = [];
+    for (var i = start; i <= end; i++) {
+        foo.push(i);
+    }
+    return foo;
+}
+
+function median(values) {
+    values.sort( function(a,b) {return a - b;} );
+ 
+    var half = Math.floor(values.length/2);
+ 
+    if(values.length % 2)
+        return values[half];
+    else
+        return (values[half-1] + values[half]) / 2.0;
+}
 
 function formSubmit(submit_btn) {
     $(submit_btn).closest("form").submit();
