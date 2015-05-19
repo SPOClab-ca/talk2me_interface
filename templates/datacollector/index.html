@@ -265,6 +265,15 @@
                 </div>
             </li>
             
+            <li><strong>Country you were born in:</strong><br />
+                <select name="country_origin" class="form-control" style="width: 300px; margin-top: 5px;">
+                    <option value="">Select country...</option>
+                    {% for opt in country_res_options %}
+                        <option value="{{ opt.country_id }}"{% ifequal form_values.country_origin|add:"0" opt.country_id|add:"0" %} selected="selected"{% endifequal %}>{{ opt.name }}</option>
+                    {% endfor %}
+                </select>
+            </li>
+            
             <li><strong>Country you currently reside in:</strong><br />
                 <select name="country_res" class="form-control" style="width: 300px; margin-top: 5px;">
                     <option value="">Select country...</option>

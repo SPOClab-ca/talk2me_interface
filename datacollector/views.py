@@ -199,6 +199,16 @@ def index(request):
                 if 'smoking' not in request.POST:
                     form_errors += ['You did not specify whether you are a regular smoker.']
                 
+                response_country_origin = ""
+                if 'country_origin' not in request.POST or not request.POST['country_origin']:
+                    form_errors += ['You did not specify the country you were born in.']
+                else:
+                    response_country_origin = Country.objects.filter(country_id=request.POST['country_origin'])
+                    if not response_country_origin:
+                        form_errors += ['You specified an invalid country of birth.']
+                    else:
+                        response_country_origin = response_country_origin[0]
+                
                 response_country_res = ""
                 if 'country_res' not in request.POST or not request.POST['country_res']:
                     form_errors += ['You did not specify the country you currently reside in.']
@@ -314,6 +324,9 @@ def index(request):
                     if response_smoking in map_response_to_id:
                         response_smoking_id = map_response_to_id[response_smoking]
                         Subject.objects.filter(user_id=request.user.id).update(smoker_recent=response_smoking_id)
+                    
+                    # Country of origin
+                    Subject.objects.filter(user_id=request.user.id).update(origin_country=response_country_origin)
                     
                     # Country of residence
                     Subject.objects.filter(user_id=request.user.id).update(residence_country=response_country_res)
