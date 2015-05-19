@@ -164,7 +164,8 @@ $(document).ajaxSend(function(event, xhr, settings) {
  * re-tell it in their own words) 
  */
 function hideDisplay(btn) {
-    record_btn = $(btn).closest("li").find("#record-btn");
+    var instance_id = $(btn).closest("li").find("[name=instanceid]").val();
+    var record_btn = $(btn).closest("li").find("#record-btn_" + instance_id);
     $(btn).closest("li").html("Click the \"Start recording\" button below to begin recording. Tell the story in your own words, as you remember it. Try to speak for at least a minute. When done, click the \"Stop recording\" button.<p>" + record_btn.html() + "</p>");
 }
 
