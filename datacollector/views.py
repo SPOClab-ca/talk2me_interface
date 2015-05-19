@@ -11,6 +11,7 @@ from django.template import RequestContext
 from django.utils import simplejson
 from datacollector.forms import *
 from datacollector.models import *
+from settings import STATIC_URL
 from settings import SUBSITE_ID
 
 import datetime
@@ -664,7 +665,7 @@ def session(request, session_id):
                         if field_data_type == "text":
                             display_field = instance_value.value.replace('\n', '<br>')
                         elif field_data_type == "image":
-                            display_field = "<img src='/static/img/" + instance_value.value + "' style=\"" + style_attributes + "\" />"
+                            display_field = "<img src='" + STATIC_URL + "img/" + instance_value.value + "' style=\"" + style_attributes + "\" />"
                         elif field_data_type == "text_withblanks":
                             display_field = (instance_value.value).replace("[BLANK]", "<input name='response' type='text' value='' /><input name='instanceid' type='hidden' value='" + instance_id + "' />")
                         elif field_data_type == "timer_rig":
