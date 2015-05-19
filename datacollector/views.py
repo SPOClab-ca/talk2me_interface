@@ -456,7 +456,7 @@ def startsession(request):
         
         subject = Subject.objects.get(user_id=request.user.id)
 
-        default_tasks = [1,2,7,8,10,11,12,13]     
+        default_tasks = [1,2,7,8,10,11,12,13,14]     
         startdate = datetime.datetime.now()
         new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None)
         
@@ -699,6 +699,10 @@ def session(request, session_id):
                             
                             # Associated textarea where the user will type out the RIG response
                             display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input name='instanceid' type='hidden' value='" + instance_id + "' />"
+                        elif field_data_type == "text_newlines":
+                            sents = instance_value.value.split(" || ")
+                            regex_nonalpha = re.compile(r"^[^a-zA-Z0-9]+$")
+                            display_field = "<br>".join([sent[0].lower() + sent[1:] for sent in sents if not regex_nonalpha.findall(sent)])
                         else:
                             display_field = instance_value.value.replace('\n', '<br>')
                         
