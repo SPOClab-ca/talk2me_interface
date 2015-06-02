@@ -2,6 +2,7 @@
 var support_html5 = true;
 var timer_rig = false;
 var page_start_time = false;
+var website_id = 'talk2me';
 
 /* 
  * Run on page load
@@ -84,7 +85,7 @@ $(window).unload(function() {
         $.ajax({
             async: false,
             type: 'POST',
-            url: '/datacollector/pagetime',
+            url: '/' + website_id + '/pagetime',
             data: {'timeelapsed': page_time_elapsed, 'sessiontaskid': session_task_id },
             dataType: 'json',
             error: function(jqXHR, textStatus, errorThrown) { 
@@ -119,6 +120,70 @@ function median(values) {
 
 function formSubmit(submit_btn) {
     $(submit_btn).closest("form").submit();
+}
+
+function formSubmitAjax(submit_btn) {
+    
+    // As soon as the submit button is pressed, (1) disable the button to prevent resubmits,
+    // (2) show an ajax indicator to the user to indicate that their data is being sent to 
+    // the server, and (3) clear the errors display div.
+    $(submit_btn).prop("disabled", true);
+    $("#ajax_loader_msg").html("Submitting data, please wait...");
+    $("#ajax_loader").removeClass("invisible");
+    $("#form_errors").addClass("invisible");
+    
+    var post_params = "";
+    var the_form = $(submit_btn).closest("form");
+    $(the_form).find(".form-field").each(function() {
+        // If the form element is a radio element, then only add it to params if it is the selected one
+        if (!($(this).is("input[type='radio']")) || $(this).is(":checked") == true) {
+            if (post_params) {
+                post_params += "&";
+            }
+            post_params += $(this).attr('name') + "=" + encodeURIComponent($(this).val());
+        }
+    });
+    
+    $.ajax({
+        async: true,
+        type: 'POST',
+        url: $(the_form).attr("action"),
+        data: post_params,
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) { 
+            // (1) Re-enable submit button, (2) hide the ajax indicator
+            $(submit_btn).prop("disabled", false);
+            $("#ajax_loader").addClass("invisible");
+            
+            // (3) Display error message
+            $("#form_errors").html("<strong>The form could not be submitted.</strong> Error 601: " + textStatus + " - " + errorThrown + ". Please contact the website administrators to report this error.").removeClass("invisible");
+            $("body").scrollTop(0);
+        },
+        success: function(data, textStatus, jqXHR) {
+            // (1) Re-enable submit button, (2) hide the ajax indicator
+            $(submit_btn).prop("disabled", false);
+            $("#ajax_loader").addClass("invisible");
+            
+            response_text = jqXHR.responseText;
+            page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
+            if (page_response['status'] == 'success') {
+                window.location.reload();
+            } else {
+                var errors = page_response['error'];
+                if (errors.length > 0) {
+                    var display_errors = "<strong>The form could not be submitted. Please correct the following error" + (errors.length > 1 ? "s" : "") + ":</strong><ul>";
+                    for (i = 0; i < errors.length; i++) {
+                        display_errors += "<li>" + errors[i].msg + "</li>";
+                    }
+                    display_errors += "</ul>";
+                    
+                    // (3) Display error message
+                    $("#form_errors").html(display_errors).removeClass("invisible");
+                    $("body").scrollTop(0);
+                }
+            }
+        }
+    });
 }
 
 $(document).ajaxSend(function(event, xhr, settings) {
@@ -178,10 +243,13 @@ function startTimerRig(start_btn, instance_id) {
         updateTimerDisplay(start_btn, instance_id); 
     }, 1000);
     
-    // Disable the Start button, and enable the response field
+    // (1) disable the Submit button, 
+    // (2) disable the Start button, 
+    // (3) enable the response field
+    $("#submit_btn").prop("disabled", true);
     $(start_btn).prop('disabled', true);
     $(start_btn).parent().find("[name=response]").each(function() {
-        $(this).prop('readonly', false);
+        $(this).prop('readonly', false).removeClass("input-disabled");
     });
     $(start_btn).text("Started timer...");
 }
@@ -206,10 +274,13 @@ function updateTimerDisplay(start_btn, instance_id) {
     if (new_value <= 0) {
         stopTimerRig();
         
-        // Disable the response field
+        // (1) disable the response field
+        // (2) enable the submit button
+        // NB: DO NOT re-enable the Start button, since only one response will be accepted
         $(start_btn).parent().find("[name=response]").each(function() {
-            $(this).prop('readonly', true);
+            $(this).prop('readonly', true).addClass("input-disabled");
         });
+        $("#submit_btn").prop("disabled", false);
     }
 }
 

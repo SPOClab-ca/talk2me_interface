@@ -15,6 +15,7 @@ from settings import STATIC_URL
 from settings import SUBSITE_ID
 
 import datetime
+import json
 import random
 import re
 
@@ -585,54 +586,100 @@ def session(request, session_id):
             
             if not session.end_date:
                 
-                # If session responses are submitted, write them to the database first (no validation needed)
+                # If session responses are submitted, perform validation. If validation passes, write them to the database and return a 'success' response to the AJAX script. If validation fails, return a 'fail' response to the AJAX script, along with the form errors found.
                 if request.method == "POST":
                     
-                    active_task = Session_Task.objects.filter(session=session,date_completed__isnull=True).order_by('order')[0].task
-
-                    # Process any input, textarea (text), and multiselect responses
-                    if 'response' in request.POST and 'instanceid' in request.POST:
-                        responses = request.POST.getlist('response')
-                        instances = request.POST.getlist('instanceid')
-                        for i in range(len(responses)):
-                            response = responses[i]
-                            instance = Session_Task_Instance.objects.filter(session_task_instance_id=instances[i])
-                            if instance:
-                                instance = instance[0]
-                                
-                                # Find the response field type for this task
-                                response_data_type = Task_Field.objects.filter(task=instance.session_task.task,field_type__name='input')[0].field_data_type
-                                
-                                # Update the appropriate entry in the database (NB: 'audio' responses are not handled here; they are saved to database as soon as they are recorded, to avoid loss of data)                         
-                                if response_data_type == 'multiselect':
-                                    Session_Response.objects.filter(session_task_instance=instance).update(value_multiselect=response,date_completed=datetime.datetime.now())
-                                else:
-                                    Session_Response.objects.filter(session_task_instance=instance).update(value_text=response,date_completed=datetime.datetime.now())
+                    form_errors = []
+                    json_data = {}
+                    json_data['status'] = 'fail'
                     
-                    # Process any radio selection responses (different ID for the radio group for each instance of the task)
-                    if 'instanceid' in request.POST:
-                        instances = request.POST.getlist('instanceid')
-                        for i in range(len(instances)):
-                            response_label = 'response_' + str(instances[i])
-                            if response_label in request.POST:
-                                response = request.POST[response_label]
-                                instance = Session_Task_Instance.objects.filter(session_task_instance_id=instances[i])
-                                if instance:
-                                    instance = instance[0]
+                    active_task = Session_Task.objects.filter(session=session,date_completed__isnull=True).order_by('order')
+                    if active_task:
+                        active_task = active_task[0].task
+                        
+                        # Validate the form first
+                        if 'response' in request.POST and 'instanceid' in request.POST:
+                            responses = request.POST.getlist('response')
+                            instances = request.POST.getlist('instanceid')
+                            for i in range(len(responses)):
+                                response = responses[i]
+                                next_instance = instances[i]
+                                if not response:
+                                    form_errors += ['You did not provide a response for question #' + str(i+1) + '.']
+                                if not next_instance:
+                                    form_errors += ['Question #' + str(i+1) + ' is invalid.']
+                                else:
+                                    instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
+                                    if not instance:
+                                        form_errors += ['Question #' + str(i+1) + ' is invalid.']
+                        
+                        elif 'instanceid' in request.POST:
+                            instances = request.POST.getlist('instanceid')
+                            for i in range(len(instances)):
+                                # The audio questions are already transmitted to db, ignore those
+                                audio_label = 'response_audio_' + str(instances[i])
+                                if not audio_label:
+                                    response_label = 'response_' + str(instances[i])
+                                    if response_label in request.POST:
+                                        response = request.POST[response_label]
+                                        next_instance = instances[i]
+                                        if not response:
+                                            form_errors += ['You did not provide a response for question #' + str(i+1) + '.']
+                                        if not next_instance:
+                                            form_errors += ['Question #' + str(i+1) + ' is invalid.']
+                                        else:
+                                            instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
+                                            if not instance:
+                                                form_errors += ['Question #' + str(i+1) + ' is invalid.']
+                                    else:
+                                        form_errors += ['You did not provide a response for question #' + str(i+1) + '.']
+                            
+                        # Process any input, textarea (text), and multiselect responses
+                        if not form_errors:
+                            if 'response' in request.POST and 'instanceid' in request.POST:
+                                responses = request.POST.getlist('response')
+                                instances = request.POST.getlist('instanceid')
+                                for i in range(len(responses)):
+                                    response = responses[i]
+                                    instance = Session_Task_Instance.objects.filter(session_task_instance_id=instances[i])[0]
                                     
                                     # Find the response field type for this task
                                     response_data_type = Task_Field.objects.filter(task=instance.session_task.task,field_type__name='input')[0].field_data_type
                                     
-                                    if response_data_type == 'select':
-                                        Session_Response.objects.filter(session_task_instance=instance).update(value_text=response,date_completed=datetime.datetime.now())
+                                    # Update the appropriate entry in the database (NB: 'audio' responses are not handled here; they are saved to database as soon as they are recorded, to avoid loss of data)                         
+                                    if response_data_type == 'multiselect':
+                                        Session_Response.objects.filter(session_task_instance=instance).update(value_multiselect=response,date_completed=datetime.datetime.now())
                                     else:
                                         Session_Response.objects.filter(session_task_instance=instance).update(value_text=response,date_completed=datetime.datetime.now())
-                    
-                    
-                    # Mark the task as submitted
-                    Session_Task.objects.filter(session=session,task=active_task).update(date_completed=datetime.datetime.now())
-
-
+                                        
+                            # Process any radio selection responses (different ID for the radio group for each instance of the task)
+                            if 'instanceid' in request.POST:
+                                instances = request.POST.getlist('instanceid')
+                                for i in range(len(instances)):
+                                    audio_label = 'response_audio_' + str(instances[i])
+                                    if not audio_label:
+                                        response_label = 'response_' + str(instances[i])
+                                        if response_label in request.POST:
+                                            response = request.POST[response_label]
+                                            instance = Session_Task_Instance.objects.filter(session_task_instance_id=instances[i])[0]
+                                            
+                                            # Find the response field type for this task
+                                            response_data_type = Task_Field.objects.filter(task=instance.session_task.task,field_type__name='input')[0].field_data_type
+                                            
+                                            if response_data_type == 'select':
+                                                Session_Response.objects.filter(session_task_instance=instance).update(value_text=response,date_completed=datetime.datetime.now())
+                                            else:
+                                                Session_Response.objects.filter(session_task_instance=instance).update(value_text=response,date_completed=datetime.datetime.now())
+                            
+                            # Mark the task as submitted
+                            Session_Task.objects.filter(session=session,task=active_task).update(date_completed=datetime.datetime.now())
+                            
+                            json_data['status'] = 'success'
+                        
+                    if form_errors:
+                        json_data['error'] = [dict(msg=x) for x in form_errors]
+                    return HttpResponse(json.dumps(json_data))
+                
                 num_current_task = Session_Task.objects.filter(session=session,date_completed__isnull=False).count() + 1
                 num_tasks = Session_Task.objects.filter(session=session).count()  
                 active_task = Session_Task.objects.filter(session=session,date_completed__isnull=True).order_by('order')
@@ -677,10 +724,12 @@ def session(request, session_id):
                         
                         if field_data_type == "text":
                             display_field = instance_value.value.replace('\n', '<br>')
+                        elif field_data_type == "text_well":
+                            display_field = "<div class='well well-lg'>" + instance_value.value.replace('\n', '<br>') + "</div>"
                         elif field_data_type == "image":
                             display_field = "<img src='" + STATIC_URL + "img/" + instance_value.value + "' style=\"" + style_attributes + "\" />"
                         elif field_data_type == "text_withblanks":
-                            display_field = (instance_value.value).replace("[BLANK]", "<input name='response' type='text' value='' /><input name='instanceid' type='hidden' value='" + instance_id + "' />")
+                            display_field = (instance_value.value).replace("[BLANK]", "<input class='form-field' name='response' type='text' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />")
                         elif field_data_type == "timer_rig":
                         
                             # Parse out the duration of the timer
@@ -695,10 +744,10 @@ def session(request, session_id):
                                 # Default duration
                                 dur_sec = 60
                                 
-                            display_field = re.sub(timer_duration, "<br /><button onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />", instance_value.value)
+                            display_field = re.sub(timer_duration, "<br /><br /><button class='btn btn-success' onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />", instance_value.value)
                             
                             # Associated textarea where the user will type out the RIG response
-                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input name='instanceid' type='hidden' value='" + instance_id + "' />"
+                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea class='form-field input-disabled' name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                         elif field_data_type == "text_newlines":
                             sents = instance_value.value.split(" || ")
                             regex_nonalpha = re.compile(r"^[^a-zA-Z0-9]+$")
@@ -728,17 +777,17 @@ def session(request, session_id):
                                 existing_value = ""
                                 if response_field.value_text:
                                     existing_value = response_field.value_text 
-                                response_field = "<input name='response' type='text' value='" + existing_value + "'><input name='instanceid' type='hidden' value='" + instance_id + "' />"
+                                response_field = "<input class='form-field' name='response' type='text' value='" + existing_value + "'><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                             elif field_data_type == "text":
                                 existing_value = ""
                                 if response_field.value_text:
                                     existing_value = response_field.value_text 
-                                response_field = "<input name='response' type='text' value='" + existing_value + "'><input name='instanceid' type='hidden' value='" + instance_id + "' />"
+                                response_field = "<input class='form-field' name='response' type='text' value='" + existing_value + "'><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                             elif field_data_type == "textarea":
                                 existing_value = ""
                                 if response_field.value_text:
                                     existing_value = response_field.value_text 
-                                response_field = "<textarea name='response' style=\"" + style_attributes + "\">" + existing_value + "</textarea><input name='instanceid' type='hidden' value='" + instance_id + "' />"
+                                response_field = "<textarea class='form-field' name='response' style=\"" + style_attributes + "\">" + existing_value + "</textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                             elif field_data_type == "audio":
                                 requires_audio = True
                                 
@@ -750,7 +799,7 @@ def session(request, session_id):
                                 response_field += "<p id='record-btn_" + instance_id + "'"
                                 if not keep_visible:
                                     response_field += " class='invisible'"
-                                response_field += "><input type='button' onClick='javascript: toggleRecording(this);' value='Start recording'>&nbsp;<span id='status_recording_" + instance_id + "'></span><input name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
+                                response_field += "><input id='btn_recording_" + instance_id + "' type='button' class='btn btn-success' onClick='javascript: toggleRecording(this);' value='Start recording'>&nbsp;<span class='invisible' id='status_recording_" + instance_id + "'><img src='" + STATIC_URL + "img/ajax_loader.gif' /> <span id='status_recording_" + instance_id + "_msg'></span></span><input class='form-field' type='hidden' id='response_audio_" + instance_id + "' name='response_audio_" + instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
                                     
                             elif field_data_type == "select":
                                 existing_value = ""
@@ -763,7 +812,7 @@ def session(request, session_id):
                                 
                                 for sel_option in sel_options:
                                     response_field += "<div class='radio'>"
-                                    response_field += "<label><input type='radio' name='response_" + instance_id + "' value='" + sel_option.value + "'"
+                                    response_field += "<label><input type='radio' class='form-field' name='response_" + instance_id + "' value='" + sel_option.value + "'"
                                     
                                     # Mark any previously-submitted responses as selected
                                     if existing_value == sel_option.value:
@@ -772,14 +821,14 @@ def session(request, session_id):
                                     response_field += "> " + sel_option.value_display + "</label>"
                                     response_field += "</div>"
                                 
-                                response_field += "<input name='instanceid' type='hidden' value='" + instance_id + "' />"
+                                response_field += "<input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                             
                             elif regex_scale.findall(field_data_type):
                                 matches = regex_scale.findall(field_data_type)
                                 scale_start = matches[0][0]
                                 scale_end = matches[0][1]
                                 
-                                response_field = "<div><div class='scale_" + str(scale_start) + "_" + str(scale_end) + "' style=\"" + style_attributes + "\"></div><div class='scale_display' style='font-size: 20px;'></div><input name='response' type='hidden' value='' /></div><input name='instanceid' type='hidden' value='" + instance_id + "' />" 
+                                response_field = "<div><div class='scale_" + str(scale_start) + "_" + str(scale_end) + "' style=\"" + style_attributes + "\"></div><div class='scale_display' style='font-size: 20px;'></div><input class='form-field' name='response' type='hidden' value='' /></div><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />" 
                                 
                         active_instances += [display_field + "<br/>" + response_field]
                         
@@ -836,6 +885,9 @@ def audiotest(request):
             if session_response:
                 file_content = ContentFile(request.FILES[f].read())
                 session_response.value_audio.save('',file_content)
+                
+                # Update the Session Response date of completion
+                Session_Response.objects.filter(session_task_instance=instance).update(date_completed=datetime.datetime.now())
         
         return_dict = {"status": "success", "msg": msg, "files": files}
         json = simplejson.dumps(return_dict)

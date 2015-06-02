@@ -23,9 +23,8 @@
           </div>
         </div>
         
-        {% for val in post_values %}
-            POST value: {{ val }}<br/>
-        {% endfor %}
+        <div id="form_errors" class="invisible bs-callout bs-callout-danger">
+        </div>
 
         <form id='session_form' method="post" action="">
         {% csrf_token %}
@@ -33,6 +32,7 @@
         <h2>{{ active_task.name }}</h2>    
         <p>{{ active_task.instruction }}</p>
 
+        {% if active_instances|length > 1 %}
         <ol>
         {% for instance in active_instances %}
             <li class='task-instance'>
@@ -40,17 +40,22 @@
             </li>
         {% endfor %}
         </ol>
+        {% else %}
+        {% for instance in active_instances %}
+            <div class='task-instance'>
+                {% autoescape off %}{{ instance }}{% endautoescape %}
+            </div>
+        {% endfor %}
+        {% endif %}
         
         {% if requires_audio and not existing_responses %}
-        <input id='submit_btn' type="button" onClick="javascript: formSubmit(this);" value="Submit" disabled />
+        <input id='submit_btn' class='btn btn-primary' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" disabled />
         {% else %}
-        <input id='submit_btn' type="button" onClick="javascript: formSubmit(this);" value="Submit" />
+        <input id='submit_btn' class='btn btn-primary' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" />
         {% endif %}
         
-        {% if requires_audio %}
-        <!-- Display ajax indicator while the audio data is being uploaded to server -->
-        <span id="ajax_loader" class="invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> Saving audio...</span>
-        {% endif %}
+        <!-- Display ajax indicator while the audio/other data is being uploaded to server -->
+        <span id="ajax_loader" class="invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span id="ajax_loader_msg"></span></span>
         </form>
         
 

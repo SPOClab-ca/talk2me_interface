@@ -110,9 +110,11 @@ DEALINGS IN THE SOFTWARE.
   };
 
   Recorder.sendToServer = function(blob, instanceid) {
-
-    console.log("sending blob to server...");
-    $("#ajax_loader").removeClass("invisible");
+    
+    $("#form_errors").addClass("invisible");
+    $("#status_recording_" + instanceid).find("img").removeClass("invisible");
+    $("#status_recording_" + instanceid + "_msg").html("Sending audio data to server, please be patient...");
+    $("#status_recording_" + instanceid).removeClass("invisible");
     var fd = new FormData();
     fd.append('fname', 'test.wav');
     fd.append('data', blob);
@@ -124,15 +126,24 @@ DEALINGS IN THE SOFTWARE.
         processData: false,
         contentType: false,        
         dataType: 'json',
-        error: function(jqXHR, textStatus, errorThrown) { 
-            console.log('Error: ' + textStatus + ", " + errorThrown);
-            $("#ajax_loader").addClass("invisible");
+        error: function(jqXHR, textStatus, errorThrown) {
+            $("#status_recording_" + instanceid).addClass("invisible");
+            
+            // Re-enable recording button
+            $("#btn_recording_" + instanceid).prop("disabled", false);
+            
+            // Display error message
+            $("#form_errors").html("<strong>The audio data could not be submitted.</strong> Error 701: " + textStatus + " - " + errorThrown + ". Please contact the website administrators to report this error.").removeClass("invisible");
+            $("body").scrollTop(0);
         },
         success: function(data, textStatus, jqXHR) {
-            console.log('OK!');
             // Re-enable submit button
             $("#submit_btn").prop('disabled',false);
-            $("#ajax_loader").addClass("invisible");
+            $("#status_recording_" + instanceid).find("img").addClass("invisible");
+            $("#status_recording_" + instanceid + "_msg").html("Done!");
+            
+            // Mark the response field as completed
+            $("#response_audio_" + instanceid).val("yes");
         }
     });
   }

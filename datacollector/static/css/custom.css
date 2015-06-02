@@ -34,6 +34,10 @@ ol li img {
     font-size: 24px;
 }
 
+.input-disabled {
+    background-color: #eee;
+}
+
 #ajax_loader {
     font-style: italic;
     margin-left: 5px;

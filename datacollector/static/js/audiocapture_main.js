@@ -59,16 +59,18 @@ function toggleRecording( e ) {
         // stop recording
         audioRecorder.stop();
         e.classList.remove("recording");
-        $(e).val("Start recording");
-        $("#status_recording_" + instance_id).html("");
+        $(e).val("Start recording").prop("disabled", true);
+        $("#status_recording_" + instance_id).addClass("invisible");
         audioRecorder.getBuffers( gotBuffers );
     } else {
         // start recording
         if (!audioRecorder)
             return;
         e.classList.add("recording");
-        $(e).val("Stop recording");
-        $("#status_recording_" + instance_id).html("Recording audio...");
+        $(e).val("Stop recording").prop("disabled", false);
+        $("#status_recording_" + instance_id + "_msg").html("Recording audio...");
+        $("#status_recording_" + instance_id).find("img").addClass("invisible");
+        $("#status_recording_" + instance_id).removeClass("invisible");
         audioRecorder.clear();
         audioRecorder.setInstanceId(instance_id);
         audioRecorder.record();
