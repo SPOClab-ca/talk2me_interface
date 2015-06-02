@@ -137,13 +137,25 @@ DEALINGS IN THE SOFTWARE.
             $("body").scrollTop(0);
         },
         success: function(data, textStatus, jqXHR) {
-            // Re-enable submit button
-            $("#submit_btn").prop('disabled',false);
+            // Mark the response field as completed
+            $("#response_audio_" + instanceid).val("yes");
+            
+            // Re-enable submit button only if ALL response audio fields have been submitted
+            var incomplete_responses = [];
+            $("[name^='response_audio_']").each(function() {
+                if ($(this).val() == "") {
+                    incomplete_responses.push($(this).attr("name"));
+                }
+            });
+            if (incomplete_responses.length == 0) {
+                $("#submit_btn").prop('disabled',false);
+            }
+            
+            // Disable the recording button to prevent redoing the task
             $("#status_recording_" + instanceid).find("img").addClass("invisible");
             $("#status_recording_" + instanceid + "_msg").html("Done!");
             
-            // Mark the response field as completed
-            $("#response_audio_" + instanceid).val("yes");
+            
         }
     });
   }

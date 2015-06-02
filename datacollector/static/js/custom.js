@@ -229,9 +229,13 @@ $(document).ajaxSend(function(event, xhr, settings) {
  * re-tell it in their own words) 
  */
 function hideDisplay(btn) {
-    var instance_id = $(btn).closest("li").find("[name=instanceid]").val();
-    var record_btn = $(btn).closest("li").find("#record-btn_" + instance_id);
-    $(btn).closest("li").html("Click the \"Start recording\" button below to begin recording. Tell the story in your own words, as you remember it. Try to speak for at least a minute. When done, click the \"Stop recording\" button.<p>" + record_btn.html() + "</p>");
+    var container = $(btn).closest("li");
+    if ($(btn).closest("li").length == 0) {
+        container = $(btn).closest("div");
+    }
+    var instance_id = $(container).find("[name=instanceid]").val();
+    var record_btn = $(container).find("#record-btn_" + instance_id);
+    $(container).html("Click the \"Start recording\" button below to begin recording. Tell the story in your own words, as you remember it. Try to speak for at least a minute. When done, click the \"Stop recording\" button.<p class='space-top-small space-bottom-small'>" + record_btn.html() + "</p>");
 }
 
 

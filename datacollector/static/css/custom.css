@@ -7,6 +7,14 @@ ol li img {
     vertical-align: top;
 }
 
+.space-bottom-small {
+    margin-bottom: 10px;
+}
+
+.space-top-small {
+    margin-top: 10px;
+}
+
 .task-instance {
     margin-bottom: 20px;
 }  

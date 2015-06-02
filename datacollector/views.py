@@ -725,7 +725,7 @@ def session(request, session_id):
                         if field_data_type == "text":
                             display_field = instance_value.value.replace('\n', '<br>')
                         elif field_data_type == "text_well":
-                            display_field = "<div class='well well-lg'>" + instance_value.value.replace('\n', '<br>') + "</div>"
+                            display_field = "<div class='well well-lg space-bottom-small'>" + instance_value.value.replace('\n', '<br>') + "</div>"
                         elif field_data_type == "image":
                             display_field = "<img src='" + STATIC_URL + "img/" + instance_value.value + "' style=\"" + style_attributes + "\" />"
                         elif field_data_type == "text_withblanks":
@@ -795,7 +795,7 @@ def session(request, session_id):
                                 keep_visible = instance_value.task_field.keep_visible
                                 response_field = ""
                                 if not keep_visible:
-                                    response_field += "<p><input type='button' onClick='javascript: hideDisplay(this);' value='Continue'></p>"
+                                    response_field += "<p><input class='btn btn-primary' type='button' onClick='javascript: hideDisplay(this);' value='Continue'></p>"
                                 response_field += "<p id='record-btn_" + instance_id + "'"
                                 if not keep_visible:
                                     response_field += " class='invisible'"

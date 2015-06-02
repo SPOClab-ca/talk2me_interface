@@ -33,22 +33,22 @@
         <p>{{ active_task.instruction }}</p>
 
         {% if active_instances|length > 1 %}
-        <ol>
-        {% for instance in active_instances %}
-            <li class='task-instance'>
-                {% autoescape off %}{{ instance }}{% endautoescape %}    
-            </li>
-        {% endfor %}
-        </ol>
+            <ol>
+            {% for instance in active_instances %}
+                <li class='task-instance'>
+                    {% autoescape off %}{{ instance }}{% endautoescape %}    
+                </li>
+            {% endfor %}
+            </ol>
         {% else %}
-        {% for instance in active_instances %}
-            <div class='task-instance'>
-                {% autoescape off %}{{ instance }}{% endautoescape %}
-            </div>
-        {% endfor %}
+            {% for instance in active_instances %}
+                <div class='task-instance'>
+                    {% autoescape off %}{{ instance }}{% endautoescape %}
+                </div>
+            {% endfor %}
         {% endif %}
         
-        {% if requires_audio and not existing_responses %}
+        {% if requires_audio %}
         <input id='submit_btn' class='btn btn-primary' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" disabled />
         {% else %}
         <input id='submit_btn' class='btn btn-primary' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" />
