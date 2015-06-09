@@ -3,11 +3,23 @@ var support_html5 = true;
 var timer_rig = false;
 var page_start_time = false;
 var website_id = 'talk2me';
+var static_path = '/static/';
 
 /* 
  * Run on page load
  */
 $(document).ready(function () {
+    
+    // If on the main page, preload the expensive background image before displaying it
+    if ($(".image-bg-fluid-height").length > 0) {
+        var background_img = static_path + "img/rosetta_stone.jpg";
+        $.preload([
+            background_img
+        ], function() {
+                $(".image-bg-fluid-height").css("background-image", "url(" + background_img + ")");
+            }
+        );
+    }
     
     // Add date picker to date fields. The subject has to be at least 18 years old.
     $(".datefield").each(function() {
@@ -77,6 +89,7 @@ $(document).ready(function () {
  */
 $(window).unload(function() {
     
+    // If the user is currently on a session page, record the time they spend on it
     var session_task_id = $("#session_task_id").val();
     if (session_task_id !== undefined) {
         // By default, store the time elapsed in seconds in db
@@ -98,6 +111,26 @@ $(window).unload(function() {
     }
     
 });
+
+
+$.preload = function(array, fn_when_done) {
+	var length = array.length,
+	    document = window.document,
+	    body = document.body,
+	    isIE = 'fileSize' in document,
+	    object;
+	while (length--) {
+		if (isIE) {
+			new Image().src = array[length];
+			continue;
+		}
+		object = document.createElement('object');
+		object.data = array[length];
+		object.width = object.height = 0;
+		body.appendChild(object);
+	}
+    fn_when_done();
+};
 
 function range(start, end) {
     var foo = [];
