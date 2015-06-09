@@ -45,6 +45,11 @@ textarea, input[type=text] {
 	margin: 0 auto;
 }
 
+header {
+    height: auto;
+    width: 100%;
+}
+
 .header-panel {
     width: 940px;
     margin-left: auto;
