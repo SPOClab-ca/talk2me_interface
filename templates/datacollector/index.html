@@ -22,8 +22,7 @@
                 <hr />
                 <!-- Login form directly on home page to minimize login time -->
                 <form method='post' action='login'>
-                    <div class="table-responsive">
-                    <table class="table table-condensed table-login login-container">
+                    <table class="table table-condensed table-login">
                         <tbody>
                             <tr><td class="table-label">Username</td></tr>
                             <tr><td><input name="username" id="username" class="form-control" type="text" value="" placeholder="Username" autofocus="autofocus" /></td></tr>
@@ -31,7 +30,7 @@
                             <tr><td><input name="password" id="password" class="form-control" type="password" value="" placeholder="Password" /></td></tr>
                         </tbody>
                     </table>
-                    </div>
+                    
                     {% csrf_token %}
                     <div class="login-container text-right">
                         <button type="submit" class="btn btn-primary btn-lg">Login</button><br />

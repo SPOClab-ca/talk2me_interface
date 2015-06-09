@@ -17,7 +17,7 @@ h4 {
     font-weight: 700;
 }
 
-textarea, input[type=text] {
+textarea, input[type=text], input[type=password] {
     font-size: 18px;
 }
 
@@ -61,10 +61,6 @@ header {
 
 .header-panel hr {
     border: 1px solid #fff;
-}
-
-.login-container {
-    width: 50%;
 }
 
 .table-login tbody tr td {
