@@ -636,7 +636,7 @@ def session(request, session_id):
                             for i in range(len(instances)):
                                 # The audio questions are already transmitted to db, ignore those
                                 audio_label = 'response_audio_' + str(instances[i])
-                                if not audio_label:
+                                if not audio_label in request.POST:
                                     response_label = 'response_' + str(instances[i])
                                     if response_label in request.POST:
                                         response = request.POST[response_label]
@@ -675,7 +675,7 @@ def session(request, session_id):
                                 instances = request.POST.getlist('instanceid')
                                 for i in range(len(instances)):
                                     audio_label = 'response_audio_' + str(instances[i])
-                                    if not audio_label:
+                                    if not audio_label in request.POST:
                                         response_label = 'response_' + str(instances[i])
                                         if response_label in request.POST:
                                             response = request.POST[response_label]
