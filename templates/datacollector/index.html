@@ -14,29 +14,33 @@
 {% block header %}
 {% if not is_authenticated %}
     <header class="image-bg-fluid-height">
-        <div class="header-panel">
-            <h1>{{ website_name }}</h1>
-            <p class="lead">Online language assessment for longitudinal monitoring of changes in cognitive ability</p>
-            <hr />
-            <!-- Login form directly on home page to minimize login time -->
-            <form method='post' action='login'>
-                <table class="table table-condensed table-login login-container">
-                    <tbody>
-                        <tr><td class="table-label">Username</td></tr>
-                        <tr><td><input name="username" id="username" class="form-control" type="text" value="" placeholder="Username" autofocus="autofocus" /></td></tr>
-                        <tr><td class="table-label">Password</td></tr>
-                        <tr><td><input name="password" id="password" class="form-control" type="password" value="" placeholder="Password" /></td></tr>
-                    </tbody>
-                </table>
-                {% csrf_token %}
-                <div class="login-container text-right">
-                    <button type="submit" class="btn btn-primary btn-lg">Login</button><br />
-                </div>
-                <div class="login-container text-right space-top-small">
-                    New user? <a href="/{{ website_id }}/register">Click here to register</a>
-                </div>
-            </form>
-            
+        <div class="container">
+        <div class="row">
+            <div class="header-panel">
+                <h1>{{ website_name }}</h1>
+                <p class="lead">Online language assessment for longitudinal monitoring of changes in cognitive ability</p>
+                <hr />
+                <!-- Login form directly on home page to minimize login time -->
+                <form method='post' action='login'>
+                    <table class="table table-condensed table-login login-container">
+                        <tbody>
+                            <tr><td class="table-label">Username</td></tr>
+                            <tr><td><input name="username" id="username" class="form-control" type="text" value="" placeholder="Username" autofocus="autofocus" /></td></tr>
+                            <tr><td class="table-label">Password</td></tr>
+                            <tr><td><input name="password" id="password" class="form-control" type="password" value="" placeholder="Password" /></td></tr>
+                        </tbody>
+                    </table>
+                    {% csrf_token %}
+                    <div class="login-container text-right">
+                        <button type="submit" class="btn btn-primary btn-lg">Login</button><br />
+                    </div>
+                    <div class="login-container text-right space-top-small">
+                        New user? <a href="/{{ website_id }}/register">Click here to register</a>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
         </div>
     </header>
 {% endif %}
