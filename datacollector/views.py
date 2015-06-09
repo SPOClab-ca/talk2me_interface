@@ -123,7 +123,6 @@ def index(request):
             elif form_type == 'demographic':
             
                 # Perform form validation first
-                # - check that consent has been provided
                 selected_gender = ""
                 if 'gender' not in request.POST:
                     form_errors += ['You did not specify your gender.']
@@ -160,36 +159,44 @@ def index(request):
                 if 'language' not in request.POST and ('language_other' not in request.POST or not request.POST['language_other']):
                     form_errors += ['You did not specify any languages you can communicate in.']
                 else:
+                    # Check that English has been selected as a spoken language
+                    # Find ID of English language in db and compare to form inputs
                     response_languages = request.POST.getlist('language')
-                    for i in range(len(response_languages)):
-                        # - check that the selected languages are valid
-                        selected_language = Language.objects.filter(language_id=response_languages[i])
-                        if not selected_language:
-                            form_errors += ['The language you have selected (' + str(response_languages[i]) + ') is invalid.']
-                        else:
-                            selected_language = selected_language[0]
-                            # - check that level of fluency has been selected for each language
-                            if 'language_fluency_' + str(response_languages[i]) not in request.POST:
-                                form_errors += ['You did not specify your level of fluency in ' + selected_language.name + '.']
-                                form_languages_fluency += [""]
-                            else:
-                                form_languages_fluency += [request.POST['language_fluency_' + str(response_languages[i])] ]
-                        
-                    response_languages_other = request.POST.getlist('language_other')
-                    for i in range(len(response_languages_other)):
-                        if response_languages_other[i]:
+                    
+                    required_lang = "English"
+                    english_lang = Language.objects.filter(name=required_lang)[0].language_id
+                    if str(english_lang) not in response_languages:
+                        form_errors += ['You did not specify any language proficiency in ' + required_lang + '. This is mandatory for participation, since this website is only available in ' + required_lang + '.']
+                    else:
+                        for i in range(len(response_languages)):
                             # - check that the selected languages are valid
-                            selected_language = Language.objects.filter(language_id=response_languages_other[i])
+                            selected_language = Language.objects.filter(language_id=response_languages[i])
                             if not selected_language:
-                                form_errors += ['The language you have selected (' + str(response_languages_other[i]) + ') is invalid.']
+                                form_errors += ['The language you have selected (' + str(response_languages[i]) + ') is invalid.']
                             else:
                                 selected_language = selected_language[0]
                                 # - check that level of fluency has been selected for each language
-                                if 'other_fluency_' + str(i+1) not in request.POST:
+                                if 'language_fluency_' + str(response_languages[i]) not in request.POST:
                                     form_errors += ['You did not specify your level of fluency in ' + selected_language.name + '.']
-                                    form_languages_other_fluency += [""]
+                                    form_languages_fluency += [""]
                                 else:
-                                    form_languages_other_fluency += [request.POST['other_fluency_' + str(i+1)]]
+                                    form_languages_fluency += [request.POST['language_fluency_' + str(response_languages[i])] ]
+                            
+                        response_languages_other = request.POST.getlist('language_other')
+                        for i in range(len(response_languages_other)):
+                            if response_languages_other[i]:
+                                # - check that the selected languages are valid
+                                selected_language = Language.objects.filter(language_id=response_languages_other[i])
+                                if not selected_language:
+                                    form_errors += ['The language you have selected (' + str(response_languages_other[i]) + ') is invalid.']
+                                else:
+                                    selected_language = selected_language[0]
+                                    # - check that level of fluency has been selected for each language
+                                    if 'other_fluency_' + str(i+1) not in request.POST:
+                                        form_errors += ['You did not specify your level of fluency in ' + selected_language.name + '.']
+                                        form_languages_other_fluency += [""]
+                                    else:
+                                        form_languages_other_fluency += [request.POST['other_fluency_' + str(i+1)]]
                     
                 if 'education_level' not in request.POST:
                     form_errors += ['You did not specify your education level.']
@@ -370,9 +377,16 @@ def index(request):
     form_languages_other = [int(sel_lang) for sel_lang in request.POST.getlist('language_other') if sel_lang ]
     
     for i in range(len(form_languages)):
-        dict_language[form_languages[i]] = form_languages_fluency[i]
+        if i < len(form_languages_fluency) and i >= 0:            
+            dict_language[form_languages[i]] = form_languages_fluency[i]
+        else:
+            dict_language[form_languages[i]] = ""
+            
     for i in range(len(form_languages_other)):
-        dict_language_other[form_languages_other[i]] = form_languages_other_fluency[i]
+        if i < len(form_languages_other_fluency) and i >= 0:
+            dict_language_other[form_languages_other[i]] = form_languages_other_fluency[i]
+        else:
+            dict_language_other[form_languages_other[i]] = ""
     
     # , 'form_languages': form_languages, 'form_languages_other': form_languages_other, 'form_languages_fluency': form_languages_fluency
     passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options }
@@ -434,6 +448,10 @@ def register(request):
             # Create a corresponding subject in the app
             new_subject = Subject.objects.create(user_id=new_user.id)
 
+            # Automatically log the user in and redirect to index page
+            new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
+            auth_login(request,new_user)
+            
             return HttpResponseRedirect(website_root)
     else:
         form = UserCreationForm()
