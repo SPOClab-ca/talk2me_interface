@@ -9,29 +9,6 @@ var website_id = 'talk2me';
  */
 $(document).ready(function () {
     
-    // If on the main page, preload the expensive background image before displaying it
-    /*
-    if ($(".image-bg-fluid-height").length > 0) {
-        var script = document.getElementsByTagName("script")[0];
-        var static_path = "/" + website_id + "/static/"; // default
-        if (script.getAttribute.length !== 'undefined') {
-            static_path = script.getAttribute('src',2);
-            // Truncate to the static files path
-            var regex_path = new RegExp("(.+/)js/.+[.]js");
-            if (regex_path.test(static_path)) {
-                static_path = regex_path.exec(static_path)[1];
-            }
-        }
-        var background_img = static_path + "img/rosetta_stone.jpg";
-        $.preload([
-            background_img
-        ], function() {
-                $(".image-bg-fluid-height").css("background-image", "url(" + background_img + ")");
-            }
-        );
-    }
-    */
-    
     // Add date picker to date fields. The subject has to be at least 18 years old.
     $(".datefield").each(function() {
         $(this).datepicker({ 

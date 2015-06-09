@@ -1,4 +1,5 @@
 {% extends "datacollector/base.html" %}
+{% load form_fields %}
 
 {% block title %}{{ website_name }} - Register New Account{% endblock%}
 
@@ -17,11 +18,20 @@
 {% endif %}
 
 <form action="" method="POST">
-    <table class="table">
-        {{ form.as_table }}
+    <table class="table table-condensed table-login login-container">
+        <tbody>
+        {% for field in form %}
+            <tr><td class="table-label">{{ field.label }}</td></tr>
+            {% if forloop.first %}
+                <tr><td>{{ field|addcss:"form-control,autofocus:autofocus" }} {{ field.errors }}</td></tr>
+            {% else %}
+                <tr><td>{{ field|addcss:"form-control" }} {{ field.errors }}</td></tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
     </table>
     {% csrf_token %}
-    <button type="submit" class="btn btn-primary">Create account</button>
+    <button type="submit" class="btn btn-primary btn-lg">Create account</button>
 </form>
 
 
