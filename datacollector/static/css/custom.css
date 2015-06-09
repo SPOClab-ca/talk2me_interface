@@ -117,6 +117,10 @@ ol li img {
     margin-top: 5px;
 }
 
+.btn-fixedwidth {
+    width: 200px;    
+}
+
 /* Form errors - these are handled outside of the form, so hide the inline errors in the form html */
 .errorlist {
     list-style-type: none;

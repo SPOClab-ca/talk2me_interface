@@ -18,7 +18,7 @@
         <h1>Session in progress</h1>
         
         <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="{{ num_current_task }}" aria-valuemin="0" aria-valuemax="{{ num_tasks }}" style="width: {{ percentage_completion }}%;">
+          <div class="progress-bar" role="progressbar" aria-valuenow="{{ num_current_task }}" aria-valuemin="0" aria-valuemax="{{ num_tasks }}" style="font-size: 16px; width: {{ percentage_completion }}%;">
             {{ percentage_completion }}%
           </div>
         </div>
@@ -49,9 +49,9 @@
         {% endif %}
         
         {% if requires_audio %}
-        <input id='submit_btn' class='btn btn-primary btn-lg' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" disabled />
+        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" disabled />
         {% else %}
-        <input id='submit_btn' class='btn btn-primary btn-lg' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" />
+        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" />
         {% endif %}
         
         <!-- Display ajax indicator while the audio/other data is being uploaded to server -->

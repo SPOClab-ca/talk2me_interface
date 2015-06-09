@@ -744,10 +744,10 @@ def session(request, session_id):
                                 # Default duration
                                 dur_sec = 60
                                 
-                            display_field = re.sub(timer_duration, "<br /><br /><button class='btn btn-success' onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />", instance_value.value)
+                            display_field = re.sub(timer_duration, "<br /><br /><button class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />", instance_value.value)
                             
                             # Associated textarea where the user will type out the RIG response
-                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea class='form-field input-disabled' name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
+                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea class='form-control form-field input-disabled' name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                         elif field_data_type == "text_newlines":
                             sents = instance_value.value.split(" || ")
                             regex_nonalpha = re.compile(r"^[^a-zA-Z0-9]+$")
@@ -777,17 +777,17 @@ def session(request, session_id):
                                 existing_value = ""
                                 if response_field.value_text:
                                     existing_value = response_field.value_text 
-                                response_field = "<input class='form-field' name='response' type='text' value='" + existing_value + "'><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
+                                response_field = "<input class='form-field form-control' name='response' type='text' value='" + existing_value + "'><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                             elif field_data_type == "text":
                                 existing_value = ""
                                 if response_field.value_text:
                                     existing_value = response_field.value_text 
-                                response_field = "<input class='form-field' name='response' type='text' value='" + existing_value + "'><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
+                                response_field = "<input class='form-field form-control' name='response' type='text' value='" + existing_value + "'><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                             elif field_data_type == "textarea":
                                 existing_value = ""
                                 if response_field.value_text:
                                     existing_value = response_field.value_text 
-                                response_field = "<textarea class='form-field' name='response' style=\"" + style_attributes + "\">" + existing_value + "</textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
+                                response_field = "<textarea class='form-field form-control' name='response' style=\"" + style_attributes + "\">" + existing_value + "</textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                             elif field_data_type == "audio":
                                 requires_audio = True
                                 
@@ -795,11 +795,11 @@ def session(request, session_id):
                                 keep_visible = instance_value.task_field.keep_visible
                                 response_field = ""
                                 if not keep_visible:
-                                    response_field += "<p><input class='btn btn-primary' type='button' onClick='javascript: hideDisplay(this);' value='Continue'></p>"
+                                    response_field += "<p><input class='btn btn-primary btn-med btn-fixedwidth' type='button' onClick='javascript: hideDisplay(this);' value='Continue'></p>"
                                 response_field += "<p id='record-btn_" + instance_id + "'"
                                 if not keep_visible:
                                     response_field += " class='invisible'"
-                                response_field += "><input id='btn_recording_" + instance_id + "' type='button' class='btn btn-success' onClick='javascript: toggleRecording(this);' value='Start recording'>&nbsp;<span class='invisible' id='status_recording_" + instance_id + "'><img src='" + STATIC_URL + "img/ajax_loader.gif' /> <span id='status_recording_" + instance_id + "_msg'></span></span><input class='form-field' type='hidden' id='response_audio_" + instance_id + "' name='response_audio_" + instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
+                                response_field += "><input id='btn_recording_" + instance_id + "' type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: toggleRecording(this);' value='Start recording'>&nbsp;<span class='invisible' id='status_recording_" + instance_id + "'><img src='" + STATIC_URL + "img/ajax_loader.gif' /> <span id='status_recording_" + instance_id + "_msg'></span></span><input class='form-field' type='hidden' id='response_audio_" + instance_id + "' name='response_audio_" + instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
                                     
                             elif field_data_type == "select":
                                 existing_value = ""
