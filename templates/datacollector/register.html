@@ -23,9 +23,9 @@
         {% for field in form %}
             <tr><td class="table-label">{{ field.label }}</td></tr>
             {% if forloop.first %}
-                <tr><td>{{ field|addcss:"form-control,autofocus:autofocus" }} {{ field.errors }}</td></tr>
+                <tr><td>{{ field|addcss:"form-control,autofocus:autofocus" }} <div class='form-helptext small'>{{ field.help_text }}</div> {{ field.errors }}</td></tr>
             {% else %}
-                <tr><td>{{ field|addcss:"form-control" }} {{ field.errors }}</td></tr>
+                <tr><td>{{ field|addcss:"form-control" }} <div class='form-helptext small'>{{ field.help_text }}</div> {{ field.errors }}</td></tr>
             {% endif %}
         {% endfor %}
         </tbody>

@@ -113,6 +113,10 @@ ol li img {
     display: none;
 }
 
+.form-helptext {
+    margin-top: 5px;
+}
+
 /* Form errors - these are handled outside of the form, so hide the inline errors in the form html */
 .errorlist {
     list-style-type: none;
