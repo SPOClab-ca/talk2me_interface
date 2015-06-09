@@ -800,7 +800,7 @@ def session(request, session_id):
                                 existing_value = ""
                                 if response_field.value_text:
                                     existing_value = response_field.value_text 
-                                response_field = "<input class='form-field form-control' name='response' type='text' value='" + existing_value + "'><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
+                                response_field = "<input class='form-field form-control' name='response' type='text' value='" + existing_value + "' style=\"" + style_attributes + "\"><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
                             elif field_data_type == "textarea":
                                 existing_value = ""
                                 if response_field.value_text:
