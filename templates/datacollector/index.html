@@ -11,6 +11,38 @@
     {% endif %}
 {% endblock %}
 
+{% block header %}
+{% if not is_authenticated %}
+    <header class="image-bg-fluid-height">
+        <div class="header-panel">
+            <h1>{{ website_name }}</h1>
+            <p class="lead">Online language assessment for longitudinal monitoring of changes in cognitive ability</p>
+            
+            <!-- Login form directly on home page to minimize login time -->
+            <form method='post' action='login'>
+                <table class="table table-condensed table-login login-container">
+                    <tbody>
+                        <tr><td class="table-label">Username</td></tr>
+                        <tr><td><input name="username" id="username" class="form-control" type="text" value="" placeholder="Username" autofocus="autofocus" /></td></tr>
+                        <tr><td class="table-label">Password</td></tr>
+                        <tr><td><input name="password" id="password" class="form-control" type="password" value="" placeholder="Password" /></td></tr>
+                    </tbody>
+                </table>
+                {% csrf_token %}
+                <div class="login-container text-right">
+                    <button type="submit" class="btn btn-primary btn-lg">Login</button><br />
+                </div>
+                <div class="login-container text-right space-top-small">
+                    New user? <a href="/{{ website_id }}/register">Click here to register</a>
+                </div>
+                <!--<input type='submit' value='Submit'>-->
+            </form>
+            
+        </div>
+    </header>
+{% endif %}
+{% endblock %}
+
 {% block content %}
 
 
@@ -339,44 +371,15 @@
     
 {% else %}
 
-    <h1>{{ website_name }}</h1>
-    <a href="/{{ website_id }}/login">Login</a> | <a href="/{{ website_id }}/register">New User</a>
-
     <div class="support_html5 bs-callout bs-callout-danger invisible">
         {{ website_name }} requires a modern browser which supports HTML5. You are using a browser which does not support this technology. <strong>To use {{ website_name }}, please download the latest version of <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank">Chrome</a> or <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank">Firefox</a></strong>.<br />
         <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank"><img src="{{ STATIC_URL }}img/chrome.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
         <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank"><img src="{{ STATIC_URL }}img/firefox.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
     </div>
     
-    <!--
-    <div class="jumbotron">
-      <div class="container">
-        <h1>{{ website_name }}</h1>
-        <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study analyzing the differences in longitudinal progression of linguistic markers between healthy older adults and those with dementia. We are interested in assessing the validity and usability of an automated web-based system, <em>{{ website_name }}</em>, for linguistic data acquisition, as a means of monitoring changes in language ability.</p>
-        <p><a class="btn btn-primary btn-lg" role="button" onClick="javascript: location.href='/{{ website_id }}/about';">Learn more &raquo;</a></p>
-      </div>
+    <div>
+        <a href="http://www.utoronto.ca/"><img class="logo logo-first" style="height: 80px;" src="{{ STATIC_URL }}img/uoft_logo_web.jpg" /></a> <a href="http://www.nserc-crsng.gc.ca/"><img class="logo" style="height: 80px;" src="{{ STATIC_URL }}img/nserc_logo_web.jpg" /></a>
     </div>
-    
-    <div class="row">
-        <div class="col-md-4">
-            <h2>Step 1: Sign up</h2>
-            <p>Register for a new user account if this is your first visit, or login if you already have one.</p>
-            <p><button class='btn btn-default' onClick="javascript: location.href='/{{ website_id }}/login';">Login</button> <button class='btn btn-default' onClick="javascript: location.href='/{{ website_id }}/register';">New User</button></p>
-        </div>
-        
-        <div class="col-md-4">
-            <h2>Step 2: Language data</h2>
-            <p>Register for a new user account if this is your first visit, or login if you already have one.</p>
-            
-        </div>
-        
-        <div class="col-md-4">
-            <h2>Step 3: Spread the word</h2>
-            <p>Register for a new user account if this is your first visit, or login if you already have one.</p>
-            
-        </div>
-    </div>
-    -->
 {% endif %}
 
 {% endblock %}

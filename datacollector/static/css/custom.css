@@ -1,3 +1,62 @@
+body, p, div {
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+} 
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Lato', sans-serif;
+}
+
+h4 {
+    font-weight: 700;
+}
+
+
+.image-bg-fluid-height,
+.image-bg-fixed-height {
+    text-align: center;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+
+.image-bg-fluid-height {
+	background: url('../img/rosetta_stone.jpg') no-repeat center center scroll;
+    padding: 100px 0;
+}
+
+.image-bg-fixed-height {
+	background: url('http://lorempixel.com/g/1920/500/') no-repeat center center scroll;
+    height: 450px;
+}
+
+.img-center {
+	margin: 0 auto;
+}
+
+.header-panel {
+    width: 940px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    padding: 50px;
+    color: rgb(50, 50, 50);
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.login-container {
+    width: 50%;
+}
+
+.table-login tbody tr td {
+    border: 0px;
+}
+
+.table-label {
+    font-weight: bold;
+}
 
 ol li {
     margin-bottom: 20px;
@@ -7,8 +66,25 @@ ol li img {
     vertical-align: top;
 }
 
+.logo {
+    margin: 30px;
+    margin-bottom: 10px;
+}
+
+.logo-first {
+    margin-left: 0px;
+}
+
+.logo-last {
+    margin-right: 0px;
+}
+
 .space-bottom-small {
     margin-bottom: 10px;
+}
+
+.space-top-med {
+    margin-top: 20px;
 }
 
 .space-top-small {
