@@ -846,7 +846,7 @@ def session(request, session_id):
                                 scale_start = matches[0][0]
                                 scale_end = matches[0][1]
                                 
-                                response_field = "<div><div class='scale_" + str(scale_start) + "_" + str(scale_end) + "' style=\"" + style_attributes + "\"></div><div class='scale_display' style='font-size: 20px;'></div><input class='form-field' name='response' type='hidden' value='' /></div><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />" 
+                                response_field = "<div class='row'><div class='col-xs-6'><div class='scale_" + str(scale_start) + "_" + str(scale_end) + "' style=\"" + style_attributes + "\"></div><div class='scale_display' style='font-size: 20px;'></div><input class='form-field' name='response' type='hidden' value='' /></div></div><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />" 
                                 
                         active_instances += [display_field + "<br/>" + response_field]
                         
