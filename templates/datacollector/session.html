@@ -11,12 +11,12 @@
 {% endblock %}
 
 {% block content %}
-<h1>Session {{ session.session_id }}</h1>
 
 {% if session %}
     <!-- If the session is active (still has unanswered questions),display the next pending question -->
     {% if active_task %}
-    
+        <h1>Session in progress</h1>
+        
         <div class="progress">
           <div class="progress-bar" role="progressbar" aria-valuenow="{{ num_current_task }}" aria-valuemin="0" aria-valuemax="{{ num_tasks }}" style="width: {{ percentage_completion }}%;">
             {{ percentage_completion }}%
@@ -49,9 +49,9 @@
         {% endif %}
         
         {% if requires_audio %}
-        <input id='submit_btn' class='btn btn-primary' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" disabled />
+        <input id='submit_btn' class='btn btn-primary btn-lg' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" disabled />
         {% else %}
-        <input id='submit_btn' class='btn btn-primary' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" />
+        <input id='submit_btn' class='btn btn-primary btn-lg' type="button" onClick="javascript: formSubmitAjax(this);" value="Submit" />
         {% endif %}
         
         <!-- Display ajax indicator while the audio/other data is being uploaded to server -->
@@ -61,27 +61,27 @@
 
     <!-- Otherwise, show results -->
     {% else %}
-    <h2>Session completed on {{ completed_date }}</h2>
-    
-    {% if display_thankyou %}
-        <div class="bs-callout bs-callout-info"><strong>Thank you for completing this session!</strong></div>
-    {% endif %}
-    
-    {% if session_summary %}
-        <h3>Summary</h3>
-        <table class='table table-striped'>
-            <thead><tr><th>No.</th><th>Task</th><th>Number of responses</th></tr></thead>
-            <tbody>
-            {% autoescape off %}{{ session_summary|safe }}{% endautoescape %}
-            </tbody>
-        </table>
-    {% endif %}
+        <h1>Session completed on {{ completed_date }}</h1>
+        
+        {% if display_thankyou %}
+            <div class="bs-callout bs-callout-info"><strong>Thank you for completing this session!</strong></div>
+        {% endif %}
+        
+        {% if session_summary %}
+            <h3>Summary</h3>
+            <table class='table table-striped'>
+                <thead><tr><th>No.</th><th>Task</th><th>Number of responses</th></tr></thead>
+                <tbody>
+                {% autoescape off %}{{ session_summary|safe }}{% endautoescape %}
+                </tbody>
+            </table>
+        {% endif %}
     
     {% endif %}
     
 {% else %}
-    <p>Invalid session</p>
-    <p><a href="/{{ website_id }}/">Index</a></p>
+    <h1>Invalid page</h1>
+    <p><a href="/{{ website_id }}/">Go back to the Index page</a></p>
 {% endif %}
 
 {% endblock %}
