@@ -914,11 +914,16 @@ def audiotest(request):
 
 def account(request):
     is_authenticated = False
-    consent_submitted = False
-    demographic_submitted = False
     form_values = {}
     form_errors = []
     save_confirm = False
+    save_msg = ""
+    json_data = {}
+    json_data['status'] = 'fail'
+    
+    # These two flags are passed to the account page so that the base template included therein can use them
+    consent_submitted = False
+    demographic_submitted = False
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -927,17 +932,46 @@ def account(request):
             subject = subject[0]
             consent_submitted = subject.date_consent_submitted
             demographic_submitted = subject.date_demographics_submitted
-        
+            
             if request.method == "POST":
                 form_values = request.POST
-                if 'btn-save' in request.POST:
+                if 'btn-pwdchange' in request.POST:
+                    # Perform form validation first
+                    # Check that (1) the current password is correct, (2) the new password match, 
+                    # (3) the new password meets the password field requirements
+                    pwd_new = ""
+                    if not 'pwd_current' in request.POST or not request.POST['pwd_current']:
+                        form_errors += ['You did not provide your current password.']
+                    elif not authenticate(username=User.objects.get(id=subject.user_id).username, password=request.POST['pwd_current']):
+                        form_errors += ['The current password you provided is incorrect.']
+                    
+                    if not 'pwd_new1' in request.POST or not 'pwd_new2' in request.POST or \
+                        not request.POST['pwd_new1'] or not request.POST['pwd_new2']:
+                        form_errors += ['You did not provide your new password (twice).']
+                    elif str(request.POST['pwd_new1']) != str(request.POST['pwd_new2']):
+                        form_errors += ['The new passwords you provided do not match. You have to repeat the new password twice.']
+                    
+                    if not form_errors:
+                        pwd_new = request.POST['pwd_new1']
+                        u = User.objects.get(id=subject.user_id)
+                        u.set_password(pwd_new)
+                        u.save()
+                        save_confirm = True
+                        save_msg = "Password updated successfully."
+                        json_data['save_msg'] = save_msg
+                        json_data['status'] = 'success'
+                    else:
+                        json_data['error'] = [dict(msg=x) for x in form_errors]
+                    
+                    return HttpResponse(json.dumps(json_data))
+                    
+                elif 'btn-save' in request.POST:
                     
                     # Perform form validation first
                     # - check that if any of the email-related options has been selected, the email address is provided
                     user_email = ""
                     if 'email_address' in request.POST:
                         user_email = request.POST['email_address']
-                        
                         if user_email:
                             # Validate user email if provided
                             if not regex_email.match(user_email):
@@ -983,17 +1017,29 @@ def account(request):
                             Subject.objects.filter(user_id=request.user.id).update(preference_email_updates=0, email_updates=None)
                         
                         save_confirm = True
+                        save_msg = "Changes saved successfully."
+                        json_data['save_msg'] = save_msg
+                        json_data['status'] = 'success'
+                    else:
+                        json_data['error'] = [dict(msg=x) for x in form_errors]
+                    
+                    return HttpResponse(json.dumps(json_data))
                     
                 elif 'btn-withdraw' in request.POST:
                     if 'withdraw_confirm' not in request.POST:
                         form_errors += ['You did not select the confirmation checkbox which acknowledges that you understand the effects of withdrawing from the study.']
-                    else:
+                    
+                    if not form_errors:
                         # Delete entire user account, including from auth_user
                         Subject.objects.filter(user_id=request.user.id).delete()
                         User.objects.filter(id=request.user.id).delete()
                         auth_logout(request)
-                        return HttpResponseRedirect(website_root)
-                        
+                        json_data['status'] = 'success'
+                        json_data['website_root'] = website_root
+                        #return HttpResponseRedirect(website_root)
+                    else:
+                        json_data['error'] = [dict(msg=x) for x in form_errors]
+                    return HttpResponse(json.dumps(json_data))
                         
             else:
                 # Fill out the form values with the default values from the database (i.e. mimic the way a POST form works - checkboxes only appear in the collection if they are checked).
@@ -1004,12 +1050,18 @@ def account(request):
                 if subject.preference_email_updates:
                     form_values['cb_preference_email_updates'] = subject.preference_email_updates
                 form_values['email_address'] = request.user.email
-                
-    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm}
-    passed_vars.update(global_passed_vars)
-    
-    return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
-    
+              
+            passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm, 'save_msg': save_msg, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
+            passed_vars.update(global_passed_vars)
+            return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
+        else:
+            # If user is authenticated with as a User that doesn't exist as a Subject (i.e. for this study), then go to main page
+            return HttpResponseRedirect(website_root)
+    else:
+        # If user is not authenticated, just go to main page
+        return HttpResponseRedirect(website_root)
+        
+        
 def about(request):
     is_authenticated = False
     consent_submitted = False

@@ -143,7 +143,7 @@ function formSubmit(submit_btn) {
     $(submit_btn).closest("form").submit();
 }
 
-function formSubmitAjax(submit_btn) {
+function formSubmitAjax(submit_btn, success_fn) {
     
     // As soon as the submit button is pressed, (1) disable the button to prevent resubmits,
     // (2) show an ajax indicator to the user to indicate that their data is being sent to 
@@ -152,12 +152,21 @@ function formSubmitAjax(submit_btn) {
     $("#ajax_loader_msg").html("Submitting data, please wait...");
     $("#ajax_loader").removeClass("invisible");
     $("#form_errors").addClass("invisible");
+    $("#save_msg_container").addClass("invisible");
     
     var post_params = "";
     var the_form = $(submit_btn).closest("form");
     $(the_form).find(".form-field").each(function() {
         // If the form element is a radio element, then only add it to params if it is the selected one
-        if (!($(this).is("input[type='radio']")) || $(this).is(":checked") == true) {
+        if ($(this).is("input[type='checkbox']")) {
+            if ($(this).is(":checked") == true) {
+                if (post_params) {
+                    post_params += "&";
+                }
+                post_params += $(this).attr('name') + "=on";
+            }
+        }
+        else if (!($(this).is("input[type='radio']")) || $(this).is(":checked") == true) {
             if (post_params) {
                 post_params += "&";
             }
@@ -188,7 +197,7 @@ function formSubmitAjax(submit_btn) {
             response_text = jqXHR.responseText;
             page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
             if (page_response['status'] == 'success') {
-                window.location.reload();
+                success_fn(page_response);
             } else {
                 var errors = page_response['error'];
                 if (errors.length > 0) {
@@ -206,6 +215,28 @@ function formSubmitAjax(submit_btn) {
         }
     });
 }
+
+/* Functions used as success functions after AJAX form submission 
+ * "params" - the page response dictionary (returned from corresponding view)
+ */
+ 
+// Used on the Session page to refresh and display the next task
+function reloadPage(params) {
+    window.location.reload();
+}
+
+// Used on Account Settings page: display success message up top, and clear any password fields
+function displayConfirmMsg(params) {
+    $("#save_msg_container").html(params['save_msg']).removeClass("invisible");
+    $("body").scrollTop(0);
+    $(".pwd-field").val("");
+}
+
+// Used on Account Settings page: after Withdrawal, the user is logged out - redirect to main page
+function redirectToHome(params) {
+    window.location.href = params['website_root'];
+}
+/* END FUNCTIONS USED AS SUCCESS FUNCTIONS AFTER AJAX FORM SUBMISSION */
 
 $(document).ajaxSend(function(event, xhr, settings) {
     function getCookie(name) {

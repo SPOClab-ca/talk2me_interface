@@ -3,7 +3,7 @@ body:after{
     content: url('../img/rosetta_stone.jpg') url('../img/uoft_logo_web.jpg') url('../img/nserc_logo_web.jpg');
 }
 
-body, p, div {
+body, p, div, span {
     font-family: 'Lato', sans-serif;
     font-weight: 400;
     font-size: 18px;
@@ -21,6 +21,9 @@ textarea, input[type=text], input[type=password] {
     font-size: 18px;
 }
 
+.font-bold {
+    font-weight: bold;
+}
 
 .image-bg-fluid-height,
 .image-bg-fixed-height {
@@ -63,7 +66,7 @@ header {
     border: 1px solid #fff;
 }
 
-.table-login tbody tr td {
+.table-noborder tbody tr td {
     border: 0px;
 }
 
