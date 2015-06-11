@@ -1042,7 +1042,7 @@ def account(request):
                         User.objects.filter(id=request.user.id).delete()
                         auth_logout(request)
                         json_data['status'] = 'success'
-                        json_data['website_root'] = website_root
+                        json_data['website_root'] = '/' + global_passed_vars['website_id']
                         #return HttpResponseRedirect(website_root)
                     else:
                         json_data['error'] = [dict(msg=x) for x in form_errors]
