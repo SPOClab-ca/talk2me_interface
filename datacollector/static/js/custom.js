@@ -384,3 +384,11 @@ function demographicsAddLanguage(link) {
         $(tr_last).after($(tr_clone));
     }
 }
+
+// Used on Demographics page, to auto-select a language for which a fluency has been selected
+// The radio button of the selected fluency is passed as argument "rb".
+function selectCorrespondingLanguage(rb) {
+    if ($(rb).is(":checked")) {
+        $(rb).closest("tr").find("input[type=checkbox]").attr("checked", true);
+    }
+}

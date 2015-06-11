@@ -214,7 +214,7 @@
                     <td>
                     {% for detail_opt in language_fluency_options %}
                         <div class="radio">
-                            <label><input type="radio" name="language_fluency_{{ opt.language_id }}" value="{{ detail_opt.language_level_id }}"{% ifequal dict_language|hash:opt.language_id|add:"0" detail_opt.language_level_id|add:"0" %} checked="checked"{% endifequal %}> {{ detail_opt.name }}</label>
+                            <label><input type="radio" name="language_fluency_{{ opt.language_id }}" value="{{ detail_opt.language_level_id }}"{% ifequal dict_language|hash:opt.language_id|add:"0" detail_opt.language_level_id|add:"0" %} checked="checked"{% endifequal %} onClick="javascript: selectCorrespondingLanguage(this);"> {{ detail_opt.name }}</label>
                         </div>
                     {% endfor %}
                     </td>
