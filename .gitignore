@@ -8,7 +8,6 @@
 ./*/*~
 
 # Ignore setup files
-manage.py
 settings.py
 
 # Ignore deployment-related files
