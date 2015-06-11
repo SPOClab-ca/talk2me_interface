@@ -156,7 +156,17 @@ def index(request):
                             form_errors += ['You have specified an invalid category for ethnicity.']
                         
                 
-                if 'language' not in request.POST and ('language_other' not in request.POST or not request.POST['language_other']):
+                # Get the fluency for each of the languages specified
+                if 'language_other' in request.POST:
+                    response_languages_other = request.POST.getlist('language_other')
+                    for i in range(len(response_languages_other)):
+                        if 'other_fluency_' + str(i+1) not in request.POST:
+                            form_languages_other_fluency += [""]
+                        else:
+                            form_languages_other_fluency += [request.POST['other_fluency_' + str(i+1)]]
+                
+                
+                if 'language' not in request.POST and ('language_other' not in request.POST or not [x for x in request.POST.getlist('language_other') if x]):
                     form_errors += ['You did not specify any languages you can communicate in.']
                 else:
                     # Check that English has been selected as a spoken language
@@ -194,9 +204,6 @@ def index(request):
                                     # - check that level of fluency has been selected for each language
                                     if 'other_fluency_' + str(i+1) not in request.POST:
                                         form_errors += ['You did not specify your level of fluency in ' + selected_language.name + '.']
-                                        form_languages_other_fluency += [""]
-                                    else:
-                                        form_languages_other_fluency += [request.POST['other_fluency_' + str(i+1)]]
                     
                 if 'education_level' not in request.POST:
                     form_errors += ['You did not specify your education level.']
