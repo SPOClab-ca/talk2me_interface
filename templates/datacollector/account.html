@@ -69,9 +69,9 @@
     <div id="detail_preference_email_reminders" style="margin-left: 20px;">
         Frequency: 
         <div class="radio" style="display: inline; margin-left: 10px; margin-bottom: 15px;">
-            <label class="radio-inline"><input type="radio" class="form-field" name="radio_email_reminders_freq" value="7"{% if form_values.radio_email_reminders_freq == '7' %} checked="checked"{% endif %} /> Weekly</label>
-            <label class="radio-inline"><input type="radio" class="form-field" name="radio_email_reminders_freq" value="30"{% if form_values.radio_email_reminders_freq == '30' %} checked="checked"{% endif %}{% if 'radio_email_reminders_freq' not in form_values %} checked="checked"{% endif %} /> Monthly</label>
-            <label class="radio-inline"><input type="radio" class="form-field" name="radio_email_reminders_freq" value="365"{% if form_values.radio_email_reminders_freq == '365' %} checked="checked"{% endif %} /> Annually</label>
+            <label class="radio-inline"><input type="radio" class="form-field" name="radio_email_reminders_freq" value="7"{% if form_values.radio_email_reminders_freq|add:"0" == 7 %} checked="checked"{% endif %} /> Weekly</label>
+            <label class="radio-inline"><input type="radio" class="form-field" name="radio_email_reminders_freq" value="30"{% if form_values.radio_email_reminders_freq|add:"0" == 30 %} checked="checked"{% endif %}{% if 'radio_email_reminders_freq' not in form_values %} checked="checked"{% endif %} /> Monthly</label>
+            <label class="radio-inline"><input type="radio" class="form-field" name="radio_email_reminders_freq" value="365"{% if form_values.radio_email_reminders_freq|add:"0" == 365 %} checked="checked"{% endif %} /> Annually</label>
         </div>
     </div>
     <br />

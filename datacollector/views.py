@@ -1043,7 +1043,6 @@ def account(request):
                         auth_logout(request)
                         json_data['status'] = 'success'
                         json_data['website_root'] = '/' + global_passed_vars['website_id']
-                        #return HttpResponseRedirect(website_root)
                     else:
                         json_data['error'] = [dict(msg=x) for x in form_errors]
                     return HttpResponse(json.dumps(json_data))
@@ -1054,10 +1053,11 @@ def account(request):
                     form_values['cb_preference_prizes'] = subject.preference_prizes
                 if subject.preference_email_reminders:
                     form_values['cb_preference_email_reminders'] = subject.preference_email_reminders
+                    form_values['radio_email_reminders_freq'] = subject.preference_email_reminders_freq
                 if subject.preference_email_updates:
                     form_values['cb_preference_email_updates'] = subject.preference_email_updates
                 form_values['email_address'] = request.user.email
-              
+            
             passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm, 'save_msg': save_msg, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
