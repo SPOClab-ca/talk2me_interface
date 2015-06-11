@@ -453,8 +453,8 @@ def register(request):
             new_user = form.save()
             
             # Create a corresponding subject in the app
-            new_subject = Subject.objects.create(user_id=new_user.id)
-
+            new_subject = Subject.objects.create(user_id=new_user.id, date_created=datetime.datetime.now())
+            
             # Automatically log the user in and redirect to index page
             new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
             auth_login(request,new_user)
