@@ -139,7 +139,7 @@ class Subject(models.Model):
     # from each user for this study)
 
     def __unicode__(self):
-        return "User " + str(self.user_id) + " (" + str(User.objects.get(id=self.user_id).username) + "), Gender: " + str(self.gender) + \
+        return "User " + str(self.user_id) + ", Gender: " + str(self.gender) + \
                 ", DOB: " + str(self.dob) + ", Consent: " + str(self.date_consent_submitted) + \
                 ", demographic submitted: " + str(self.date_demographics_submitted)
 
