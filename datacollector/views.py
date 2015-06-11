@@ -1006,9 +1006,9 @@ def account(request):
                     
                     if not form_errors:
                         if user_email:
-                            User.objects.filter(user_id=request.user.id).update(email=user_email)
+                            User.objects.filter(id=request.user.id).update(email=user_email)
                         else:
-                            User.objects.filter(user_id=request.user.id).update(email="")
+                            User.objects.filter(id=request.user.id).update(email="")
                         
                         if 'cb_preference_prizes' in request.POST:
                             Subject.objects.filter(user_id=request.user.id).update(preference_prizes=1, email_prizes=user_email)
