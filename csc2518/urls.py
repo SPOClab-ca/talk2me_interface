@@ -32,6 +32,7 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'pagetime$', 'datacollector.views.pagetime'),
     url(r'^' + settings.SUBSITE_ID + 'about/$', 'datacollector.views.about'),
     url(r'^' + settings.SUBSITE_ID + 'account/$', 'datacollector.views.account'),
+    url(r'^' + settings.SUBSITE_ID + '404/$', 'datacollector.views.notfound'),
     url(r'^' + settings.SUBSITE_ID + 'error/(?P<error_id>\d{3})/$', 'datacollector.views.error'),
     url(r'^' + settings.SUBSITE_ID + 'media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     
