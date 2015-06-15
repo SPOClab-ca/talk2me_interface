@@ -140,6 +140,7 @@ function median(values) {
 }
 
 function formSubmit(submit_btn) {
+    $(submit_btn).attr("disabled", "disabled");
     $(submit_btn).closest("form").submit();
 }
 
