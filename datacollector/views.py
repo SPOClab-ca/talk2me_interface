@@ -15,13 +15,17 @@ from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
 
 import datetime
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import json
 import random
 import re
+import smtplib
+import crypto
 
 
 # Globals
-global global_passed_vars
+global global_passed_vars, date_format, age_limit, regex_email, regex_date
 global_passed_vars = { "website_id": "talk2me", "website_name": "Talk2Me", "website_email": "talk2me.toronto@gmail.com" }
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
@@ -33,6 +37,45 @@ regex_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 regex_date = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 
 
+# Set up mail authentication
+global email_username, email_password, website_hostname
+email_username = Settings.objects.get(setting_name="system_email").setting_value
+email_password = Settings.objects.get(setting_name="system_email_passwd").setting_value
+website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
+
+
+# emailTo, emailCc, emailBcc: lists of email addresses
+# emailSubject, emailBody: strings
+def sendEmail(emailTo, emailCc, emailBcc, emailSubject, text, html):
+    
+    # Send the message via Gmail's SMTP server
+    try:
+        server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+        server.login(email_username, email_password)
+        
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = emailSubject
+        msg['From'] = global_passed_vars['website_name'] + "<" + email_username + ">"
+        msg['To'] = ",".join(emailTo)
+        msg['Cc'] = ",".join(emailCc)
+        msg['Bcc'] = ",".join(emailBcc)
+        
+        # Create an HTML and alternate plain text version
+        part1 = MIMEText(text, 'plain')
+        part2 = MIMEText(html, 'html')
+        
+        # Attach parts into message container.
+        # According to RFC 2046, the last part of a multipart message, in this case
+        # the HTML message, is best and preferred.
+        msg.attach(part1)
+        msg.attach(part2)
+            
+        server.sendmail(email_username, emailTo + emailCc + emailBcc, msg.as_string())
+        server.quit()
+        return True
+    except:
+        return False
+    
 def index(request):
     
     # Authenticate current user. If no user logged in, redirect to login page.
@@ -98,9 +141,25 @@ def index(request):
                     
                 if not form_errors:
                     
-                    # Record user email, if provided
+                    # Record user email, if provided, and send a verification email
                     if user_email:
+                        new_email_token = crypto.generate_confirmation_token(request.user.username + user_email)
+                        confirmation_link = website_hostname + "/activate/" + new_email_token  
+                        
+                        emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+                        <head>
+                            <title></title>
+                            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                        </head><body>"""
+                        emailPost = """</body></html>"""
+                        emailText = "Welcome to " + global_passed_vars['website_name'] + "!\n\nThank you for registering an account.\n\nPlease click this link to confirm your email address:\n\n<a href=\"" + confirmation_link + "\">" + confirmation_link + "</a>\n\nIf the link above does not work, please copy and paste it into your browser's address bar.\n\nWhy am I verifying my email address? We value your privacy and want to make sure that you are the one who initiated this registration. If you received this email by mistake, you can make it all go away by simply ignoring it."
+                        
+                        emailHtml = "<h3>Welcome to " + global_passed_vars['website_name'] + "!</h3><p>Thank you for registering an account.</p><p><strong>Please click this link to confirm your email address:</strong></p><p><u><a href=\"" + confirmation_link + "\">" + confirmation_link + "</a></u></p><p>If the link above does not work, please copy and paste it into your browser's address bar.</p><p><strong>Why am I verifying my email address?</strong> We value your privacy and want to make sure that you are the one who initiated this registration. If you received this email by mistake, you can make it all go away by simply ignoring it.</p>"
+                        
+                        successFlag = sendEmail([user_email], [], [email_username], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
+                        
                         User.objects.filter(id=request.user.id).update(email=user_email)
+                        Subject.objects.filter(user_id=request.user.id).update(email_validated=0,email_token=new_email_token)
                     
                     # Update consent details
                     Subject.objects.filter(user_id=request.user.id).update(date_consent_submitted=date_submitted)
@@ -571,6 +630,62 @@ def startsession(request):
     else:
         return HttpResponseRedirect(website_root)
 
+def notfound(request):
+    
+    is_authenticated = False
+    consent_submitted = False
+    demographic_submitted = False
+    
+    if request.user.is_authenticated():
+        is_authenticated = True
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
+            
+    passed_vars = {'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
+    passed_vars.update(global_passed_vars)
+    
+    return render_to_response('datacollector/notfound.html', passed_vars, context_instance=RequestContext(request))
+    
+def activate(request, user_token):
+
+    is_authenticated = False
+    consent_submitted = False
+    demographic_submitted = False
+    email_prevalidated = False
+    email_validated = False
+    email_address = ""
+    
+    if request.user.is_authenticated():
+        is_authenticated = True
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
+            
+    # Determine if the token is valid
+    s = Subject.objects.filter(email_token=user_token)
+    if not s:
+        return HttpResponseRedirect(website_root + "404")
+    
+    # Determine if user's email is already confirmed
+    u = User.objects.filter(id=s[0].user_id)
+    if u:
+        email_address = u[0].email
+        if s[0].email_validated:
+            email_prevalidated = True
+        else:
+            s.update(email_validated=1)
+            email_validated = True
+        
+    passed_vars = {'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'email_prevalidated': email_prevalidated, 'email_validated': email_validated, 'email_address': email_address}
+    passed_vars.update(global_passed_vars)
+    
+    return render_to_response('datacollector/activate.html', passed_vars, context_instance=RequestContext(request))
+    
 
 def session(request, session_id):
 

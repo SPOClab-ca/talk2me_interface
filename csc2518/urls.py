@@ -18,6 +18,7 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'login$', 'datacollector.views.login'),
     url(r'^' + settings.SUBSITE_ID + 'logout$', 'datacollector.views.logout'),
     url(r'^' + settings.SUBSITE_ID + 'register$', 'datacollector.views.register'),
+    url(r'^' + settings.SUBSITE_ID + 'activate/(?P<user_token>\w+)$', 'datacollector.views.activate'),
 
     # Sessions 
     url(r'^' + settings.SUBSITE_ID + 'startsession$', 'datacollector.views.startsession'),
