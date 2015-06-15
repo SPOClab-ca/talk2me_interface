@@ -125,10 +125,10 @@ class Value_Difficulty(models.Model):
 
 class Settings(models.Model):
     def __unicode__(self):
-        return "Setting: " + str(self.name) + " = " + str(self.value)
+        return "Setting: " + str(self.setting_name) + " = " + str(self.setting_value)
     
-    name = models.CharField(max_length=50, primary_key=True)
-    value = models.CharField(max_length=50)
+    setting_name = models.CharField(max_length=50, primary_key=True)
+    setting_value = models.CharField(max_length=50)
     
     
 # END HELPER CLASSES -------------------------------------------------------
