@@ -7,8 +7,9 @@
 *~
 ./*/*~
 
-# Ignore setup files
+# Ignore setup and sensitive files
 settings.py
+crypto.py
 
 # Ignore deployment-related files
 wsgi.py
