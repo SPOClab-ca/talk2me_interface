@@ -205,7 +205,7 @@ class Subject_Dementia_Type(models.Model):
     # is filled out).
 
     def __unicode__(self):
-        return "User " + str(self.subject.user_id) + " - " + str(self.dementia_type.name)
+        return "User " + str(self.subject.user_id) + " - " + str(self.dementia_type_name)
 
     subject = models.ForeignKey(Subject)
     dementia_type_id = models.IntegerField(null=True, blank=True)
