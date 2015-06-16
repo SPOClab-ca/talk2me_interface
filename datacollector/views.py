@@ -122,7 +122,7 @@ def index(request):
                         
                         emailHtml = "<h3>Welcome to " + global_passed_vars['website_name'] + "!</h3><p>Thank you for registering an account.</p><p><strong>Please click this link to confirm your email address:</strong></p><p><u><a href=\"" + confirmation_link + "\">" + confirmation_link + "</a></u></p><p>If the link above does not work, please copy and paste it into your browser's address bar.</p><p><strong>Why am I verifying my email address?</strong> We value your privacy and want to make sure that you are the one who initiated this registration. If you received this email by mistake, you can make it all go away by simply ignoring it.</p>"
                         
-                        successFlag = emails.sendEmail([user_email], [], [email_username], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
+                        successFlag = emails.sendEmail(email_username, email_password, global_passed_vars['website_name'], [user_email], [], [email_username], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
                         
                         User.objects.filter(id=request.user.id).update(email=user_email)
                         Subject.objects.filter(user_id=request.user.id).update(email_validated=0,email_token=new_email_token)
