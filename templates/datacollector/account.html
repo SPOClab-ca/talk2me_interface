@@ -61,7 +61,7 @@
                         </div>
                     {% else %}
                         {% if form_values.email_address %}
-                        <button type="button" class="btn btn-default btn-lg btn-red" onClick="javascript: void(0);">
+                        <button type="button" class="btn btn-default btn-lg btn-red" onClick="javascript: resendConfirmationEmail(this);">
                           <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Not verified. Click to resend confirmation email.
                         </button>
                         {% endif %}
@@ -117,5 +117,9 @@
     <button name="btn-withdraw" type="button" class="btn btn-danger btn-lg form-field" onClick="javascript: formSubmitAjax(this, redirectToHome);">Withdraw from study</button> <button type="button" class="btn btn-default btn-lg" onClick="javascript: location.href='/{{ website_id }}/';">Cancel</button>
     </p>
 </form>
+
+<!-- Dialog messages -->
+<div id="dialog-message" class="invisible">
+</div>
 
 {% endblock %}

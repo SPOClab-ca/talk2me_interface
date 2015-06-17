@@ -394,3 +394,49 @@ function selectCorrespondingLanguage(rb) {
         $(rb).closest("tr").find("input[type=checkbox]").attr("checked", true);
     }
 }
+
+// Account Settings page: resend user confirmation email
+function resendConfirmationEmail(btn) {
+    $(btn).attr("disabled", "disabled");
+    $.ajax({
+        async: true,
+        type: 'GET',
+        url: '/' + website_id + '/account',
+        data: {'resend-email': 'true' },
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) { 
+            $(btn).removeAttr("disabled");
+            $("#dialog-message").removeClass("invisible").attr("title", "Resend failed").html("<p>The confirmation email could not be resent due to the following error: " + errorThrown + "</p>").dialog({
+                modal: true,
+                buttons: {
+                    OK: function() { $(this).dialog("close"); }
+                },
+                width: 450
+            });
+        },
+        success: function(data, textStatus, jqXHR) {
+            $(btn).removeAttr("disabled");
+            response_text = jqXHR.responseText;
+            page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
+            if (page_response['status'] == 'success') {
+                // Notify user 
+                $("#dialog-message").removeClass("invisible").attr("title", "Resend successful").html("<p>The confirmation email has been resent successfully.</p>").dialog({
+                    modal: true,
+                    buttons: {
+                        OK: function() { $(this).dialog("close"); }
+                    },
+                    width: 450
+                });
+            } else {
+                var error_msg = page_response['error'];
+                $("#dialog-message").removeClass("invisible").attr("title", "Resend failed").html("<p>" + error_msg + "</p>").dialog({
+                    modal: true,
+                    buttons: {
+                        OK: function() { $(this).dialog("close"); }
+                    },
+                    width: 450
+                });
+            }
+        }
+    });
+}

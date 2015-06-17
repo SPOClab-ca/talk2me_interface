@@ -41,6 +41,13 @@ email_username = Settings.objects.get(setting_name="system_email").setting_value
 email_password = Settings.objects.get(setting_name="system_email_passwd").setting_value
 website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
 
+emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head><body>"""
+emailPost = """</body></html>"""
+
     
 def index(request):
     
@@ -1018,6 +1025,32 @@ def account(request):
             demographic_submitted = subject.date_demographics_submitted
             is_email_validated = subject.email_validated
             
+            if request.method == "GET":
+                # A get form request
+                if 'resend-email' in request.GET:
+                    # Initiate an email validation resend email if the user has provided an email
+                    if request.user.email:
+                        # Check if there is an existing email token, if not generate one
+                        if subject.email_token:
+                            email_token = subject.email_token
+                        else:
+                            email_token = crypto.generate_confirmation_token(request.user.username + request.user.email)
+                        confirmation_link = website_hostname + "/activate/" + email_token  
+                            
+                        emailText = "You have updated your email address on " + global_passed_vars['website_name'] + "\n\nPlease click this link to confirm your email address:\n\n<a href=\"" + confirmation_link + "\">" + confirmation_link + "</a>\n\nWhy am I receiving this email? We value your privacy and want to make sure that you are the one who entered this email address in our system. If you received this email by mistake, you can make it all go away by simply ignoring it."
+                        
+                        emailHtml = "<h3>You have updated your email address on " + global_passed_vars['website_name'] + "</h3><p><strong>Please click this link to confirm your email address:</strong></p><p><u><a href=\"" + confirmation_link + "\">" + confirmation_link + "</a></u></p><p>If the link above does not work, please copy and paste it into your browser's address bar.</p><p><strong>Why am I receiving this email?</strong> We value your privacy and want to make sure that you are the one who entered this email address in our system. If you received this email by mistake, you can make it all go away by simply ignoring it.</p>"
+                        
+                        successFlag = emails.sendEmail(email_username, email_password, global_passed_vars['website_name'], [request.user.email], [], [email_username], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
+                        if successFlag:
+                            json_data['status'] = 'success'
+                        else:
+                            json_data['error'] = 'The confirmation email could not be sent. Please verify that you have provided a valid email address.'
+                    else:
+                        json_data['error'] = 'The confirmation email could not be sent. You have not provided an email address.'
+                    
+                    return HttpResponse(json.dumps(json_data))
+                    
             if request.method == "POST":
                 form_values = request.POST
                 if 'btn-pwdchange' in request.POST:
@@ -1097,7 +1130,7 @@ def account(request):
                                 sendEmail([user_email], [], [], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
                                 
                                 # Display "Not verified" msg to user
-                                email_confirm_display = "<button type=\"button\" class=\"btn btn-default btn-lg btn-red\" onClick=\"javascript: void(0);\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span> Not verified. Click to resend confirmation email.</button>"
+                                email_confirm_display = "<button type=\"button\" class=\"btn btn-default btn-lg btn-red\" onClick=\"javascript: resendConfirmationEmail(this);\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span> Not verified. Click to resend confirmation email.</button>"
                                 
                             User.objects.filter(id=request.user.id).update(email=user_email)
                         else:
