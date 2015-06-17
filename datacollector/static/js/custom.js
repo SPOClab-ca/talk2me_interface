@@ -406,7 +406,7 @@ function resendConfirmationEmail(btn) {
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) { 
             $(btn).removeAttr("disabled");
-            $("#dialog-message").removeClass("invisible").attr("title", "Resend failed").html("<p>The confirmation email could not be resent due to the following error: " + errorThrown + "</p>").dialog({
+            $("#dialog-message").attr("title", "Resend failed").html("<p>The confirmation email could not be resent due to the following error: " + errorThrown + "</p>").dialog({
                 modal: true,
                 buttons: {
                     OK: function() { $(this).dialog("close"); }
@@ -420,7 +420,7 @@ function resendConfirmationEmail(btn) {
             page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
             if (page_response['status'] == 'success') {
                 // Notify user 
-                $("#dialog-message").removeClass("invisible").attr("title", "Resend successful").html("<p>The confirmation email has been resent successfully.</p>").dialog({
+                $("#dialog-message").attr("title", "Resend successful").html("<p>The confirmation email has been resent successfully.</p>").dialog({
                     modal: true,
                     buttons: {
                         OK: function() { $(this).dialog("close"); }
@@ -429,7 +429,7 @@ function resendConfirmationEmail(btn) {
                 });
             } else {
                 var error_msg = page_response['error'];
-                $("#dialog-message").removeClass("invisible").attr("title", "Resend failed").html("<p>" + error_msg + "</p>").dialog({
+                $("#dialog-message").attr("title", "Resend failed").html("<p>" + error_msg + "</p>").dialog({
                     modal: true,
                     buttons: {
                         OK: function() { $(this).dialog("close"); }
