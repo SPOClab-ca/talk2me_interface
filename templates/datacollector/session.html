@@ -58,6 +58,7 @@
         <span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span>
         </form>
         
+        <input type="hidden" id="unsaved_changes" value="no" />
 
     <!-- Otherwise, show results -->
     {% else %}
@@ -83,6 +84,9 @@
     <h1>Invalid page</h1>
     <p><a href="/{{ website_id }}/">Go back to the Index page</a></p>
 {% endif %}
+
+<!-- Dialog messages -->
+<div id="dialog-message"></div>
 
 {% endblock %}
 
