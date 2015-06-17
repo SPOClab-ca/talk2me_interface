@@ -1009,6 +1009,7 @@ def account(request):
     save_msg = ""
     json_data = {}
     json_data['status'] = 'fail'
+    json_data['email_change'] = 'false'
     
     # These two flags are passed to the account page so that the base template included therein can use them
     consent_submitted = False
@@ -1116,9 +1117,13 @@ def account(request):
                         form_errors += ['You have not selected a frequency for the scheduled e-mail reminders.']
                     
                     if not form_errors:
+                        
+                        current_email = User.objects.filter(id=request.user.id)[0].email
+                        if user_email != current_email:
+                            json_data['email_change'] = 'true'
+                        
                         if user_email:
                             # If the email is different from the existing email for the account, reset the email validated flag, regenerate the email token, and resend a confirmation email
-                            current_email = User.objects.filter(id=request.user.id)[0].email
                             if user_email != current_email:
                                 new_email_token = crypto.generate_confirmation_token(request.user.username + user_email)
                                 Subject.objects.filter(user_id=request.user.id).update(email_validated=0, email_token=new_email_token)
