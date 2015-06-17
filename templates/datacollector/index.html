@@ -154,7 +154,7 @@
         </div>
         <br />
 
-        <button type="button" onClick="javascript: formSubmit(this);" class="btn btn-primary btn-lg">Submit</button>
+        <div><button type="button" onClick="javascript: formSubmit(this, 'Submitting data, please wait...');" class="btn btn-primary btn-lg">Submit</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
         </form>
         
     {% else %}
@@ -322,7 +322,7 @@
             
         </ol>
         
-        <button class="btn btn-primary btn-lg" type="button" onClick="javascript: formSubmit(this);">Submit</button>
+        <div><button class="btn btn-primary btn-lg" type="button" onClick="javascript: formSubmit(this, 'Submitting data, please wait...');">Submit</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
         </form>
 
     {% else %}

@@ -49,13 +49,13 @@
         {% endif %}
         
         {% if requires_audio %}
-        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, reloadPage);" value="Submit" disabled />
+        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" disabled />
         {% else %}
-        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, reloadPage);" value="Submit" />
+        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" />
         {% endif %}
         
         <!-- Display ajax indicator while the audio/other data is being uploaded to server -->
-        <span id="ajax_loader" class="invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span id="ajax_loader_msg"></span></span>
+        <span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span>
         </form>
         
 

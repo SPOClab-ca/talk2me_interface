@@ -37,7 +37,7 @@
     </div>
     </div>
     
-    <button name="btn-pwdchange" type="button" class="btn btn-primary btn-lg form-field" onClick="javascript: formSubmitAjax(this, displayConfirmMsg);">Change password</button> <button type="button" class="btn btn-default btn-lg" onClick="javascript: location.href='/{{ website_id }}/';">Cancel</button>
+    <div><button name="btn-pwdchange" type="button" class="btn btn-primary btn-lg form-field" onClick="javascript: formSubmitAjax(this, '', displayConfirmMsg);">Change password</button> <button type="button" class="btn btn-default btn-lg" onClick="javascript: location.href='/{{ website_id }}/';">Cancel</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
     <br />
 </form>
 
@@ -95,7 +95,7 @@
     </div>
     <br />
     
-    <button name="btn-save" type="button" class="btn btn-primary btn-lg form-field" onClick="javascript: formSubmitAjax(this, displayConfirmMsg);">Save changes</button> <button type="button" class="btn btn-default btn-lg" onClick="javascript: location.href='/{{ website_id }}/';">Cancel</button>
+    <div><button name="btn-save" type="button" class="btn btn-primary btn-lg form-field" onClick="javascript: formSubmitAjax(this, '', displayConfirmMsg);">Save changes</button> <button type="button" class="btn btn-default btn-lg" onClick="javascript: location.href='/{{ website_id }}/';">Cancel</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
     <br />
 </form>
     
@@ -114,7 +114,7 @@
     </div>
     <br />
     
-    <button name="btn-withdraw" type="button" class="btn btn-danger btn-lg form-field" onClick="javascript: formSubmitAjax(this, redirectToHome);">Withdraw from study</button> <button type="button" class="btn btn-default btn-lg" onClick="javascript: location.href='/{{ website_id }}/';">Cancel</button>
+    <div><button name="btn-withdraw" type="button" class="btn btn-danger btn-lg form-field" onClick="javascript: formSubmitAjax(this, '', redirectToHome);">Withdraw from study</button> <button type="button" class="btn btn-default btn-lg" onClick="javascript: location.href='/{{ website_id }}/';">Cancel</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
     </p>
 </form>
 

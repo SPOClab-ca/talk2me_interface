@@ -144,19 +144,19 @@ function median(values) {
         return (values[half-1] + values[half]) / 2.0;
 }
 
-function formSubmit(submit_btn) {
-    $(submit_btn).attr("disabled", "disabled");
+function formSubmit(submit_btn, ajax_msg) {
+    preventResubmission(submit_btn, ajax_msg);
     $(submit_btn).closest("form").submit();
 }
 
-function formSubmitAjax(submit_btn, success_fn) {
+function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
     
     // As soon as the submit button is pressed, (1) disable the button to prevent resubmits,
     // (2) show an ajax indicator to the user to indicate that their data is being sent to 
     // the server, and (3) clear the errors display div.
     $(submit_btn).prop("disabled", true);
-    $("#ajax_loader_msg").html("Submitting data, please wait...");
-    $("#ajax_loader").removeClass("invisible");
+    $(submit_btn).siblings(".ajax_loader").removeClass("invisible");
+    $(submit_btn).siblings(".ajax_loader").children(".ajax_loader_msg").html(ajax_msg);
     $("#form_errors").addClass("invisible");
     $("#save_msg_container").addClass("invisible");
     
@@ -189,7 +189,7 @@ function formSubmitAjax(submit_btn, success_fn) {
         error: function(jqXHR, textStatus, errorThrown) { 
             // (1) Re-enable submit button, (2) hide the ajax indicator
             $(submit_btn).prop("disabled", false);
-            $("#ajax_loader").addClass("invisible");
+            $(submit_btn).siblings(".ajax_loader").addClass("invisible");
             
             // (3) Display error message
             $("#form_errors").html("<strong>The form could not be submitted.</strong> Error 601: " + textStatus + " - " + errorThrown + ". Please contact the website administrators to report this error.").removeClass("invisible");
@@ -198,7 +198,7 @@ function formSubmitAjax(submit_btn, success_fn) {
         success: function(data, textStatus, jqXHR) {
             // (1) Re-enable submit button, (2) hide the ajax indicator
             $(submit_btn).prop("disabled", false);
-            $("#ajax_loader").addClass("invisible");
+            $(submit_btn).siblings(".ajax_loader").addClass("invisible");
             
             response_text = jqXHR.responseText;
             page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
@@ -456,7 +456,11 @@ function resendConfirmationEmail(btn) {
 }
 
 function preventResubmission(link, notification) {
-    $(link).addClass("not-active");
+    if ($(link).is("button")) {
+        $(link).attr("disabled", "disabled");
+    } else {
+        $(link).addClass("not-active");
+    }
     $(link).siblings(".ajax_loader").removeClass("invisible");
     $(link).siblings(".ajax_loader").children(".ajax_loader_msg").html(notification);
 }
