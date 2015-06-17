@@ -73,18 +73,39 @@ $(document).ready(function () {
 });
 
 
+/* Check for unsaved work before navigation away from page */
+window.onbeforeunload = function (e) {
+    var e = e || window.event;
+    var msg = 'You have unsaved data that will be lost if you leave this page.';
+    
+    // If the user is currently on a session page and has entered in some unsaved data, 
+    // ask them to confirm leaving the page.
+    var session_task_id = $("#session_task_id").val();
+    if (session_task_id !== undefined) {
+        var unsaved_changes_id = "unsaved_changes";
+        if ($("#" + unsaved_changes_id).length > 0) {
+            if ($("#" + unsaved_changes_id).val() == "yes") {
+                
+                // For IE6-8 and Firefox prior to version 4
+                if (e) {
+                    e.returnValue = msg;
+                }
+                // For Chrome, Firefox, Safari, Opera (modern versions)
+                return msg;
+            }
+        }
+    }
+};
+
 /*
  * Run when window is closed/left
  */
 $(window).unload(function() {
     
+    // If the user is currently on a session page, record the time they spent on it
     var session_task_id = $("#session_task_id").val();
     if (session_task_id !== undefined) {
-        // If the user is currently on a session page and has entered in some unsaved data, 
-        // ask them to confirm leaving the page.
         
-        
-        // If the user is currently on a session page, record the time they spent on it
         // By default, store the time elapsed in seconds in db
         var page_time_elapsed = Math.round((new Date().getTime() - page_start_time) / 1000);
         
@@ -463,4 +484,12 @@ function preventResubmission(link, notification) {
     }
     $(link).siblings(".ajax_loader").removeClass("invisible");
     $(link).siblings(".ajax_loader").children(".ajax_loader_msg").html(notification);
+}
+
+// Session page: if any changes made to any of the form fields, update the unsaved changes boolean flag
+function setUnsavedChanges() {
+    var unsaved_changes_id = "unsaved_changes";
+    if ($("#" + unsaved_changes_id).length > 0) {
+        $("#" + unsaved_changes_id).val("yes");
+    }
 }
