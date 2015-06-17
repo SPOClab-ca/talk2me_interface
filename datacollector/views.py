@@ -15,13 +15,11 @@ from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
 
 import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import json
 import random
 import re
-import smtplib
 import crypto
+import emails
 
 
 # Globals
@@ -43,44 +41,6 @@ email_username = Settings.objects.get(setting_name="system_email").setting_value
 email_password = Settings.objects.get(setting_name="system_email_passwd").setting_value
 website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
 
-emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title></title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-</head><body>"""
-emailPost = """</body></html>"""
-
-# emailTo, emailCc, emailBcc: lists of email addresses
-# emailSubject, emailBody: strings
-def sendEmail(emailTo, emailCc, emailBcc, emailSubject, text, html):
-    
-    # Send the message via Gmail's SMTP server
-    try:
-        server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-        server.login(email_username, email_password)
-        
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = emailSubject
-        msg['From'] = global_passed_vars['website_name'] + "<" + email_username + ">"
-        msg['To'] = ",".join(emailTo)
-        msg['Cc'] = ",".join(emailCc)
-        msg['Bcc'] = ",".join(emailBcc)
-        
-        # Create an HTML and alternate plain text version
-        part1 = MIMEText(text, 'plain')
-        part2 = MIMEText(html, 'html')
-        
-        # Attach parts into message container.
-        # According to RFC 2046, the last part of a multipart message, in this case
-        # the HTML message, is best and preferred.
-        msg.attach(part1)
-        msg.attach(part2)
-            
-        server.sendmail(email_username, emailTo + emailCc + emailBcc, msg.as_string())
-        server.quit()
-        return True
-    except:
-        return False
     
 def index(request):
     
@@ -156,7 +116,7 @@ def index(request):
                         
                         emailHtml = "<h3>Welcome to " + global_passed_vars['website_name'] + "!</h3><p>Thank you for registering an account.</p><p><strong>Please click this link to confirm your email address:</strong></p><p><u><a href=\"" + confirmation_link + "\">" + confirmation_link + "</a></u></p><p>If the link above does not work, please copy and paste it into your browser's address bar.</p><p><strong>Why am I verifying my email address?</strong> We value your privacy and want to make sure that you are the one who initiated this registration. If you received this email by mistake, you can make it all go away by simply ignoring it.</p>"
                         
-                        successFlag = sendEmail([user_email], [], [], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
+                        successFlag = emails.sendEmail(email_username, email_password, global_passed_vars['website_name'], [user_email], [], [email_username], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
                         
                         User.objects.filter(id=request.user.id).update(email=user_email)
                         Subject.objects.filter(user_id=request.user.id).update(email_validated=0,email_token=new_email_token)
