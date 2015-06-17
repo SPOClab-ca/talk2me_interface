@@ -38,11 +38,17 @@ regex_date = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 
 
 # Set up mail authentication
-global email_username, email_password, website_hostname
+global email_username, email_password, website_hostname, emailPre, emailPost
 email_username = Settings.objects.get(setting_name="system_email").setting_value
 email_password = Settings.objects.get(setting_name="system_email_passwd").setting_value
 website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
 
+emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head><body>"""
+emailPost = """</body></html>"""
 
 # emailTo, emailCc, emailBcc: lists of email addresses
 # emailSubject, emailBody: strings
@@ -146,17 +152,11 @@ def index(request):
                         new_email_token = crypto.generate_confirmation_token(request.user.username + user_email)
                         confirmation_link = website_hostname + "/activate/" + new_email_token  
                         
-                        emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
-                        <head>
-                            <title></title>
-                            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-                        </head><body>"""
-                        emailPost = """</body></html>"""
                         emailText = "Welcome to " + global_passed_vars['website_name'] + "!\n\nThank you for registering an account.\n\nPlease click this link to confirm your email address:\n\n<a href=\"" + confirmation_link + "\">" + confirmation_link + "</a>\n\nIf the link above does not work, please copy and paste it into your browser's address bar.\n\nWhy am I verifying my email address? We value your privacy and want to make sure that you are the one who initiated this registration. If you received this email by mistake, you can make it all go away by simply ignoring it."
                         
                         emailHtml = "<h3>Welcome to " + global_passed_vars['website_name'] + "!</h3><p>Thank you for registering an account.</p><p><strong>Please click this link to confirm your email address:</strong></p><p><u><a href=\"" + confirmation_link + "\">" + confirmation_link + "</a></u></p><p>If the link above does not work, please copy and paste it into your browser's address bar.</p><p><strong>Why am I verifying my email address?</strong> We value your privacy and want to make sure that you are the one who initiated this registration. If you received this email by mistake, you can make it all go away by simply ignoring it.</p>"
                         
-                        successFlag = sendEmail([user_email], [], [email_username], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
+                        successFlag = sendEmail([user_email], [], [], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
                         
                         User.objects.filter(id=request.user.id).update(email=user_email)
                         Subject.objects.filter(user_id=request.user.id).update(email_validated=0,email_token=new_email_token)
@@ -1046,6 +1046,8 @@ def account(request):
     # These two flags are passed to the account page so that the base template included therein can use them
     consent_submitted = False
     demographic_submitted = False
+    is_email_validated = False
+    email_confirm_display = "<div class=\"alert alert-success\"><span class=\"glyphicon glyphicon-ok\"></span> Verified</div>"
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -1054,6 +1056,7 @@ def account(request):
             subject = subject[0]
             consent_submitted = subject.date_consent_submitted
             demographic_submitted = subject.date_demographics_submitted
+            is_email_validated = subject.email_validated
             
             if request.method == "POST":
                 form_values = request.POST
@@ -1121,9 +1124,31 @@ def account(request):
                     
                     if not form_errors:
                         if user_email:
+                            # If the email is different from the existing email for the account, reset the email validated flag, regenerate the email token, and resend a confirmation email
+                            current_email = User.objects.filter(id=request.user.id)[0].email
+                            if user_email != current_email:
+                                new_email_token = crypto.generate_confirmation_token(request.user.username + user_email)
+                                Subject.objects.filter(user_id=request.user.id).update(email_validated=0, email_token=new_email_token)
+                                
+                                confirmation_link = website_hostname + "/activate/" + new_email_token
+                                emailText = "You have updated your email address on " + global_passed_vars['website_name'] + "\n\nPlease click this link to confirm your email address:\n\n<a href=\"" + confirmation_link + "\">" + confirmation_link + "</a>\n\nWhy am I receiving this email? We value your privacy and want to make sure that you are the one who entered this email address in our system. If you received this email by mistake, you can make it all go away by simply ignoring it."
+                                emailHtml = "<h3>You have updated your email address on " + global_passed_vars['website_name'] + "</h3><p><strong>Please click this link to confirm your email address:</strong></p><p><u><a href=\"" + confirmation_link + "\">" + confirmation_link + "</a></u></p><p>If the link above does not work, please copy and paste it into your browser's address bar.</p><p><strong>Why am I receiving this email?</strong> We value your privacy and want to make sure that you are the one who entered this email address in our system. If you received this email by mistake, you can make it all go away by simply ignoring it.</p>"
+                                
+                                sendEmail([user_email], [], [], "University of Toronto: " + global_passed_vars['website_name'] + " - Email Confirmation", emailText, emailPre + emailHtml + emailPost)
+                                
+                                # Display "Not verified" msg to user
+                                email_confirm_display = "<button type=\"button\" class=\"btn btn-default btn-lg btn-red\" onClick=\"javascript: void(0);\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span> Not verified. Click to resend confirmation email.</button>"
+                                
                             User.objects.filter(id=request.user.id).update(email=user_email)
                         else:
                             User.objects.filter(id=request.user.id).update(email="")
+                            
+                            # Reset the email validation flag and the email token
+                            Subject.objects.filter(user_id=request.user.id).update(email_validated=0, email_token=None)
+                            
+                            # Hide email verified msg
+                            email_confirm_display = ""
+                            
                         
                         if 'cb_preference_prizes' in request.POST:
                             Subject.objects.filter(user_id=request.user.id).update(preference_prizes=1, email_prizes=user_email)
@@ -1143,6 +1168,7 @@ def account(request):
                         save_confirm = True
                         save_msg = "Changes saved successfully."
                         json_data['save_msg'] = save_msg
+                        json_data['email_confirm_display'] = email_confirm_display
                         json_data['status'] = 'success'
                     else:
                         json_data['error'] = [dict(msg=x) for x in form_errors]
@@ -1175,7 +1201,7 @@ def account(request):
                     form_values['cb_preference_email_updates'] = subject.preference_email_updates
                 form_values['email_address'] = request.user.email
             
-            passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm, 'save_msg': save_msg, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
+            passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm, 'save_msg': save_msg, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'is_email_validated': is_email_validated}
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
         else:

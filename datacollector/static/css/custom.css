@@ -25,6 +25,26 @@ textarea, input[type=text], input[type=password] {
     font-weight: bold;
 }
 
+.btn-red, .btn-red:hover, .btn-red:active {
+    color: #d9534f;
+    background-color: #f2dede;
+    border-color: #eed3d7;
+}
+
+.btn-green, .btn-green:hover, .btn-green:active {
+    color: #468847;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+}
+
+.btn-green:hover {
+    background-color: #e9fae1;
+}
+
+.btn-red:hover {
+    background-color: #f7e3e3;
+}
+
 .image-bg-fluid-height,
 .image-bg-fixed-height {
     text-align: center;

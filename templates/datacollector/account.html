@@ -48,11 +48,25 @@
     {% csrf_token %}
     
     <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <table class="table table-condensed table-noborder">
             <tbody>
-                <tr><td class="table-label">E-mail address</td></tr>
-                <tr><td><input class="form-control form-field" id='email_address' name='email_address' type='text' value="{{ form_values.email_address }}"></td></tr>
+                <tr><td class="table-label" style="width: 50%;">E-mail address</td><td style="width: 50%;"></td></tr>
+                <tr><td><input class="form-control form-field" id='email_address' name='email_address' type='text' value="{{ form_values.email_address }}"></td>
+                <td id="email_validation">
+                    {% if is_email_validated %}
+                        <div class="alert alert-success">
+                            <span class="glyphicon glyphicon-ok"></span>
+                            Verified
+                        </div>
+                    {% else %}
+                        {% if form_values.email_address %}
+                        <button type="button" class="btn btn-default btn-lg btn-red" onClick="javascript: void(0);">
+                          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Not verified. Click to resend confirmation email.
+                        </button>
+                        {% endif %}
+                    {% endif %}
+                </td></tr>
             </tbody>
         </table>
     </div>

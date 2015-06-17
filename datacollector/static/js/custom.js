@@ -231,6 +231,7 @@ function displayConfirmMsg(params) {
     $("#save_msg_container").html(params['save_msg']).removeClass("invisible");
     $("body").scrollTop(0);
     $(".pwd-field").val("");
+    $("#email_validation").html(params['email_confirm_display']);
 }
 
 // Used on Account Settings page: after Withdrawal, the user is logged out - redirect to main page
