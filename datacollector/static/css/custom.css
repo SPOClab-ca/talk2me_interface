@@ -265,3 +265,12 @@ ol li img {
   background-color: #f0f7fd;
   border-color: #d0e3f0;
 }
+
+/* Links that are inactive to prevent resubmission */
+.ajax_loader {
+    margin-left: 10px;
+}
+.not-active {
+   pointer-events: none;
+   cursor: default;
+}

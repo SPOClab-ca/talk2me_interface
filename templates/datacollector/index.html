@@ -338,7 +338,7 @@
         </div>
         
         <div class="unsupported_html5">
-            <h4><a href="/{{ website_id }}/startsession">Start a new session</a></h4>
+            <h4><a href="/{{ website_id }}/startsession" onClick="preventResubmission(this, '');">Start a new session</a><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></h4>
         </div>
         
             {% if active_sessions %}

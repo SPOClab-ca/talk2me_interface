@@ -78,9 +78,13 @@ $(document).ready(function () {
  */
 $(window).unload(function() {
     
-    // If the user is currently on a session page, record the time they spend on it
     var session_task_id = $("#session_task_id").val();
     if (session_task_id !== undefined) {
+        // If the user is currently on a session page and has entered in some unsaved data, 
+        // ask them to confirm leaving the page.
+        
+        
+        // If the user is currently on a session page, record the time they spent on it
         // By default, store the time elapsed in seconds in db
         var page_time_elapsed = Math.round((new Date().getTime() - page_start_time) / 1000);
         
@@ -449,4 +453,10 @@ function resendConfirmationEmail(btn) {
             }
         }
     });
+}
+
+function preventResubmission(link, notification) {
+    $(link).addClass("not-active");
+    $(link).siblings(".ajax_loader").removeClass("invisible");
+    $(link).siblings(".ajax_loader").children(".ajax_loader_msg").html(notification);
 }
