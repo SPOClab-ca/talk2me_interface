@@ -3,6 +3,7 @@ var support_html5 = true;
 var timer_rig = false;
 var page_start_time = false;
 var website_id = 'talk2me';
+var default_dialog_width = 450;
 
 /* 
  * Run on page load
@@ -395,6 +396,25 @@ function selectCorrespondingLanguage(rb) {
     }
 }
 
+// This function creates a jQuery UI dialog widget, assuming the existence of 
+// a #dialog-message div on the current page
+function createDialog(title, body, width) {
+    var dialog_id = "dialog-message";
+    if ($("#" + dialog_id).length > 0) {
+        $("#" + dialog_id).attr("title", title).html(body).dialog({
+            modal: true,
+            buttons: {
+                OK: function() { closeDialog(this) }
+            },
+            width: width
+        });
+    }
+}
+
+function closeDialog(d) {
+    $(d).dialog("close");
+}
+
 // Account Settings page: resend user confirmation email
 function resendConfirmationEmail(btn) {
     $(btn).attr("disabled", "disabled");
@@ -406,13 +426,9 @@ function resendConfirmationEmail(btn) {
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) { 
             $(btn).removeAttr("disabled");
-            $("#dialog-message").attr("title", "Resend failed").html("<p>The confirmation email could not be resent due to the following error: " + errorThrown + "</p>").dialog({
-                modal: true,
-                buttons: {
-                    OK: function() { $(this).dialog("close"); }
-                },
-                width: 450
-            });
+            createDialog("Failed", 
+                        "<p>The confirmation email could not be resent due to the following error: " + errorThrown + "</p>", 
+                        default_dialog_width);
         },
         success: function(data, textStatus, jqXHR) {
             $(btn).removeAttr("disabled");
@@ -420,22 +436,14 @@ function resendConfirmationEmail(btn) {
             page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
             if (page_response['status'] == 'success') {
                 // Notify user 
-                $("#dialog-message").attr("title", "Resend successful").html("<p>The confirmation email has been resent successfully.</p>").dialog({
-                    modal: true,
-                    buttons: {
-                        OK: function() { $(this).dialog("close"); }
-                    },
-                    width: 450
-                });
+                createDialog("Success", 
+                        "<p>The confirmation email has been resent successfully. Please check your email client in a few minutes.</p>", 
+                        default_dialog_width);
             } else {
                 var error_msg = page_response['error'];
-                $("#dialog-message").attr("title", "Resend failed").html("<p>" + error_msg + "</p>").dialog({
-                    modal: true,
-                    buttons: {
-                        OK: function() { $(this).dialog("close"); }
-                    },
-                    width: 450
-                });
+                createDialog("Failed", 
+                        "<p>" + error_msg + "</p>", 
+                        default_dialog_width);
             }
         }
     });
