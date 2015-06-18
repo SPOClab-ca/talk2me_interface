@@ -41,6 +41,7 @@ $(document).ready(function () {
                 slide: function(event, ui) {
                     $(this).siblings(".scale_display").html(ui.value);
                     $(this).siblings("[name=response]").val(ui.value);
+                    setUnsavedChanges();
                 }
             });
             
@@ -67,6 +68,11 @@ $(document).ready(function () {
             $(this).addClass("invisible");
         });
     }
+    
+    // Make sure that any changes made to any form elements will trigger an "unsaved changes" dialog on page exit
+    $(".form-field").change(function() { 
+        setUnsavedChanges();
+    });
     
     // Measure time spent on page
     page_start_time = new Date().getTime();
@@ -224,6 +230,9 @@ function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
             response_text = jqXHR.responseText;
             page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
             if (page_response['status'] == 'success') {
+                // Now that the data have been saved on the server, reset the "unsaved changes" flag (if it exists)
+                $("#unsaved_changes").val("");
+                
                 success_fn(page_response);
             } else {
                 var errors = page_response['error'];
