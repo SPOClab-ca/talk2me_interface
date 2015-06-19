@@ -82,6 +82,19 @@ $(document).ready(function () {
     var session_task_id = $("#session_task_id").val();
     if (session_task_id !== undefined) {
         $(window).scrollTop(0);
+        
+        // If there are multiple audio recording buttons on the session page, disable all but the first.
+        // (At any point in time there should only be one active audio recording button to prevent user 
+        // from clicking all of them at the same time).
+        var id_audio_buttons = "btn_recording_";
+        if ($("[id^='" + id_audio_buttons + "']").length > 1) {
+            var audio_buttons = $("[id^='" + id_audio_buttons + "']");
+            for (i = 0; i < audio_buttons.length; i++) {
+                if (i > 0) {
+                    $(audio_buttons[i]).attr("disabled", "disabled");
+                }
+            }
+        }
     }
     
     // Measure time spent on page

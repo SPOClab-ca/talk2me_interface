@@ -59,7 +59,28 @@ function toggleRecording( e ) {
         // stop recording
         audioRecorder.stop();
         e.classList.remove("recording");
+        
+        // Disable the current audio button to prevent repeated recordings, 
+        // and if applicable, enable the next audio recording button (if one exists).
+        // (At any point in time there should only be one active audio recording button to prevent user 
+        // from clicking all of them at the same time).
         $(e).val("Start recording").prop("disabled", true);
+        var id_audio_buttons = "btn_recording_";
+        if ($("[id^='" + id_audio_buttons + "']").length > 1) {
+            var audio_buttons = $("[id^='" + id_audio_buttons + "']");
+            var enable_next_btn = false;
+            for (i = 0; i < audio_buttons.length; i++) {
+                var next_audio_btn = audio_buttons[i];
+                if (enable_next_btn) {
+                    $(next_audio_btn).removeAttr("disabled");
+                    break;
+                }
+                if ($(next_audio_btn).attr("id") == $(e).attr("id")) {
+                    enable_next_btn = true;
+                }
+            }
+        }
+        
         $("#status_recording_" + instance_id).addClass("invisible");
         audioRecorder.getBuffers( gotBuffers );
     } else {
