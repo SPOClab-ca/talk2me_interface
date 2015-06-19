@@ -137,8 +137,9 @@ DEALINGS IN THE SOFTWARE.
             $("body").scrollTop(0);
         },
         success: function(data, textStatus, jqXHR) {
-            // Mark the response field as completed
+            // Mark the response field as completed, and mark the field as changed
             $("#response_audio_" + instanceid).val("yes");
+            $("#unsaved_changes").val("yes");
             
             // Re-enable submit button only if ALL response audio fields have been submitted
             var incomplete_responses = [];

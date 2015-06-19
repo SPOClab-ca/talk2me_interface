@@ -69,10 +69,13 @@ $(document).ready(function () {
         });
     }
     
-    // Make sure that any changes made to any form elements will trigger an "unsaved changes" dialog on page exit
-    $(".form-field").change(function() { 
-        setUnsavedChanges();
-    });
+    // Make sure that any changes made to any form elements will trigger an "unsaved changes" dialog on page exit.
+    // If the form elements are cleared (made blank), then reset the unsaved changes flag.
+    // "keyup" ensures that changes are captured on input fields and textareas *before* they lose focus (e.g., type into
+    // a textarea, then it gets disabled, and then click backspace without clicking away from textarea), while "change"
+    // captures changes on radio, select, and checkbox fields.
+    $(".form-field").keyup(function() { detectFieldChanges(this); })
+                    .change(function() { detectFieldChanges(this); });
     
     // Measure time spent on page
     page_start_time = new Date().getTime();
@@ -231,7 +234,7 @@ function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
             page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
             if (page_response['status'] == 'success') {
                 // Now that the data have been saved on the server, reset the "unsaved changes" flag (if it exists)
-                $("#unsaved_changes").val("");
+                resetUnsavedChanges();
                 
                 success_fn(page_response);
             } else {
@@ -495,10 +498,27 @@ function preventResubmission(link, notification) {
     $(link).siblings(".ajax_loader").children(".ajax_loader_msg").html(notification);
 }
 
+
+
 // Session page: if any changes made to any of the form fields, update the unsaved changes boolean flag
 function setUnsavedChanges() {
     var unsaved_changes_id = "unsaved_changes";
     if ($("#" + unsaved_changes_id).length > 0) {
         $("#" + unsaved_changes_id).val("yes");
+    }
+}
+
+function resetUnsavedChanges() {
+    var unsaved_changes_id = "unsaved_changes";
+    if ($("#" + unsaved_changes_id).length > 0) {
+        $("#" + unsaved_changes_id).val("");
+    }
+}
+
+function detectFieldChanges(field) { 
+    if ($(field).val() != "") {
+        setUnsavedChanges();
+    } else {
+        resetUnsavedChanges();
     }
 }
