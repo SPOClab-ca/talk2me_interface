@@ -77,6 +77,13 @@ $(document).ready(function () {
     $(".form-field").keyup(function() { detectFieldChanges(this); })
                     .change(function() { detectFieldChanges(this); });
     
+    // If the user is currently loading a session page, scroll to top to prevent
+    // the browser from scrolling down when the next task is displayed on the same page.
+    var session_task_id = $("#session_task_id").val();
+    if (session_task_id !== undefined) {
+        $(window).scrollTop(0);
+    }
+    
     // Measure time spent on page
     page_start_time = new Date().getTime();
 });
