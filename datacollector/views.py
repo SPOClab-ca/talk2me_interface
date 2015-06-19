@@ -556,14 +556,19 @@ def startsession(request):
                         if field_values:
                             selected_values += [field_values[0]]
                         else:
-                            # If there still aren't any results (i.e., the subject has seen all possible values for this field), relax the query completely by selecting any random field value
-                            field_values = Task_Field_Value.objects.filter(task_field=field)
+                            # If there aren't any results (i.e., the subject has seen all possible values for this field), then relax the query by just selecting values that are different from the currently selected values (i.e., don't want any repeating values in the current session if possible, which should be the case as long as the number of values for the field is greater than the default number of instances for the field).
+                            field_values = Task_Field_Value.objects.filter(task_field=field,*limits)
                             if field_values:
                                 selected_values += [field_values[0]]
                             else:
-                                # The database doesn't contain any entries for this task field.
-                                # Fail, display an error page.
-                                return HttpResponseRedirect(website_root + 'error/501')
+                                # If there still aren't any results (i.e., the subject has seen all possible values for this field), relax the query completely by selecting any random field value, regardless of whether the subject has seen it before or whether it has been selected for the current session (i.e., allow repeats).
+                                field_values = Task_Field_Value.objects.filter(task_field=field)
+                                if field_values:
+                                    selected_values += [field_values[0]]
+                                else:
+                                    # The database doesn't contain any entries for this task field.
+                                    # Fail, display an error page.
+                                    return HttpResponseRedirect(website_root + 'error/501')
                     
                     # Build limit query with Q objects
                     selected_assoc_ids = [item.assoc_id for item in selected_values]
