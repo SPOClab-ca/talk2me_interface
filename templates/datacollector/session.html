@@ -90,11 +90,11 @@
 
 {% endblock %}
 
-{% if requires_audio %}
-    {% block page_js %}
+{% block page_js %}
+    {% if requires_audio %}
         <!-- Audio libraries for wav recording -->
         <script src="{{ STATIC_URL }}js/recorder.js"></script>
         <script src="{{ STATIC_URL }}js/audiocapture_main.js"></script>
         <script src="{{ STATIC_URL }}js/audiodisplay.js"></script>
-    {% endblock %}
-{% endif %}
+    {% endif %}
+{% endblock %}
