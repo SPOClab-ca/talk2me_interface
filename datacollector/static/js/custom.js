@@ -363,11 +363,11 @@ function startTimerRig(start_btn, instance_id) {
     
     // (1) disable the Submit button, 
     // (2) disable the Start button, 
-    // (3) enable the response field
+    // (3) enable the response field, and bring focus to it
     $("#submit_btn").prop("disabled", true);
     $(start_btn).prop('disabled', true);
     $(start_btn).parent().find("[name=response]").each(function() {
-        $(this).prop('readonly', false).removeClass("input-disabled");
+        $(this).prop('readonly', false).removeClass("input-disabled").focus();
     });
     $(start_btn).text("Started timer...");
 }
