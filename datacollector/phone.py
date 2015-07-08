@@ -5,10 +5,12 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.utils import simplejson
 
+from datacollector.views import generate_session
 from datacollector.models import *
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
 
+import datetime
 import json
 
 
@@ -30,15 +32,24 @@ def session(request):
                     # Validate user
                     user = Subject.objects.filter(user_id=request.GET['user_passcode'])
                     if user is not None:
+                        user = user[0]
+                        
                         # Look for latest active session, if one exists
                         active_sess = Session.objects.filter(subject=user).order_by('-session_id')
                         if active_sess:
                             active_sess = active_sess[0]
-                            json_data['session_id'] = active_sess.session_id
-                            
                         else:
                             # Otherwise, generate a new session
-                            pass
+                            active_sess = generate_session(user)
+                            
+                        json_data['session_id'] = active_sess.session_id
+                        
+                        # Update the date_last_session_access for the user (this drives reminder emails)
+                        date_access = datetime.datetime.now()
+                        Subject.objects.filter(user_id=user.user_id).update(date_last_session_access=date_access)
+                        
+                        
+                            
                     else:
                         # The 'user_passcode' (i.e., numeric user ID) is invalid / does not exist in subjects table
                         json_data['status'] = "error"
