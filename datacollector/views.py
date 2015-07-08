@@ -50,10 +50,13 @@ emailPost = """</body></html>"""
 
     
 # Common lib functions ------------------------------------------------------
-def generate_session(subject):
-    default_tasks = [1,2,7,8,10,11,12,13,14]     
+def generate_session(subject, session_type):
+    default_tasks = [1,2,7,8,10,11,12,13,14]
+    if session_type.text_only:
+        default_tasks = [1,8,10,11,12,13]
+        
     startdate = datetime.datetime.now()
-    new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None)
+    new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None, session_type=session_type)
     
     # Select random task questions for the session  
     for task_id in default_tasks:
@@ -603,8 +606,8 @@ def startsession(request):
     if request.user.is_authenticated():
         
         subject = Subject.objects.get(user_id=request.user.id)
-
-        new_session = generate_session(subject)            
+        session_type = Session_Type.objects.get(name='website')
+        new_session = generate_session(subject, session_type)         
         return HttpResponseRedirect(website_root + 'session/' + str(new_session.session_id))
     else:
         return HttpResponseRedirect(website_root)
