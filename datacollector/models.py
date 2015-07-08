@@ -292,6 +292,15 @@ class Task_Field_Value(models.Model):
     assoc = models.ForeignKey("self", null=True, blank=True)
     response_expected = models.TextField(null=True, blank=True)
 
+class Session_Type(models.Model):
+    
+    def __unicode__(self):
+        return "Session Type: " + str(self.name) + ", text-only: " + str(self.text_only)
+        
+    session_type_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
+    text_only = models.IntegerField(default=0)
+
 class Session(models.Model):
 
     def __unicode__(self):
@@ -302,7 +311,8 @@ class Session(models.Model):
     subject = models.ForeignKey(Subject)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField(null=True, blank=True)
-
+    session_type = models.ForeignKey(Session_Type)
+    
 class Session_Task(models.Model):
     # order = the tasks are shown in ascending order
     # instruction_viewed = boolean (0/1), whether the question has been shown 
