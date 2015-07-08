@@ -40,7 +40,8 @@ def session(request):
                             active_sess = active_sess[0]
                         else:
                             # Otherwise, generate a new session
-                            active_sess = generate_session(user)
+                            session_type = Session_Type.objects.get(name='phone')
+                            active_sess = generate_session(user, session_type)
                             
                         json_data['session_id'] = active_sess.session_id
                         
