@@ -49,6 +49,102 @@ emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "ht
 emailPost = """</body></html>"""
 
     
+# Common lib functions ------------------------------------------------------
+def generate_session(subject):
+    default_tasks = [1,2,7,8,10,11,12,13,14]     
+    startdate = datetime.datetime.now()
+    new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None)
+    
+    # Select random task questions for the session  
+    for task_id in default_tasks:
+        task = Task.objects.get(task_id=task_id)
+        num_instances = task.default_num_instances
+        task_order = task.default_order
+        task_delay = task.default_delay
+        task_embedded_delay = task.default_embedded_delay
+        
+        # Add the task to the current session in the database
+        new_task = Session_Task.objects.create(session=new_session, task=task, order=task_order, delay=task_delay, embedded_delay=task_embedded_delay)
+
+        # Update the database to reflect <num_instances> instances of this task for this session
+        new_task_instances = []
+        for num in range(num_instances):
+            new_task_instance = Session_Task_Instance.objects.create(session_task=new_task)
+            # Add a response entry for each task instance
+            new_task_instance_response = Session_Response.objects.create(session_task_instance=new_task_instance)
+            
+            new_task_instances += [new_task_instance]
+
+        # Select random field values for each of the new task instances 
+        # (only for the fields that need to have generated values, i.e. for display fields)
+        task_fields_display = Task_Field.objects.filter(task=task,field_type__name='display',generate_value=1)
+        
+        # For each display field, select random <num_instances> which the user hasn't seen before
+        for field in task_fields_display:
+            
+            existing_instances = Session_Task_Instance_Value.objects.filter(task_field=field, session_task_instance__session_task__session__subject=subject)
+            existing_values = [v.value for v in existing_instances]
+            
+            # Add to selected values. Make sure not to add field values that are associated with each other, or are already selected, or have been seen by the subject before in previous sessions. NB: here we are assuming that the total number of values for each field in the db is at least as big as the default number of instances for the field.
+            selected_values = []
+            limits = []
+            while len(selected_values) < num_instances:
+                
+                field_values = Task_Field_Value.objects.filter(task_field=field,*limits).exclude(value__in=existing_values)
+                if field_values:
+                    selected_values += [random.choice(field_values)]
+                else:
+                    # If there aren't any results, relax the query by restricting only to values that haven't been seen before
+                    field_values = Task_Field_Value.objects.filter(task_field=field).exclude(value__in=existing_values)
+                    if field_values:
+                        selected_values += [random.choice(field_values)]
+                    else:
+                        # If there aren't any results (i.e., the subject has seen all possible values for this field), then relax the query by just selecting values that are different from the currently selected values (i.e., don't want any repeating values in the current session if possible, which should be the case as long as the number of values for the field is greater than the default number of instances for the field).
+                        field_values = Task_Field_Value.objects.filter(task_field=field,*limits)
+                        if field_values:
+                            selected_values += [random.choice(field_values)]
+                        else:
+                            # If there still aren't any results (i.e., the subject has seen all possible values for this field), relax the query completely by selecting any random field value, regardless of whether the subject has seen it before or whether it has been selected for the current session (i.e., allow repeats).
+                            field_values = Task_Field_Value.objects.filter(task_field=field)
+                            if field_values:
+                                selected_values += [random.choice(field_values)]
+                            else:
+                                # The database doesn't contain any entries for this task field.
+                                # Fail, display an error page.
+                                return HttpResponseRedirect(website_root + 'error/501')
+                
+                # Build limit query with Q objects
+                selected_assoc_ids = [item.assoc_id for item in selected_values]
+                selected_ids = [item.task_field_value_id for item in selected_values]
+                limit_assoc = [~Q(task_field_value_id=i) for i in selected_assoc_ids if i]
+                limit_id = [~Q(task_field_value_id=i) for i in selected_ids if i]
+                limits = limit_assoc + limit_id
+            
+            for index_instance in range(num_instances):
+                instance_value = selected_values[index_instance]
+                new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
+                
+                # Using the task field value ("instance_value"), update the expected session response
+                Session_Response.objects.filter(session_task_instance=new_task_instances[index_instance]).update(value_expected=instance_value.response_expected)
+
+                # If there are any associated fields (e.g., answer field instances associated with the currently selected question field instances), add them to the session as well.
+                # Note that for select options, all options must be added, not just the one that is the correct response.
+                linked_field_instances = list(Task_Field_Value.objects.filter(Q(assoc=instance_value) | Q(assoc=instance_value.assoc)).exclude(task_field=field).exclude(assoc__isnull=True))
+                
+                # Scramble the order of the linked instances randomly, so the subject won't know the order of the correct options.
+                random.shuffle(linked_field_instances)
+                
+                for linked_instance in linked_field_instances:
+                    score = 0
+                    if linked_instance.assoc.task_field_value_id == instance_value.task_field_value_id:
+                        score = 1
+                    
+                    new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=linked_instance.task_field, value=linked_instance.value, value_display=linked_instance.value_display, difficulty=linked_instance.difficulty)
+    return new_session  
+
+# END of common lib functions ------------------------------------------------------    
+  
+  
 def index(request):
     
     # Authenticate current user. If no user logged in, redirect to login page.
@@ -508,96 +604,7 @@ def startsession(request):
         
         subject = Subject.objects.get(user_id=request.user.id)
 
-        default_tasks = [1,2,7,8,10,11,12,13,14]     
-        startdate = datetime.datetime.now()
-        new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None)
-        
-        # Select random task questions for the session  
-        for task_id in default_tasks:
-            task = Task.objects.get(task_id=task_id)
-            num_instances = task.default_num_instances
-            task_order = task.default_order
-            task_delay = task.default_delay
-            task_embedded_delay = task.default_embedded_delay
-            
-            # Add the task to the current session in the database
-            new_task = Session_Task.objects.create(session=new_session, task=task, order=task_order, delay=task_delay, embedded_delay=task_embedded_delay)
-
-            # Update the database to reflect <num_instances> instances of this task for this session
-            new_task_instances = []
-            for num in range(num_instances):
-                new_task_instance = Session_Task_Instance.objects.create(session_task=new_task)
-                # Add a response entry for each task instance
-                new_task_instance_response = Session_Response.objects.create(session_task_instance=new_task_instance)
-                
-                new_task_instances += [new_task_instance]
-
-            # Select random field values for each of the new task instances 
-            # (only for the fields that need to have generated values, i.e. for display fields)
-            task_fields_display = Task_Field.objects.filter(task=task,field_type__name='display',generate_value=1)
-            
-            # For each display field, select random <num_instances> which the user hasn't seen before
-            for field in task_fields_display:
-                
-                existing_instances = Session_Task_Instance_Value.objects.filter(task_field=field, session_task_instance__session_task__session__subject=subject)
-                existing_values = [v.value for v in existing_instances]
-                
-                # Add to selected values. Make sure not to add field values that are associated with each other, or are already selected, or have been seen by the subject before in previous sessions. NB: here we are assuming that the total number of values for each field in the db is at least as big as the default number of instances for the field.
-                selected_values = []
-                limits = []
-                while len(selected_values) < num_instances:
-                    
-                    field_values = Task_Field_Value.objects.filter(task_field=field,*limits).exclude(value__in=existing_values)
-                    if field_values:
-                        selected_values += [random.choice(field_values)]
-                    else:
-                        # If there aren't any results, relax the query by restricting only to values that haven't been seen before
-                        field_values = Task_Field_Value.objects.filter(task_field=field).exclude(value__in=existing_values)
-                        if field_values:
-                            selected_values += [random.choice(field_values)]
-                        else:
-                            # If there aren't any results (i.e., the subject has seen all possible values for this field), then relax the query by just selecting values that are different from the currently selected values (i.e., don't want any repeating values in the current session if possible, which should be the case as long as the number of values for the field is greater than the default number of instances for the field).
-                            field_values = Task_Field_Value.objects.filter(task_field=field,*limits)
-                            if field_values:
-                                selected_values += [random.choice(field_values)]
-                            else:
-                                # If there still aren't any results (i.e., the subject has seen all possible values for this field), relax the query completely by selecting any random field value, regardless of whether the subject has seen it before or whether it has been selected for the current session (i.e., allow repeats).
-                                field_values = Task_Field_Value.objects.filter(task_field=field)
-                                if field_values:
-                                    selected_values += [random.choice(field_values)]
-                                else:
-                                    # The database doesn't contain any entries for this task field.
-                                    # Fail, display an error page.
-                                    return HttpResponseRedirect(website_root + 'error/501')
-                    
-                    # Build limit query with Q objects
-                    selected_assoc_ids = [item.assoc_id for item in selected_values]
-                    selected_ids = [item.task_field_value_id for item in selected_values]
-                    limit_assoc = [~Q(task_field_value_id=i) for i in selected_assoc_ids if i]
-                    limit_id = [~Q(task_field_value_id=i) for i in selected_ids if i]
-                    limits = limit_assoc + limit_id
-                
-                for index_instance in range(num_instances):
-                    instance_value = selected_values[index_instance]
-                    new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
-                    
-                    # Using the task field value ("instance_value"), update the expected session response
-                    Session_Response.objects.filter(session_task_instance=new_task_instances[index_instance]).update(value_expected=instance_value.response_expected)
-
-                    # If there are any associated fields (e.g., answer field instances associated with the currently selected question field instances), add them to the session as well.
-                    # Note that for select options, all options must be added, not just the one that is the correct response.
-                    linked_field_instances = list(Task_Field_Value.objects.filter(Q(assoc=instance_value) | Q(assoc=instance_value.assoc)).exclude(task_field=field).exclude(assoc__isnull=True))
-                    
-                    # Scramble the order of the linked instances randomly, so the subject won't know the order of the correct options.
-                    random.shuffle(linked_field_instances)
-                    
-                    for linked_instance in linked_field_instances:
-                        score = 0
-                        if linked_instance.assoc.task_field_value_id == instance_value.task_field_value_id:
-                            score = 1
-                        
-                        new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=linked_instance.task_field, value=linked_instance.value, value_display=linked_instance.value_display, difficulty=linked_instance.difficulty)
-                    
+        new_session = generate_session(subject)            
         return HttpResponseRedirect(website_root + 'session/' + str(new_session.session_id))
     else:
         return HttpResponseRedirect(website_root)
