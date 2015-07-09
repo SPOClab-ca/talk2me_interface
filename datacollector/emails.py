@@ -3,6 +3,16 @@ from email.mime.text import MIMEText
 import smtplib
 
 
+# Global variables for HTML emails
+global emailPre, emailPost
+emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head><body>"""
+emailPost = """</body></html>"""
+
+
 # login_name: string, the email used to send out the emails
 # login_pwd: string, the password of the email used to send out the emails
 # fromName: string, how the 'from' appears in the email (e.g., "Talk2Me")
