@@ -19,25 +19,25 @@ def session(request):
     json_data['status'] = "success"
     
     # Authenticate the request - has to be issued by a superuser
-    if 'auth_name' in request.GET and 'auth_pass' in request.GET:
-        username = request.GET['auth_name']
-        password = request.GET['auth_pass']
+    if 'auth_name' in request.POST and 'auth_pass' in request.POST:
+        username = request.POST['auth_name']
+        password = request.POST['auth_pass']
         system_user = authenticate(username=username, password=password)
         if system_user is not None:
             if system_user.is_active and system_user.is_superuser:
                 # If the user is a valid superuser, 
                 # proceed with returning the active phone session for the requested user (if one exists),
                 # or create a new session (if none exist).
-                if 'user_passcode' in request.GET and 'user_birthyear' in request.GET and 'user_birthmonth' in request.GET and 'user_birthday' in request.GET:
+                if 'user_passcode' in request.POST and 'user_birthyear' in request.POST and 'user_birthmonth' in request.POST and 'user_birthday' in request.POST:
                     # Validate user
-                    user = Subject.objects.filter(user_id=request.GET['user_passcode'])
+                    user = Subject.objects.filter(user_id=request.POST['user_passcode'])
                     if user is not None:
                         user = user[0]
                         
                         # Validate user birth date to prevent random guessing of passcodes
-                        birth_year = request.GET['user_birthyear']
-                        birth_month = request.GET['user_birthmonth']
-                        birth_day = request.GET['user_birthday']
+                        birth_year = request.POST['user_birthyear']
+                        birth_month = request.POST['user_birthmonth']
+                        birth_day = request.POST['user_birthday']
                         if birth_year.isdigit() and birth_month.isdigit() and birth_day.isdigit():
                             birth_date = datetime.date(int(birth_year), int(birth_month), int(birth_day))
                             if user.dob and user.dob == birth_date:
