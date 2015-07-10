@@ -542,3 +542,26 @@ function detectFieldChanges(field) {
         resetUnsavedChanges();
     }
 }
+
+function ajaxToPhoneAPI() {
+    $.ajax({
+        async: true,
+        type: 'POST',
+        url: '/' + website_id + '/phone/session',
+        crossDomain: true,
+        data: {'auth_name': 'system', 
+               'auth_pass': '14a90af63c607ba3c1ff3906f9f5150b61eae1cc56654ef2595b7491c633619f156a8b08f1ae3798413e1bff17bf6a01f0cf1ae9417f8bfab2bce120e0fac5ba',
+               'user_passcode': 1,
+               'user_birthyear': 1990,
+               'user_birthmonth': 9,
+               'user_birthday': 25},
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) { 
+            console.log('AJAX request error from /phone/session: ' + textStatus + ", " + errorThrown);
+        },
+        success: function(data, textStatus, jqXHR) {
+            console.log('Sent AJAX request to /phone/session!');
+            
+        }
+    });
+}

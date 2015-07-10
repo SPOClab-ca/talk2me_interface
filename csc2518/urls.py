@@ -38,6 +38,7 @@ urlpatterns = patterns('',
     
     # API for phone system
     url(r'^' + settings.SUBSITE_ID + 'phone/session$', 'datacollector.phone.session'),
+    url(r'^' + settings.SUBSITE_ID + 'phone/test$', 'datacollector.phone.test'),
     
     # Maintenance scripts
     url(r'^' + settings.SUBSITE_ID + 'maintenance/mailer/reminders$', 'datacollector.mailer.reminders'),

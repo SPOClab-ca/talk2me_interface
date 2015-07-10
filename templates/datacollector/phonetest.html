@@ -1,0 +1,30 @@
+{% extends "datacollector/base.html" %}
+
+{% block title %}Talk2Me{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ request.user }} (<a href="/datacollector/logout">logout</a>)
+    {% else %}
+        <a href="{{ request.path }}login">Login</a> | <a href="{{ request.path }}register">New User</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <h1>Phone Test</h1>
+    
+    <button type="button" onClick="javascript: ajaxToPhoneAPI();">Send AJAX request to phone API</button>
+    
+    
+    <!--<input type="hidden" name="csrfmiddlewaretoken" value="GkegJ7QOY4XgpmRxP9h4HHq491ITcCZe" />-->
+    <!--<form method="POST" action="session">
+        <input type="hidden" name="user_passcode" value="1" />
+        <input type="hidden" name="user_birthyear" value="1990" />
+        <input type="hidden" name="user_birthmonth" value="9" />
+        <input type="hidden" name="user_birthday" value="25" />
+        <input type="hidden" name="auth_name" value="system" />
+        <input type="hidden" name="auth_pass" value="14a90af63c607ba3c1ff3906f9f5150b61eae1cc56654ef2595b7491c633619f156a8b08f1ae3798413e1bff17bf6a01f0cf1ae9417f8bfab2bce120e0fac5ba" />
+        <button type="submit">Submit POST request to API</button>
+    </form>
+    -->
+{% endblock %}
