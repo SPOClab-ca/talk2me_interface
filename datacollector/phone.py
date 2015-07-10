@@ -122,7 +122,7 @@ def session(request):
         return HttpResponse(json.dumps(json_data))
     
     response = HttpResponse(json.dumps(json_data))
-    response.__setitem__("Content-type", "application/json")
-    response.__setitem__("Access-Control-Allow-Origin", "x-requested-with")
+    response["Content-type"] = "application/json"
+    response["Access-Control-Allow-Origin"] = "http://talk2me.mybluemix.net"
     return response
     
