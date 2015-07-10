@@ -26,7 +26,7 @@ def session(request):
     if request.method == "OPTIONS":
         response = HttpResponse(json.dumps(json_data))
         response["Content-type"] = "application/json"
-        response["Access-Control-Allow-Origin"] = "http://talk2me.mybluemix.net"
+        response["Access-Control-Allow-Origin"] = "*"
         response["Access-Control-Allow-Methods"] = "GET, POST"
         response["Access-Control-Allow-Headers"] = "Accept, Content-Type, X-CSRFToken, X-Requested-With"
         return response
@@ -133,7 +133,7 @@ def session(request):
         
         response = HttpResponse(json.dumps(json_data))
         response["Content-type"] = "application/json"
-        response["Access-Control-Allow-Origin"] = "http://talk2me.mybluemix.net"
+        response["Access-Control-Allow-Origin"] = "*"
         return response
     
     # If the request is not OPTIONS or POST, just return 401
