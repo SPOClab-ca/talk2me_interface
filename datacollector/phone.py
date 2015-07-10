@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.utils import simplejson
+from django.views.decorators.csrf import csrf_exempt
 
 from datacollector.views import generate_session
 from datacollector.models import *
@@ -18,6 +19,7 @@ import json
 def test(request):
     return render_to_response('datacollector/phonetest.html', {'is_authenticated': True}, context_instance=RequestContext(request))
 
+@csrf_exempt
 def session(request):
     json_data = {}
     json_data['status'] = "success"
