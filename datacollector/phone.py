@@ -123,6 +123,6 @@ def session(request):
     
     response = HttpResponse(json.dumps(json_data))
     response.__setitem__("Content-type", "application/json")
-    response.__setitem__("Access-Control-Allow-Origin", "*")
+    response.__setitem__("Access-Control-Allow-Origin", "x-requested-with")
     return response
     
