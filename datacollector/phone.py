@@ -3,6 +3,7 @@
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
+from django.template import RequestContext
 from django.utils import simplejson
 
 from datacollector.views import generate_session
@@ -13,6 +14,9 @@ from csc2518.settings import SUBSITE_ID
 import datetime
 import json
 
+
+def test(request):
+    return render_to_response('datacollector/phonetest.html', {'is_authenticated': True}, context_instance=RequestContext(request))
 
 def session(request):
     json_data = {}
@@ -31,7 +35,7 @@ def session(request):
                 if 'user_passcode' in request.POST and 'user_birthyear' in request.POST and 'user_birthmonth' in request.POST and 'user_birthday' in request.POST:
                     # Validate user
                     user = Subject.objects.filter(user_id=request.POST['user_passcode'])
-                    if user is not None:
+                    if user is not None and user:
                         user = user[0]
                         
                         # Validate user birth date to prevent random guessing of passcodes
