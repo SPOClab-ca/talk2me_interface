@@ -121,6 +121,8 @@ def session(request):
         json_data['error'] = "Authentication error"
         return HttpResponse(json.dumps(json_data))
     
-        
-    return HttpResponse(json.dumps(json_data))
+    response = HttpResponse(json.dumps(json_data))
+    response.__setitem__("Content-type", "application/json")
+    response.__setitem__("Access-Control-Allow-Origin", "*")
+    return response
     
