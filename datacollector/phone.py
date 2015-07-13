@@ -75,37 +75,29 @@ def session(request):
                                     Subject.objects.filter(user_id=user.user_id).update(date_last_session_access=date_access)
                                     
                                     # Get all the unanswered tasks for the active session
-                                    active_tasks = Session_Task.objects.filter(session=active_sess,date_completed__isnull=True)
-                                    json_tasks = []
-                                    for task in active_tasks:
-                                        active_task_instances = Session_Task_Instance.objects.filter(session_task=task)
-                                        json_task_instances = []
-                                        for instance in active_task_instances:
-                                            response = Session_Response.objects.get(session_task_instance=instance)
-                                            json_values = []
-                                            active_instance_values = Session_Task_Instance_Value.objects.filter(session_task_instance=instance)
-                                            for val in active_instance_values:
-                                                value_text = val.value
-                                                if val.value_display:
-                                                    value_text = val.value_display
-                                                    
-                                                json_values += [ {'value_id': val.session_task_instance_value_id, \
-                                                                  'value_text': value_text, \
-                                                                  'value_type': val.task_field.field_type.name } ] 
-                                            
-                                            json_task_instances += [ {'session_task_instance_id': instance.session_task_instance_id, \
-                                                                      'response_id': response.session_response_id, \
-                                                                      'values': json_values } ]
-                                            
-                                        json_tasks += [ { 'session_task_id': task.session_task_id, \
-                                                          'task_id': task.task_id, \
-                                                          'task_name': task.task.name, \
-                                                          'task_instruction': task.task.instruction_phone, \
-                                                          'order': task.order, \
-                                                          'total_time': task.total_time, \
-                                                          'session_task_instances': json_task_instances } ]
+                                    json_task_instances = []
+                                    active_responses = Session_Response.objects.filter(session_task_instance__session_task__session=active_sess, date_completed__isnull=True)
+                                    for response in active_responses:
+                                        json_values = []
+                                        active_instance_values = Session_Task_Instance_Value.objects.filter(session_task_instance=response.session_task_instance)
+                                        for val in active_instance_values:
+                                            value_text = val.value
+                                            if val.value_display:
+                                                value_text = val.value_display
+                                            json_values += [ {'value_id': val.session_task_instance_value_id, \
+                                                              'value_text': value_text, \
+                                                              'value_type': val.task_field.field_type.name } ] 
                                         
-                                    json_data['session_tasks'] = json_tasks
+                                        json_task_instances += [ { 'task_id': response.session_task_instance.session_task.task_id, \
+                                                                   'task_name': response.session_task_instance.session_task.task.name, \
+                                                                   'task_instruction': response.session_task_instance.session_task.task.instruction_phone, \
+                                                                   'session_task_id': response.session_task_instance.session_task_id, \
+                                                                   'order': response.session_task_instance.session_task.order, \
+                                                                   'total_time': response.session_task_instance.session_task.total_time, \
+                                                                   'session_task_instance_id': response.session_task_instance_id, \
+                                                                   'response_id': response.session_response_id, \
+                                                                   'values': json_values } ]
+                                    json_data['session_task_instances'] = json_task_instances
                                     
                                 else:
                                     # The user birth date information that was passed in is incorrect, or 
