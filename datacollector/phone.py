@@ -129,9 +129,7 @@ def session(request):
                         json_data['error'] = "Invalid user"
                         return HttpResponse(json.dumps(json_data))
         else:
-            json_data['status'] = "error"
-            json_data['error'] = "Authentication error"
-            return HttpResponse(json.dumps(json_data))
+            return HttpResponse("Unauthorized", status=401)
         
         response = HttpResponse(json.dumps(json_data))
         response["Content-type"] = "application/json"
