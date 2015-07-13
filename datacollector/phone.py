@@ -99,7 +99,7 @@ def session(request):
                                             
                                         json_tasks += [ { 'session_task_id': task.session_task_id, \
                                                           'task_id': task.task_id, \
-                                                          'task_instruction': task.task.instruction, \
+                                                          'task_instruction': task.task.instruction_phone, \
                                                           'order': task.order, \
                                                           'total_time': task.total_time, \
                                                           'session_task_instances': json_task_instances } ]
