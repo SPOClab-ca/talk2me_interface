@@ -235,7 +235,7 @@ class Task(models.Model):
     task_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
     instruction = models.TextField()
-    instruction_phone = models.TextField()
+    instruction_phone = models.TextField(null=True, blank=True)
     default_num_instances = models.IntegerField(default=1)
     default_order = models.IntegerField()
     default_delay = models.IntegerField(default=0)
