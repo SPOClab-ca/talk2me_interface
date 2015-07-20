@@ -10,8 +10,8 @@ import json
 
 
 # Set up mail authentication
-global email_username, email_password, website_hostname, reminder_freq, date_format
-email_username = Settings.objects.get(setting_name="system_email").setting_value
+global email_username, email_password, email_name, website_hostname, reminder_freq, date_format
+email_username = Settings.objects.get(setting_name="system_email2").setting_value
 email_name = Settings.objects.get(setting_name="system_email_name").setting_value
 website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
 website_name = "Talk2Me"
