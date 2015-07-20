@@ -1,6 +1,7 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
+from subprocess import Popen, PIPE
 
 
 # Global variables for HTML emails
@@ -13,6 +14,34 @@ emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "ht
 emailPost = """</body></html>"""
 
 
+def sendEmail2(emailFrom, nameFrom, emailTo, emailCc, emailBcc, emailSubject, text, html):
+    # Send the message using sendmail
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = emailSubject
+        msg['From'] = nameFrom + "<" + emailFrom + ">"
+        msg['To'] = ",".join(emailTo)
+        msg['Cc'] = ",".join(emailCc)
+        msg['Bcc'] = ",".join(emailBcc)
+
+        # Create an HTML and alternate plain text version
+        part1 = MIMEText(text, 'plain')
+        part2 = MIMEText(html, 'html')
+
+        # Attach parts into message container.
+        # According to RFC 2046, the last part of a multipart message, in this case
+        # the HTML message, is best and preferred.
+        msg.attach(part1)
+        msg.attach(part2)
+        
+        p = Popen(["/usr/sbin/sendmail", "-t"], stdin=PIPE)
+        p.communicate(msg.as_string())
+        
+        return True
+    except:
+        return False
+
+        
 # login_name: string, the email used to send out the emails
 # login_pwd: string, the password of the email used to send out the emails
 # fromName: string, how the 'from' appears in the email (e.g., "Talk2Me")
