@@ -82,7 +82,7 @@ def reminders(request):
                                 output += ", Message from %s (%s) to %s, body: %s" % (email_sender, email_subject, email_receiver, email_text)
                                 
                                 # Send the prepared email
-                                #emails.sendEmail2(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
+                                emails.sendEmail2(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
         json_data['debug'] = output
         return HttpResponse(json.dumps(json_data))
     else:
