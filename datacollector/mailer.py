@@ -62,13 +62,15 @@ def reminders(request):
                         # (according to frequency preference) after the date of last access
                         date_first_reminder = date_last_access + datetime.timedelta(days=user_pref_freq)
                         
+                        output += ", Date of first reminder: %s" % (date_first_reminder) 
+                        
                         # Check if today's date is past the day when the first reminder 
                         # should be sent
                         delta = (today - date_first_reminder).days
                         if delta >= 0:
                             if delta % user_pref_freq == 0:
                                 # Time for a reminder
-                                output += "Time for a reminder (last access date: %s, reminder freq in days: %s)" % (date_last_access, user_pref_freq)
+                                output += ", Time for a reminder (last access date: %s, reminder freq in days: %s)" % (date_last_access, user_pref_freq)
                                 
                                 # Set up message
                                 email_subject = "%s - %s Reminder" % (website_name, reminder_freq[user_pref_freq])
@@ -77,10 +79,10 @@ def reminders(request):
                                 email_text = "Dear <b>%s</b>, \r\n\r\nIt's time for your next session on %s! When you are ready for some new language puzzles, <a href='%s'>click here</a>. Your participation in this project is important to us, and directly helps enable research into language pattern changes over time." % (username, website_name, website_hostname)
                                 email_html = "<h3>Dear %s,</h3><p>It's time for your next session on %s! When you are ready for some new language puzzles, <a href='%s'>click here</a>. Your participation in this project is important to us, and directly helps enable research into language pattern changes over time.</p>" % (username, website_name, website_hostname)
                                 
-                                output += "Message from %s (%s) to %s, body: %s" % (email_sender, email_subject, email_receiver, email_text)
+                                output += ", Message from %s (%s) to %s, body: %s" % (email_sender, email_subject, email_receiver, email_text)
                                 
                                 # Send the prepared email
-                                emails.sendEmail2(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
+                                #emails.sendEmail2(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
         json_data['debug'] = output
         return HttpResponse(json.dumps(json_data))
     else:
