@@ -217,6 +217,11 @@ def index(request):
                         
                         successFlag = emails.sendEmail(email_username, email_name, [user_email], [], [], global_passed_vars['website_name'] + " - Email Confirmation", emailText, emails.emailPre + emailHtml + emails.emailPost)
                         
+                        # Update database to keep a record of sent emails, if the mailer was successful
+                        if successFlag:
+                            s = Subject.objects.get(user_id=request.user.id)
+                            Subject_Emails.objects.create(date_sent=datetime.datetime.now().date(), subject=s, email_from=email_username, email_to=user_email, email_type='email_confirmation')
+                        
                         User.objects.filter(id=request.user.id).update(email=user_email)
                         Subject.objects.filter(user_id=request.user.id).update(email_validated=0,email_token=new_email_token)
                     
@@ -1053,6 +1058,9 @@ def account(request):
                         successFlag = emails.sendEmail(email_username, email_name, [request.user.email], [], [], global_passed_vars['website_name'] + " - Email Confirmation", emailText, emails.emailPre + emailHtml + emails.emailPost)
                         if successFlag:
                             json_data['status'] = 'success'
+                            
+                            # Update database to keep a record of sent emails, if the mailer was successful
+                            Subject_Emails.objects.create(date_sent=datetime.datetime.now().date(), subject=subject, email_from=email_username, email_to=request.user.email, email_type='email_confirmation')
                         else:
                             json_data['error'] = 'The confirmation email could not be sent. Please verify that you have provided a valid email address.'
                     else:
@@ -1140,7 +1148,12 @@ def account(request):
                                 emailText = "You have updated your email address on " + global_passed_vars['website_name'] + "\n\nPlease click this link to confirm your email address:\n\n<a href=\"" + confirmation_link + "\">" + confirmation_link + "</a>\n\nWhy am I receiving this email? We value your privacy and want to make sure that you are the one who entered this email address in our system. If you received this email by mistake, you can make it all go away by simply ignoring it."
                                 emailHtml = """<h2 style="Margin-top: 0;color: #44a8c7;font-weight: 700;font-size: 24px;Margin-bottom: 16px;font-family: Lato,sans-serif;line-height: 32px;text-align: center">You have updated your email address on """ + global_passed_vars['website_name'] + """</h2><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center"><strong>Please click this link to confirm your email address:</strong></p><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center"><u><a href=\"""" + confirmation_link + """\">""" + confirmation_link + """</a></u></p><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">If the link above does not work, please copy and paste it into your browser's address bar.</p><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center"><strong>Why am I receiving this email?</strong> We value your privacy and want to make sure that you are the one who entered this email address in our system. If you received this email by mistake, you can make it all go away by simply ignoring it.</p>"""
                                 
-                                emails.sendEmail(email_username, email_name, [user_email], [], [], global_passed_vars['website_name'] + " - Email Confirmation", emailText, emails.emailPre + emailHtml + emails.emailPost)
+                                successFlag = emails.sendEmail(email_username, email_name, [user_email], [], [], global_passed_vars['website_name'] + " - Email Confirmation", emailText, emails.emailPre + emailHtml + emails.emailPost)
+                                
+                                # Update database to keep a record of sent emails, if the mailer was successful
+                                if successFlag:
+                                    s = Subject.objects.get(user_id=request.user.id)
+                                    Subject_Emails.objects.create(date_sent=datetime.datetime.now().date(), subject=s, email_from=email_username, email_to=user_email, email_type='email_confirmation')
                                 
                                 # Display "Not verified" msg to user
                                 email_confirm_display = "<button type=\"button\" class=\"btn btn-default btn-lg btn-red\" onClick=\"javascript: resendConfirmationEmail(this);\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span> Not verified. Click to resend confirmation email.</button>"
