@@ -3,7 +3,7 @@ from email.mime.text import MIMEText
 import smtplib
 from subprocess import Popen, PIPE
 
-from csc2518.settings import STATIC_URL
+from csc2518.settings import RELATIVE_STATIC_URL
 from datacollector.models import *
 website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
 
@@ -712,7 +712,7 @@ only screen and (min-width: 0){.wrapper .btn a{font-family:"Open Sans",sans-seri
                       <td class="column" style="padding: 0;vertical-align: top;text-align: left">
                         
               <div class="image" style="font-size: 12px;Margin-bottom: 24px;mso-line-height-rule: at-least;color: #60666d;font-family: sans-serif; background-color: #f8f8f8;" align="center">
-                <a style="text-decoration: none;color: #5c91ad" href=\"""" + str(website_hostname) + """\"><img style="border: 0;-ms-interpolation-mode: bicubic;display: block;max-width: 600px" src=\"""" + str(website_hostname) + str(STATIC_URL) + """img/email_banner.jpg\" alt="Talk2Me: online language assessment for longitudinal monitoring of changes in cognitive ability" width="600" height="80" /></a>
+                <a style="text-decoration: none;color: #5c91ad" href=\"""" + str(website_hostname) + """\"><img style="border: 0;-ms-interpolation-mode: bicubic;display: block;max-width: 600px" src=\"""" + str(website_hostname) + str(RELATIVE_STATIC_URL) + """img/email_banner.jpg\" alt="Talk2Me: online language assessment for longitudinal monitoring of changes in cognitive ability" width="600" height="80" /></a>
               </div>
             
                           <table class="contents" style="border-collapse: collapse;border-spacing: 0;table-layout: fixed;width: 100%">
