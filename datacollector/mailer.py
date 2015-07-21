@@ -25,6 +25,7 @@ date_format = "%Y-%m-%d"
 def reminders(request):
     json_data = {}
     json_data['status'] = "success"
+    email_type = 'reminder'
     
     # Authenticate the request - has to be issued by a superuser
     if 'auth_name' in request.POST and 'auth_pass' in request.POST:
@@ -65,30 +66,33 @@ def reminders(request):
                         output += ", Date of first reminder: %s" % (date_first_reminder) 
                         
                         # Check if today's date is past the day when the first reminder 
-                        # should be sent
+                        # should be sent, and if it is, check if a reminder email was already sent
+                        # today (to avoid duplication, e.g. if the script is re-run twice on same day)
                         delta = (today - date_first_reminder).days
                         if delta >= 0:
                             if delta % user_pref_freq == 0:
-                                # Time for a reminder
-                                output += ", Time for a reminder (last access date: %s, reminder freq in days: %s)" % (date_last_access, user_pref_freq)
+                                # Time for a reminder, but check if one was already sent today
+                                existing_reminders = Subject_Emails.objects.filter(date_sent=today, subject=user, email_to=user_email, email_type=email_type)
+                                if not existing_reminders:
+                                    output += ", Time for a reminder (last access date: %s, reminder freq in days: %s)" % (date_last_access, user_pref_freq)
+                                    
+                                    # Set up message
+                                    email_subject = "%s - %s Reminder" % (website_name, reminder_freq[user_pref_freq])
+                                    email_sender = email_username
+                                    email_receiver = user_email
+                                    email_text = "Dear <b>%s</b>, \r\n\r\nIt's time for your next session on %s! When you are ready for some new language puzzles, <a href='%s'>click here</a>. Your participation in this project is important to us, and directly helps enable research into language pattern changes over time.\r\n\r\n- The SPOClab team!\r\n\r\nSPOClab: Signal Processing and Oral Communication lab\r\n550 University Avenue, 12-175\r\nToronto, Ontario M5G 2A2\r\n<a href='http://spoclab.ca'>http://spoclab.ca</a>\r\n\r\nYou are receiving this email because you have chosen to receive session reminders. To unsubscribe, please visit <a href='%s'>your Account Settings page</a>." % (username, website_name, website_hostname, website_hostname + '/account')
+                                    email_html = """<h2 style="Margin-top: 0;color: #44a8c7;font-weight: 700;font-size: 24px;Margin-bottom: 16px;font-family: Lato,sans-serif;line-height: 32px;text-align: center">Dear %s, it's time for your next session on %s!</h2><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">When you are ready for some new language puzzles, <a style="text-decoration: none;color: #5c91ad;border-bottom: 1px dotted #5c91ad" data-emb-href-display="undefined" href='%s'>click here</a>. Your participation in this project is important to us, and directly helps enable research into language pattern changes over time.</p><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">&mdash; The SPOClab team</p>""" % (username, website_name, website_hostname)
+                                    
+                                    output += ", Message from %s (%s) to %s, body: %s" % (email_sender, email_subject, email_receiver, email_text)
+                                    
+                                    # Send the prepared email
+                                    result_flag = emails.sendEmail(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
+                                    
+                                    # If the send was successful, record it in the database
+                                    if result_flag:
+                                        Subject_Emails.objects.create(date_sent=today, subject=user, email_from=email_sender, email_to=email_receiver, email_type=email_type)
                                 
-                                # Set up message
-                                email_subject = "%s - %s Reminder" % (website_name, reminder_freq[user_pref_freq])
-                                email_sender = email_username
-                                email_receiver = user_email
-                                email_text = "Dear <b>%s</b>, \r\n\r\nIt's time for your next session on %s! When you are ready for some new language puzzles, <a href='%s'>click here</a>. Your participation in this project is important to us, and directly helps enable research into language pattern changes over time.\r\n\r\n- The SPOClab team!\r\n\r\nSPOClab: Signal Processing and Oral Communication lab\r\n550 University Avenue, 12-175\r\nToronto, Ontario M5G 2A2\r\n<a href='http://spoclab.ca'>http://spoclab.ca</a>\r\n\r\nYou are receiving this email because you have chosen to receive session reminders. To unsubscribe, please visit <a href='%s'>your Account Settings page</a>." % (username, website_name, website_hostname, website_hostname + '/account')
-                                email_html = """<h2 style="Margin-top: 0;color: #44a8c7;font-weight: 700;font-size: 24px;Margin-bottom: 16px;font-family: Lato,sans-serif;line-height: 32px;text-align: center">Dear %s, it's time for your next session on %s!</h2><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">When you are ready for some new language puzzles, <a style="text-decoration: none;color: #5c91ad;border-bottom: 1px dotted #5c91ad" data-emb-href-display="undefined" href='%s'>click here</a>. Your participation in this project is important to us, and directly helps enable research into language pattern changes over time.</p><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">&mdash; The SPOClab team</p>""" % (username, website_name, website_hostname)
-                                
-                                output += ", Message from %s (%s) to %s, body: %s" % (email_sender, email_subject, email_receiver, email_text)
-                                
-                                # Send the prepared email
-                                result_flag = emails.sendEmail(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
-                                
-                                # If the send was successful, record it in the database
-                                if result_flag:
-                                    Subject_Emails.objects.create(date_sent=today, subject=user, email_from=email_sender, email_to=email_receiver, email_type='reminder')
-                                
-        json_data['debug'] = output
+        #json_data['debug'] = output
         return HttpResponse(json.dumps(json_data))
     else:
         json_data['status'] = 'error'
