@@ -727,8 +727,7 @@ only screen and (min-width: 0){.wrapper .btn a{font-family:"Open Sans",sans-seri
                         
                           <table class="contents" style="border-collapse: collapse;border-spacing: 0;table-layout: fixed;width: 100%">
                             <tbody><tr>
-                              <td class="padded" style="padding: 0;vertical-align: top;padding-left: 50px;padding-right: 50px;word-break: break-word;word-wrap: break-word">
-                                """ % (website_hostname, STATIC_URL)
+                              <td class="padded" style="padding: 0;vertical-align: top;padding-left: 50px;padding-right: 50px;word-break: break-word;word-wrap: break-word">""" % (website_hostname, STATIC_URL)
                                 
 emailPost2 = """</td>
                             </tr>
