@@ -181,7 +181,7 @@ class Subject_Emails(models.Model):
     email_from = models.CharField(max_length=100)
     email_to = models.CharField(max_length=100)
     email_type = models.CharField(max_length=50)
-    prize_amt = models.DecimalField(max_digits=6, decimal_places=2)
+    prize_amt = models.DecimalField(null=True, blank=True, max_digits=6, decimal_places=2)
     
         
 class Subject_Language(models.Model):
