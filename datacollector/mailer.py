@@ -82,7 +82,11 @@ def reminders(request):
                                 output += ", Message from %s (%s) to %s, body: %s" % (email_sender, email_subject, email_receiver, email_text)
                                 
                                 # Send the prepared email
-                                emails.sendEmail2(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre2 + email_html + emails.emailPost2)
+                                result_flag = emails.sendEmail2(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre2 + email_html + emails.emailPost2)
+                                
+                                # If the send was successful, record it in the database
+                                if result_flag:
+                                    Subject_Emails.objects.create(date_sent=today, subject=user, email_from=email_sender, email_to=email_receiver, email_type='reminder')
                                 
         json_data['debug'] = output
         return HttpResponse(json.dumps(json_data))
