@@ -755,7 +755,7 @@ emailPost = """</td>
 550 University Avenue, 12-175<br />
 Toronto, Ontario&nbsp;M5G 2A2<br />
 <a href="http://spoclab.ca">http://spoclab.ca</a></div>
-                <div class="permission" style="Margin-bottom: 10px">You are receiving this email because you have chosen to receive session reminders. To unsubscribe, please visit <a href='""" + str(website_hostname) + '/account' + """'>your Account Settings page</a>.</div>
+                <div class="permission" style="Margin-bottom: 10px">You are receiving this email due to your account preferences. To unsubscribe, please visit your <a href='""" + str(website_hostname) + '/account' + """'>Account Settings page</a>.</div>
               </center>
             </td>
           </tr>
