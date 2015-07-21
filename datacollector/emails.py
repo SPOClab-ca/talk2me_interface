@@ -99,7 +99,7 @@ blockquote {
 .contents {
   table-layout: fixed;
   width: 100%;
-  margin-top: 10px;
+  Margin-top: 10;
 }
 .padded {
   padding-left: 50px;
