@@ -9,16 +9,16 @@ website_hostname = Settings.objects.get(setting_name="website_hostname").setting
 
 
 # Global variables for HTML emails
-global emailPre, emailPost, emailPre2, emailPost2
-emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
+global emailPre, emailPost
+emailPre_old = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head><body>"""
-emailPost = """</body></html>"""
+emailPost_old = """</body></html>"""
 
 
-emailPre2 = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head>
+emailPre = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head>
     <title></title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <style type="text/css">
@@ -730,7 +730,7 @@ only screen and (min-width: 0){.wrapper .btn a{font-family:"Open Sans",sans-seri
                             <tbody><tr>
                               <td class="padded" style="padding: 0;vertical-align: top;padding-left: 50px;padding-right: 50px;word-break: break-word;word-wrap: break-word">"""
                                 
-emailPost2 = """</td>
+emailPost = """</td>
                             </tr>
                           </tbody></table>
                         
@@ -766,7 +766,7 @@ Toronto, Ontario&nbsp;M5G 2A2<br />
 """
 
 
-def sendEmail2(emailFrom, nameFrom, emailTo, emailCc, emailBcc, emailSubject, text, html):
+def sendEmail(emailFrom, nameFrom, emailTo, emailCc, emailBcc, emailSubject, text, html):
     # Send the message using sendmail
     try:
         msg = MIMEMultipart('alternative')
@@ -799,7 +799,7 @@ def sendEmail2(emailFrom, nameFrom, emailTo, emailCc, emailBcc, emailSubject, te
 # fromName: string, how the 'from' appears in the email (e.g., "Talk2Me")
 # emailTo, emailCc, emailBcc: lists of email addresses
 # emailSubject, emailBody: strings
-def sendEmail(login_name, login_pwd, fromName, emailTo, emailCc, emailBcc, emailSubject, text, html):
+def sendEmail_old(login_name, login_pwd, fromName, emailTo, emailCc, emailBcc, emailSubject, text, html):
     
     # Send the message via Gmail's SMTP server
     try:
