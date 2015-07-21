@@ -712,7 +712,7 @@ only screen and (min-width: 0){.wrapper .btn a{font-family:"Open Sans",sans-seri
                       <td class="column" style="padding: 0;vertical-align: top;text-align: left">
                         
               <div class="image" style="font-size: 12px;Margin-bottom: 24px;mso-line-height-rule: at-least;color: #60666d;font-family: sans-serif; background-color: #f8f8f8;" align="center">
-                <a style="text-decoration: none;color: #5c91ad" href="%s"><img style="border: 0;-ms-interpolation-mode: bicubic;display: block;max-width: 600px" src="%simg/email_banner.jpg" alt="Talk2Me: online language assessment for longitudinal monitoring of changes in cognitive ability" width="600" height="80" /></a>
+                <a style="text-decoration: none;color: #5c91ad" href=\"""" + str(website_hostname) + """\"><img style="border: 0;-ms-interpolation-mode: bicubic;display: block;max-width: 600px" src=\"""" + str(STATIC_URL) + """img/email_banner.jpg\" alt="Talk2Me: online language assessment for longitudinal monitoring of changes in cognitive ability" width="600" height="80" /></a>
               </div>
             
                           <table class="contents" style="border-collapse: collapse;border-spacing: 0;table-layout: fixed;width: 100%">
@@ -727,7 +727,7 @@ only screen and (min-width: 0){.wrapper .btn a{font-family:"Open Sans",sans-seri
                         
                           <table class="contents" style="border-collapse: collapse;border-spacing: 0;table-layout: fixed;width: 100%">
                             <tbody><tr>
-                              <td class="padded" style="padding: 0;vertical-align: top;padding-left: 50px;padding-right: 50px;word-break: break-word;word-wrap: break-word">""" % (website_hostname, STATIC_URL)
+                              <td class="padded" style="padding: 0;vertical-align: top;padding-left: 50px;padding-right: 50px;word-break: break-word;word-wrap: break-word">"""
                                 
 emailPost2 = """</td>
                             </tr>
@@ -754,7 +754,7 @@ emailPost2 = """</td>
 550 University Avenue, 12-175<br />
 Toronto, Ontario&nbsp;M5G 2A2<br />
 <a href="http://spoclab.ca">http://spoclab.ca</a></div>
-                <div class="permission" style="Margin-bottom: 10px">You are receiving this email because you have chosen to receive session reminders. To unsubscribe, please visit <a href='%s'>your Account Settings page</a>.</div>
+                <div class="permission" style="Margin-bottom: 10px">You are receiving this email because you have chosen to receive session reminders. To unsubscribe, please visit <a href='""" + str(website_hostname) + '/account' + """'>your Account Settings page</a>.</div>
               </center>
             </td>
           </tr>
@@ -762,7 +762,7 @@ Toronto, Ontario&nbsp;M5G 2A2<br />
       </center>
   
 </body></html>
-""" % (website_hostname + '/account')
+"""
 
 
 def sendEmail2(emailFrom, nameFrom, emailTo, emailCc, emailBcc, emailSubject, text, html):
