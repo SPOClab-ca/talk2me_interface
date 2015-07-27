@@ -53,6 +53,26 @@ function doneEncoding( blob ) {
     recIndex++;
 }
 
+function toggleRecordingSilent(e) {
+    // Toggle the audio recording, without making any changes to the UI (such as button labels, AJAX indicators, etc)
+    var instance_id = $(e).siblings("[name=instanceid]").val();
+    if (e.classList.contains("recording")) {
+        // stop recording
+        audioRecorder.stop();
+        e.classList.remove("recording");
+        audioRecorder.getBuffers( gotBuffers );
+    } else {
+        // start recording
+        if (!audioRecorder)
+            return;
+        e.classList.add("recording");
+        audioRecorder.clear();
+        audioRecorder.setInstanceId(instance_id);
+        audioRecorder.record();
+    }
+}
+
+
 function toggleRecording( e ) {
     var instance_id = $(e).siblings("[name=instanceid]").val();
     if (e.classList.contains("recording")) {
