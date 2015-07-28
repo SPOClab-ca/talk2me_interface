@@ -239,6 +239,7 @@ class Task(models.Model):
     instruction_phone = models.TextField(null=True, blank=True)
     default_num_instances = models.IntegerField(default=1)
     default_order = models.IntegerField()
+    is_order_fixed = models.IntegerField(default=0)
     default_delay = models.IntegerField(default=0)
     default_embedded_delay = models.IntegerField(default=0)
     is_active = models.IntegerField(default=0)
