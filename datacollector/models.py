@@ -233,6 +233,7 @@ class Task(models.Model):
         return str(self.task_id) + " - " + str(self.name)
 
     task_id = models.AutoField(primary_key=True)
+    name_id = models.CharField(max_length=50)
     name = models.CharField(max_length=50)
     instruction = models.TextField()
     instruction_phone = models.TextField(null=True, blank=True)
