@@ -51,20 +51,30 @@ def generate_session(subject, session_type):
         active_tasks = Task.objects.filter(is_active=1, instruction_phone__isnull=False)
         
     active_task_ids = [t.task_id for t in active_tasks]
-        
+    
+    # Randomly shuffle the order of the tasks in the session, except for the tasks with fixed order (e.g., disposition task)
+    active_task_order = [(t.default_order, t.is_order_fixed) for t in active_tasks]
+    idx_to_shuffle = [i for i, x in enumerate(active_task_order) if x[1] == 0]
+    tasks_to_shuffle = [active_task_order[i] for i in idx_to_shuffle]
+    random.shuffle(tasks_to_shuffle)
+    for i in range(len(idx_to_shuffle)):
+        active_task_order[idx_to_shuffle[i]] = tasks_to_shuffle[i]
+    
     startdate = datetime.datetime.now()
     new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None, session_type=session_type)
     
     # Select random task questions for the session  
+    counter_task = 0
     for task_id in active_task_ids:
         task = Task.objects.get(task_id=task_id)
         num_instances = task.default_num_instances
         task_order = task.default_order
+        shuffled_order = active_task_order[counter_task][0]
         task_delay = task.default_delay
         task_embedded_delay = task.default_embedded_delay
         
         # Add the task to the current session in the database
-        new_task = Session_Task.objects.create(session=new_session, task=task, order=task_order, delay=task_delay, embedded_delay=task_embedded_delay)
+        new_task = Session_Task.objects.create(session=new_session, task=task, order=shuffled_order, delay=task_delay, embedded_delay=task_embedded_delay)
 
         # Update the database to reflect <num_instances> instances of this task for this session
         new_task_instances = []
@@ -140,6 +150,8 @@ def generate_session(subject, session_type):
                         score = 1
                     
                     new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=linked_instance.task_field, value=linked_instance.value, value_display=linked_instance.value_display, difficulty=linked_instance.difficulty)
+        counter_task += 1
+        
     return new_session  
 
 # END of common lib functions ------------------------------------------------------    
