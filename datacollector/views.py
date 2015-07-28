@@ -45,15 +45,18 @@ website_hostname = Settings.objects.get(setting_name="website_hostname").setting
     
 # Common lib functions ------------------------------------------------------
 def generate_session(subject, session_type):
-    default_tasks = [1,2,7,8,10,11,12,13,14,15]
+    
+    active_tasks = Task.objects.filter(is_active=1)
     if session_type.text_only:
-        default_tasks = [1,8,10,11,12,13]
+        active_tasks = Task.objects.filter(is_active=1, instruction_phone__isnull=False)
+        
+    active_task_ids = [t.task_id for t in active_tasks]
         
     startdate = datetime.datetime.now()
     new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None, session_type=session_type)
     
     # Select random task questions for the session  
-    for task_id in default_tasks:
+    for task_id in active_task_ids:
         task = Task.objects.get(task_id=task_id)
         num_instances = task.default_num_instances
         task_order = task.default_order
