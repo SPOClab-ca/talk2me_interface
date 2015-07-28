@@ -836,7 +836,7 @@ def session(request, session_id):
                         serial_instances = True
                         first_instance_id = str(active_task_instance_values[0].session_task_instance.session_task_instance_id)
                         serial_startslide = "<div class='space-bottom-med space-top-med stroop-slide'><div style='font-size: 72px;'>&nbsp;</div><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: stroopTaskBegin(this);'>Start</button><input class='form-field' type='hidden' id='response_audio_" + first_instance_id + "' name='response_audio_" + first_instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + first_instance_id + "' /></div>"
-                        #requires_audio = True
+                        requires_audio = True
                     
                     count_inst = 0
                     for instance_value in active_task_instance_values:
@@ -899,7 +899,7 @@ def session(request, session_id):
                                 if next_instance_id:
                                     append_audio_response = "<input class='form-field' type='hidden' id='response_audio_" + next_instance_id + "' name='response_audio_" + next_instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + next_instance_id + "' />"
                             
-                            serial_startslide += "<div class='invisible stroop-slide'><div style='font-size: 72px; font-weight: bold; color: #" + colour_hex + ";'>" + word_stimulus.upper() + "</div><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: stroopTaskNextItem(this);'>Next</button>" + append_audio_response + "</div>"
+                            serial_startslide += "<div class='invisible stroop-slide'><div style='font-size: 72px; font-weight: bold; color: #" + colour_hex + ";'>" + word_stimulus.upper() + "</div><button type='button' class='btn btn-success btn-med btn-fixedwidth recording' onClick='javascript: stroopTaskNextItem(this);'>Next</button>" + append_audio_response + "</div>"
                         else:
                             display_field = instance_value.value.replace('\n', '<br>')
                         

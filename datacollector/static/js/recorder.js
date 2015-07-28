@@ -23,7 +23,10 @@ DEALINGS IN THE SOFTWARE.
     var config = cfg || {};
     var bufferLen = config.bufferLen || 4096;
     this.context = source.context;
-    this.instanceid = null;
+    this.instanceid = null; // the instance ID of the response in the database, to be associated with the audio being recorded
+    this.callbackSuccess = null; // the function to be called on success (takes a Recorder instance as a parameter)
+    this.callbackFailure = null; // the function to be called on failure (takes a Recorder instance as a parameter)
+    this.initiatingElement = null; // the DOM element that initiated the audio recording, e.g. a button element
     if(!this.context.createScriptProcessor){
        this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
     } else {
@@ -74,6 +77,18 @@ DEALINGS IN THE SOFTWARE.
     this.setInstanceId = function(instance_id) {
         this.instanceid = instance_id;
     }
+    
+    this.setCallback = function(fn_cb, type_cb) {
+        if (type_cb == "success") {
+            this.callbackSuccess = fn_cb;
+        } else if (type_cb == "failure") {
+            this.callbackFailure = fn_cb;
+        }
+    }
+    
+    this.setInitiatingElement = function(elem) {
+        this.initiatingElement = elem;
+    }
 
     this.getBuffers = function(cb) {
       currCallback = cb || config.callback;
@@ -109,12 +124,19 @@ DEALINGS IN THE SOFTWARE.
     this.node.connect(this.context.destination);   // if the script node is not connected to an output the "onaudioprocess" event is not triggered in chrome.
   };
 
-  Recorder.sendToServer = function(blob, instanceid) {
+  Recorder.sendToServer = function(blob, audioRecordingInstance) {
     
-    $("#form_errors").addClass("invisible");
-    $("#status_recording_" + instanceid).find("img").removeClass("invisible");
-    $("#status_recording_" + instanceid + "_msg").html("Sending audio data to server, please be patient...");
-    $("#status_recording_" + instanceid).removeClass("invisible");
+    var instanceid = audioRecordingInstance.instanceid;
+    
+    if ($("#form_errors").length > 0) {
+        $("#form_errors").addClass("invisible");
+    }
+    if ($("#status_recording_" + instanceid).length > 0) {
+        $("#status_recording_" + instanceid).find("img").removeClass("invisible");
+        $("#status_recording_" + instanceid + "_msg").html("Sending audio data to server, please be patient...");
+        $("#status_recording_" + instanceid).removeClass("invisible");
+    }
+    
     var fd = new FormData();
     fd.append('fname', 'test.wav');
     fd.append('data', blob);
@@ -127,14 +149,26 @@ DEALINGS IN THE SOFTWARE.
         contentType: false,        
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) {
-            $("#status_recording_" + instanceid).addClass("invisible");
+            
+            if ($("#status_recording_" + instanceid).length > 0) {
+                $("#status_recording_" + instanceid).addClass("invisible");
+            }
             
             // Re-enable recording button
-            $("#btn_recording_" + instanceid).prop("disabled", false);
+            if ($("#btn_recording_" + instanceid).length > 0) {
+                $("#btn_recording_" + instanceid).prop("disabled", false);
+            }
             
             // Display error message
-            $("#form_errors").html("<strong>The audio data could not be submitted.</strong> Error 701: " + textStatus + " - " + errorThrown + ". Please contact the website administrators to report this error.").removeClass("invisible");
-            $("body").scrollTop(0);
+            if ($("#form_errors").length > 0) {
+                $("#form_errors").html("<strong>The audio data could not be submitted.</strong> Error 701: " + textStatus + " - " + errorThrown + ". Please contact the website administrators to report this error.").removeClass("invisible");
+                $("body").scrollTop(0);
+            }
+            
+            // If any callback provided, then call it
+            if (audioRecordingInstance.callbackFailure != null) {
+                audioRecordingInstance.callbackFailure(audioRecordingInstance);
+            }
         },
         success: function(data, textStatus, jqXHR) {
             // Mark the response field as completed, and mark the field as changed
@@ -152,11 +186,16 @@ DEALINGS IN THE SOFTWARE.
                 $("#submit_btn").prop('disabled',false);
             }
             
-            // Disable the recording button to prevent redoing the task
-            $("#status_recording_" + instanceid).find("img").addClass("invisible");
-            $("#status_recording_" + instanceid + "_msg").html("Done!");
+            if ($("#status_recording_" + instanceid).length > 0) {
+                // Disable the recording button to prevent redoing the task
+                $("#status_recording_" + instanceid).find("img").addClass("invisible");
+                $("#status_recording_" + instanceid + "_msg").html("Done!");
+            }            
             
-            
+            // If any callback provided, then call it
+            if (audioRecordingInstance.callbackSuccess != null) {
+                audioRecordingInstance.callbackSuccess(audioRecordingInstance);
+            }
         }
     });
   }

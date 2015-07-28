@@ -568,28 +568,35 @@ function ajaxToPhoneAPI() {
 
 function stroopTaskBegin(btn) {
     // Start recording audio
-    //toggleRecordingSilent(btn);
+    toggleRecordingSilent(btn, stroopTaskNextItemHelper, null);
     
     // Display the first item
     $(btn).closest("div.stroop-slide").addClass("invisible");
     $(btn).closest("div.stroop-slide").next("div.stroop-slide").removeClass("invisible");
 }
 
-function stroopTaskNextItem(btn) {
-    // Stop recording audio for the previous instance
-    //toggleRecordingSilent(btn);
+function stroopTaskNextItemHelper(audioRecordingInstance) {
+    // This function executes on success of the audio recording for the previous Stroop item
+    // "btn" is the initiating DOM element that was clicked to start the audio recording.
+    var btn = audioRecordingInstance.initiatingElement; // this is the element that initiated the recording that just finished
+    var btn_current = $(btn).closest("div.stroop-slide").next("div.stroop-slide").children("button")[0];
     
-    // Start recording audio for the next instance
-    //toggleRecordingSilent(btn);
-    
-    // Display the next item
-    if ($(btn).closest("div.stroop-slide").next("div.stroop-slide").length > 0) {
-        $(btn).closest("div.stroop-slide").addClass("invisible");
-        $(btn).closest("div.stroop-slide").next("div.stroop-slide").removeClass("invisible");
+    // Display the next item, if there is one
+    if ($(btn_current).closest("div.stroop-slide").next("div.stroop-slide").length > 0) {
+        
+        // Start recording audio for the next instance, and display the next instance
+        toggleRecordingSilent(btn_current, stroopTaskNextItemHelper, null);
+        
+        $(btn_current).closest("div.stroop-slide").addClass("invisible");
+        $(btn_current).closest("div.stroop-slide").next("div.stroop-slide").removeClass("invisible");
     } else {
-        // End of task - move on to next task (Submit the form)
-        //$(btn).closest("div.stroop-slide").html("Good job, you finished all Stroop questions! Click Submit to move on to the next task!");
-        //$("#submit_btn").prop("disabled", false);
+        // End of task - move on to next task (submit the form)
         $("#submit_btn").click();
     }
+    
+}
+
+function stroopTaskNextItem(btn) {
+    // Stop recording audio for the previous instance
+    toggleRecordingSilent(btn, stroopTaskNextItemHelper, null);
 }

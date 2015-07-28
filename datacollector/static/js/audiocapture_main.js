@@ -49,25 +49,39 @@ function gotBuffers( buffers ) {
 
 function doneEncoding( blob ) {
     //Recorder.setupDownload( blob, "myRecording" + ((recIndex<10)?"0":"") + recIndex + ".wav" );
-    Recorder.sendToServer(blob, audioRecorder.instanceid);
+    Recorder.sendToServer(blob, audioRecorder );
     recIndex++;
 }
 
-function toggleRecordingSilent(e) {
+// Turn the audio recording on/off. if turning off, then transmit the
+// data to the server, and invoke the callback function on success/failure,
+// if one is provided. Pass in "null" if cb is not needed.
+function toggleRecordingSilent(e, cbSuccess, cbFailure) {
     // Toggle the audio recording, without making any changes to the UI (such as button labels, AJAX indicators, etc)
-    var instance_id = $(e).siblings("[name=instanceid]").val();
     if (e.classList.contains("recording")) {
         // stop recording
         audioRecorder.stop();
         e.classList.remove("recording");
         audioRecorder.getBuffers( gotBuffers );
     } else {
+        var instance_id = $(e).siblings("[name=instanceid]").val();
+        
         // start recording
         if (!audioRecorder)
             return;
         e.classList.add("recording");
         audioRecorder.clear();
         audioRecorder.setInstanceId(instance_id);
+        // Set the appropriate callbacks, if provided
+        if (cbSuccess != null) {
+            audioRecorder.setCallback(cbSuccess, "success");
+        }
+        if (cbFailure != null) {
+            audioRecorder.setCallback(cbFailure, "failure");
+        }
+        // Set the HTML element that triggered the call as the initiating DOM element
+        audioRecorder.setInitiatingElement(e);
+        
         audioRecorder.record();
     }
 }
