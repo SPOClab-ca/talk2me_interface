@@ -240,6 +240,7 @@ class Task(models.Model):
     default_order = models.IntegerField()
     default_delay = models.IntegerField(default=0)
     default_embedded_delay = models.IntegerField(default=0)
+    is_active = models.IntegerField(default=0)
 
 
 class Task_Field(models.Model):
