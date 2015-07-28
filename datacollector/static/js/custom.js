@@ -565,3 +565,31 @@ function ajaxToPhoneAPI() {
         }
     });
 }
+
+function stroopTaskBegin(btn) {
+    // Start recording audio
+    //toggleRecordingSilent(btn);
+    
+    // Display the first item
+    $(btn).closest("div.stroop-slide").addClass("invisible");
+    $(btn).closest("div.stroop-slide").next("div.stroop-slide").removeClass("invisible");
+}
+
+function stroopTaskNextItem(btn) {
+    // Stop recording audio for the previous instance
+    //toggleRecordingSilent(btn);
+    
+    // Start recording audio for the next instance
+    //toggleRecordingSilent(btn);
+    
+    // Display the next item
+    if ($(btn).closest("div.stroop-slide").next("div.stroop-slide").length > 0) {
+        $(btn).closest("div.stroop-slide").addClass("invisible");
+        $(btn).closest("div.stroop-slide").next("div.stroop-slide").removeClass("invisible");
+    } else {
+        // End of task - move on to next task (Submit the form)
+        //$(btn).closest("div.stroop-slide").html("Good job, you finished all Stroop questions! Click Submit to move on to the next task!");
+        //$("#submit_btn").prop("disabled", false);
+        $("#submit_btn").click();
+    }
+}

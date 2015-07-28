@@ -32,23 +32,27 @@
         <h2>{{ active_task.name }}</h2>    
         <p>{{ active_task.instruction }}</p>
 
-        {% if active_instances|length > 1 %}
-            <ol>
-            {% for instance in active_instances %}
-                <li class='task-instance'>
-                    {% autoescape off %}{{ instance }}{% endautoescape %}    
-                </li>
-            {% endfor %}
-            </ol>
+        {% if serial_instances %}
+            {% autoescape off %}{{ serial_startslide }}{% endautoescape %} 
         {% else %}
-            {% for instance in active_instances %}
-                <div class='task-instance'>
-                    {% autoescape off %}{{ instance }}{% endautoescape %}
-                </div>
-            {% endfor %}
+            {% if active_instances|length > 1 %}
+                <ol>
+                {% for instance in active_instances %}
+                    <li class='task-instance'>
+                        {% autoescape off %}{{ instance }}{% endautoescape %}    
+                    </li>
+                {% endfor %}
+                </ol>
+            {% else %}
+                {% for instance in active_instances %}
+                    <div class='task-instance'>
+                        {% autoescape off %}{{ instance }}{% endautoescape %}
+                    </div>
+                {% endfor %}
+            {% endif %}
         {% endif %}
         
-        {% if requires_audio %}
+        {% if requires_audio or serial_instances %}
         <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" disabled />
         {% else %}
         <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" />

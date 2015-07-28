@@ -278,3 +278,8 @@ ol li img {
    pointer-events: none;
    cursor: default;
 }
+
+.stroop-slide {
+    text-align: center;
+    height: 200px;
+}

@@ -23,11 +23,12 @@ import emails
 
 
 # Globals
-global global_passed_vars, date_format, age_limit, regex_email, regex_date
+global global_passed_vars, date_format, age_limit, regex_email, regex_date, colour_lookup
 global_passed_vars = { "website_id": "talk2me", "website_name": "Talk2Me", "website_email": "talk2me.toronto@gmail.com" }
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 
+colour_lookup = {'red': 'ff0000', 'green': '00ff00', 'blue': '0000ff', 'brown': '6f370f', 'purple': '7c26cb'}
 
 date_format = "%Y-%m-%d"
 age_limit = 18
@@ -44,7 +45,7 @@ website_hostname = Settings.objects.get(setting_name="website_hostname").setting
     
 # Common lib functions ------------------------------------------------------
 def generate_session(subject, session_type):
-    default_tasks = [1,2,7,8,10,11,12,13,14]
+    default_tasks = [1,2,7,8,10,11,12,13,14,15]
     if session_type.text_only:
         default_tasks = [1,8,10,11,12,13]
         
@@ -693,6 +694,8 @@ def session(request, session_id):
             # If the session is active, find the first unanswered task instance to display
             active_task = None
             active_instances = []   
+            serial_instances = False
+            serial_startslide = ""
             active_session_task_id = None
             display_thankyou = False
             
@@ -827,7 +830,15 @@ def session(request, session_id):
                             responses_dict[response.session_task_instance] = response
                     
                     active_task_instance_values = Session_Task_Instance_Value.objects.filter(session_task_instance__session_task__session=session, session_task_instance__session_task__task=active_task, task_field__field_type__name='display').order_by('session_task_instance','task_field')
-
+                    
+                    # Add an attribute for each task, defining it as serial or not
+                    if active_task.name == "Stroop Interference":
+                        serial_instances = True
+                        first_instance_id = str(active_task_instance_values[0].session_task_instance.session_task_instance_id)
+                        serial_startslide = "<div class='space-bottom-med space-top-med stroop-slide'><div style='font-size: 72px;'>&nbsp;</div><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: stroopTaskBegin(this);'>Start</button><input class='form-field' type='hidden' id='response_audio_" + first_instance_id + "' name='response_audio_" + first_instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + first_instance_id + "' /></div>"
+                        #requires_audio = True
+                    
+                    count_inst = 0
                     for instance_value in active_task_instance_values:
 
                         # Determine how to display the value based on the field type
@@ -872,6 +883,23 @@ def session(request, session_id):
                             sents = instance_value.value.split(" || ")
                             regex_nonalpha = re.compile(r"^[^a-zA-Z0-9]+$")
                             display_field = "<br>".join([sent[0].lower() + sent[1:] for sent in sents if not regex_nonalpha.findall(sent)])
+                        elif field_data_type == "text_stroop":
+                            # Each instance should be displayed on its own, serially, with JS 'next' buttons in between
+                            # HTML/JS: Display each instance in a div with class 'invisible', and add a JS function on 'next' button click
+                            # which would hide the current div and display the next. If there is no next div, stop the audio recording
+                            # and make the submit button active.
+                            
+                            # Since this is a Stroop task, determine the colour in which the word stimulus should be displayed
+                            word_stimulus,colour_stimulus = instance_value.value.split("|")
+                            colour_hex = colour_lookup[colour_stimulus]
+                            
+                            append_audio_response = ""
+                            if count_inst+1 < len(active_task_instance_values):
+                                next_instance_id = str(active_task_instance_values[count_inst+1].session_task_instance.session_task_instance_id)
+                                if next_instance_id:
+                                    append_audio_response = "<input class='form-field' type='hidden' id='response_audio_" + next_instance_id + "' name='response_audio_" + next_instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + next_instance_id + "' />"
+                            
+                            serial_startslide += "<div class='invisible stroop-slide'><div style='font-size: 72px; font-weight: bold; color: #" + colour_hex + ";'>" + word_stimulus.upper() + "</div><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: stroopTaskNextItem(this);'>Next</button>" + append_audio_response + "</div>"
                         else:
                             display_field = instance_value.value.replace('\n', '<br>')
                         
@@ -951,6 +979,7 @@ def session(request, session_id):
                                 response_field = "<div class='row'><div class='col-xs-6'><div class='scale_" + str(scale_start) + "_" + str(scale_end) + "' style=\"" + style_attributes + "\"></div><div class='scale_display' style='font-size: 20px;'></div><input class='form-field' name='response' type='hidden' value='' /></div></div><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />" 
                                 
                         active_instances += [display_field + "<br/>" + response_field]
+                        count_inst += 1
                         
             else:
                 # The session has been completed. Display a summary.
@@ -961,7 +990,7 @@ def session(request, session_id):
                     session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                     counter += 1
                     
-            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'display_thankyou': display_thankyou, 'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
+            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'serial_instances': serial_instances, 'serial_startslide': serial_startslide, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'display_thankyou': display_thankyou, 'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
             passed_vars.update(global_passed_vars)
                     
             return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))
