@@ -283,3 +283,9 @@ ol li img {
     text-align: center;
     height: 200px;
 }
+
+/* Customize the background of a jQuery modal dialog */
+.ui-widget-overlay {
+    opacity: .93;
+    filter:Alpha(Opacity=93);
+}
