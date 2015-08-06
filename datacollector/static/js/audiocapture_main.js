@@ -251,8 +251,7 @@ function initAudio() {
                 "optional": []
             },
         }, gotStream, function(e) {
-            alert('Error getting audio');
-            console.log(e);
+            createDialogRedirect("Unable to record audio", "A microphone is required to complete the task on this page, and your computer currently doesn't have one. Please check that your microphone is enabled, or connect a working microphone to your computer.", default_dialog_width, "Go back to index", goToIndex);
         });
 }
 
