@@ -463,11 +463,39 @@ function createDialog(title, body, width) {
         $("#" + dialog_id).attr("title", title).html(body).dialog({
             modal: true,
             buttons: {
-                OK: function() { closeDialog(this) }
+                OK: function() { closeDialog(this); }
             },
             width: width
         });
     }
+}
+
+function createDialogRedirect(title, body, width, redirectBtnTitle, redirectFn) {
+    var dialog_id = "dialog-message";
+    if ($("#" + dialog_id).length > 0) {
+        
+        $("#" + dialog_id).attr("title", title).html(body).dialog({
+            closeOnEscape: false,
+            modal: true,
+            width: width,
+            open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog | ui).hide() }
+        });
+        
+        // Need to create the buttons as an object because otherwise the button name cannot 
+        // be specified dynamically (jquery interprets the variable name as the button name even 
+        // when it's not in quotes). Additionally, this button object has to be created *after*
+        // the dialog is initialized, because the dynamic redirectFn needs a reference to the 
+        // existing dialog object.
+        var dialog_obj = $("#" + dialog_id);
+        var dialog_buttons = {};
+        dialog_buttons[redirectBtnTitle] = function() { redirectFn(dialog_obj); };
+        $(dialog_obj).dialog("option", "buttons", dialog_buttons);
+    }
+}
+
+function goToIndex(d) {
+    closeDialog(d);
+    window.location.href = '/' + website_id;
 }
 
 function closeDialog(d) {
