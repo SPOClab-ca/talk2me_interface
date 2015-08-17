@@ -2,6 +2,8 @@ import datetime
 import os
 import requests
 
+from settings import SYSTEM_CRED
+
 def generate_log(r):
     return "\n".join([ "HTTP Response Status: %d (%s)" % (r.status_code, r.reason), \
                        "HTTP Response JSON: ", \
@@ -12,9 +14,8 @@ def generate_log(r):
 # Send out the reminders, and log the HTTP response from the server
 r = requests.post("https://www.cs.toronto.edu/talk2me/maintenance/mailer/reminders", \
                   data={'auth_name': 'system', \
-                        'auth_pass': 'test'})
-
-# 14a90af63c607ba3c1ff3906f9f5150b61eae1cc56654ef2595b7491c633619f156a8b08f1ae3798413e1bff17bf6a01f0cf1ae9417f8bfab2bce120e0fac5ba                        
+                        'auth_pass': SYSTEM_CRED})
+                        
 # Log the result
 date_format = '%Y%m%d_%H%M%S'
 timestamp = datetime.datetime.now().strftime(date_format)
