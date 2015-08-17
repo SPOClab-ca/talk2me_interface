@@ -21,10 +21,16 @@ import re
 import crypto
 import emails
 
+# Set up mail authentication
+global email_username, email_name, website_hostname
+email_username = Settings.objects.get(setting_name="system_email").setting_value
+email_name = Settings.objects.get(setting_name="system_email_name").setting_value
+website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
+website_name = Settings.objects.get(setting_name="website_name").setting_value
 
 # Globals
 global global_passed_vars, date_format, age_limit, regex_email, regex_date, colour_lookup
-global_passed_vars = { "website_id": "talk2me", "website_name": "Talk2Me", "website_email": "talk2me.toronto@gmail.com" }
+global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username }
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 
@@ -34,13 +40,6 @@ date_format = "%Y-%m-%d"
 age_limit = 18
 regex_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 regex_date = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
-
-
-# Set up mail authentication
-global email_username, email_name, website_hostname
-email_username = Settings.objects.get(setting_name="system_email").setting_value
-email_name = Settings.objects.get(setting_name="system_email_name").setting_value
-website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
 
     
 # Common lib functions ------------------------------------------------------
