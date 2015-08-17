@@ -14,7 +14,7 @@ global email_username, email_password, email_name, website_hostname, reminder_fr
 email_username = Settings.objects.get(setting_name="system_email").setting_value
 email_name = Settings.objects.get(setting_name="system_email_name").setting_value
 website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
-website_name = "Talk2Me"
+website_name = Settings.objects.get(setting_name="website_name").setting_value
 
 today = datetime.datetime.now().date()
 reminder_freq = { 7: "Weekly", 30: "Monthly", 365: "Annual" }
@@ -36,7 +36,7 @@ def reminders(request):
         if system_user is not None:
             if system_user.is_active and system_user.is_superuser:
                 
-                # Find all users whom we need to remind who have a validated email address
+                # Find all users who we need to remind & who have a validated email address
                 users_to_remind = Subject.objects.filter(preference_email_reminders=1,email_validated=1,email_reminders__isnull=False,preference_email_reminders_freq__isnull=False)
                 for user in users_to_remind:
                     
@@ -91,7 +91,15 @@ def reminders(request):
                                     # If the send was successful, record it in the database
                                     if result_flag:
                                         Subject_Emails.objects.create(date_sent=today, subject=user, email_from=email_sender, email_to=email_receiver, email_type=email_type)
-                                
+            else:
+                json_data['status'] = 'error'
+                json_data['error'] = 'Unauthorized'
+                return HttpResponse(json.dumps(json_data), status=401)
+        else:
+            json_data['status'] = 'error'
+            json_data['error'] = 'Unauthorized'
+            return HttpResponse(json.dumps(json_data), status=401)
+        
         #json_data['debug'] = output
         return HttpResponse(json.dumps(json_data))
     else:
