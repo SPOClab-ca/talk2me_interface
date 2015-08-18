@@ -62,7 +62,20 @@
         <div id="navbar" class="collapse navbar-collapse">
           <div class="navbar-text pull-right">
                 {% if active_notifications %}
-                    <span style="margin-right: 5px;"><img style="height: 32px; margin: 0; padding: 0;" src="{{ STATIC_URL }}img/icon_announce.png" />{{ active_notifications|length }}</span>
+                    <span class="dropdown" style="margin-right: 5px;">
+                        <img id="dropdown_notifications" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="height: 28px; margin: 0; padding: 0; vertical-align: middle;" src="{{ STATIC_URL }}img/icon_announce.png" />{{ active_notifications|length }}
+                        
+                        <table class="dropdown-menu dropdown-notifications" aria-labelledby="dropdown_notifications">
+                            <tbody>
+                            {% for notif in active_notifications %}
+                                <tr class='clickable-row' data-href='/talk2me/about'>
+                                    <td><img src="{{ STATIC_URL }}img/{{ notif.notification.icon_filename }}" style="height: 50px;" /></td>
+                                    <td>{{ notif.notification.notification_text }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </span>
                 {% endif %}
                 {% block auth_user %}{% endblock %}
           </div>

@@ -289,3 +289,33 @@ ol li img {
     opacity: .93;
     filter:Alpha(Opacity=93);
 }
+
+
+/* Dropdown notification menu */
+.dropdown {
+    cursor: pointer;
+}
+
+.dropdown-notifications {
+    width: 350px;
+    font-size: small;
+    color: #333;
+}
+
+.dropdown-notifications tr {
+    background-color: #f0f7fd;
+}
+
+.dropdown-notifications tr:hover {
+    background-color: #d0e3f0;
+}
+
+.dropdown-notifications tr td {
+    padding: 5px;
+}
+
+
+
+.clickable-row {
+    cursor: pointer;
+}

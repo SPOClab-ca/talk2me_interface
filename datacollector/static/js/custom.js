@@ -98,6 +98,11 @@ $(document).ready(function () {
         }
     }
     
+    // Make all clickable table rows links
+    $(".clickable-row").click(function() {
+        window.document.location = $(this).data("href");
+    });
+    
     // Measure time spent on page
     page_start_time = new Date().getTime();
 });
