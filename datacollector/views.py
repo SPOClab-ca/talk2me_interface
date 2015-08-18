@@ -854,7 +854,7 @@ def session(request, session_id):
                     active_task_instance_values = Session_Task_Instance_Value.objects.filter(session_task_instance__session_task__session=session, session_task_instance__session_task__task=active_task, task_field__field_type__name='display').order_by('session_task_instance','task_field')
                     
                     # Add an attribute for each task, defining it as serial or not
-                    if active_task.name == "Stroop Interference":
+                    if active_task.name_id == "stroop":
                         serial_instances = True
                         first_instance_id = str(active_task_instance_values[0].session_task_instance.session_task_instance_id)
                         serial_startslide = "<div class='space-bottom-med space-top-med stroop-slide'><div style='font-size: 72px;'>&nbsp;</div><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: stroopTaskBegin(this);'>Start</button><input class='form-field' type='hidden' id='response_audio_" + first_instance_id + "' name='response_audio_" + first_instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + first_instance_id + "' /></div>"
