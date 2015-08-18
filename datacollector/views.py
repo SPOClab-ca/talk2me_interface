@@ -170,6 +170,7 @@ def index(request):
     is_authenticated = False
     completed_sessions = []
     active_sessions = []
+    active_notifications = []
     consent_submitted = False
     demographic_submitted = False
     gender_options = []
@@ -517,11 +518,16 @@ def index(request):
             education_options = Education_Level.objects.all().order_by('-ranking')
             dementia_options = Dementia_Type.objects.all().order_by('ranking')
             country_res_options = Country.objects.all().order_by('name')
-    
-        # For the currently logged on user, find all previous sessions in the system
-        completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False).order_by('-start_date')
-        active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True).order_by('-start_date')
-    
+        
+        # For the currently logged on user who has completed both consent and demographic forms, populate the index/dashboard
+        # page with their previously completed and active sessions, and any notifications
+        if consent_submitted and demographic_submitted:
+            completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False).order_by('-start_date')
+            active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True).order_by('-start_date')
+            
+            # Fetch all notifications that are active and have not been dismissed by the user 
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = Subject_Notifications.objects.filter(Q(date_end__isnull=True) | Q(date_end__gte = datetime.datetime.now().date()), subject=subject, dismissed=0)
     
     dict_language = {}
     dict_language_other = {}
@@ -542,7 +548,7 @@ def index(request):
             dict_language_other[form_languages_other[i]] = ""
     
     # , 'form_languages': form_languages, 'form_languages_other': form_languages_other, 'form_languages_fluency': form_languages_fluency
-    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options }
+    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options }
     passed_vars.update(global_passed_vars)
     return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
 
