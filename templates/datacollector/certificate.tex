@@ -1,0 +1,61 @@
+\documentclass[12pt,letter,landscape]{memoir}
+
+\usepackage[utf8]{inputenc}
+
+% Page options
+\usepackage{geometry}
+\geometry{left=1.27cm}
+\geometry{right=1.27cm}
+\geometry{top=1.27cm}
+\geometry{bottom=1.27cm} 
+
+% Used to draw page border
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+
+% Images (logo, signatures)
+\usepackage{graphicx}
+
+% Ignore Latex errors while compiling
+\nonstopmode
+
+% Turn off page numbering
+\pagenumbering{gobble}
+
+\title{Test}
+
+\begin{document}
+\begin{center}
+\begin{vplace}[1]
+
+\fontsize{12}{14.4}\selectfont
+\fontsize{14.4}{17.3}\selectfont
+\fontsize{17.3}{20.7}\selectfont
+\fontsize{20.7}{24.9}\selectfont
+\fontsize{24.9}{29.9}\selectfont
+
+% UofT logo
+% \includegraphics[scale=1]{% templatetag openbrace %}{{ STATIC_URL }}/uoft_logo_web.jpg{% templatetag closebrace %}
+% \includegraphics{uoft_logo_web}
+
+\large{This is to certify that}\\
+
+\bigskip
+\bigskip
+
+\textbf{\Huge{% templatetag openbrace %}{{ username }}{% templatetag closebrace %}}
+
+\bigskip
+\bigskip
+
+\textit{\textbf{\Large{has participated in a longitudinal study for collection of a large-scale dataset of linguistic markers for development of novel research into the preclinical stages and progression of age-related dementia}}}\\
+
+\bigskip
+\medskip
+
+\Large{% templatetag openbrace %}{{ datestamp }}{% templatetag closebrace %}
+
+\end{vplace}
+\end{center}
+\end{document}

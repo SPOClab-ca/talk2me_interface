@@ -42,6 +42,7 @@ urlpatterns = patterns('',
     
     # Maintenance scripts
     url(r'^' + settings.SUBSITE_ID + 'maintenance/mailer/reminders$', 'datacollector.mailer.reminders'),
+    url(r'^' + settings.SUBSITE_ID + 'maintenance/prizes/certificate/(?P<subject_id>\d+)/$', 'datacollector.prizes.certificate'),
     
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
