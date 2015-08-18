@@ -182,6 +182,31 @@ class Subject_Emails(models.Model):
     email_to = models.CharField(max_length=100)
     email_type = models.CharField(max_length=50)
     prize_amt = models.DecimalField(null=True, blank=True, max_digits=6, decimal_places=2)
+
+class Notification(models.Model):
+    
+    def __unicode__(self):
+        return "Notification " + str(self.notification_id) + " (Trigger: " + str(self.notification_trigger) + ")"
+    
+    notification_id = models.CharField(max_length=50, primary_key=True)
+    notification_name = models.CharField(max_length=200)
+    notification_text = models.TextField()
+    notification_trigger = models.CharField(max_length=50, null=True, blank=True)
+    icon_filename = models.CharField(max_length=100)
+
+    
+class Subject_Notifications(models.Model):
+    # Records all historical notifications displayed to the user
+    
+    def __unicode__(self):
+        return "Subject Notification " + str(self.notification.notification_id) + " for " + str(User.objects.get(id=self.subject.user_id).username) + " (Date Start: " + str(self.date_start) + ", Date End: " + (str(self.date_end) if self.date_end else "NULL") + ")"
+    
+    subject_notification_id = models.IntegerField(primary_key=True)
+    subject = models.ForeignKey(Subject)
+    notification = models.ForeignKey(Notification)
+    date_start = models.DateField()
+    date_end = models.DateField(null=True, blank=True)
+    dismissed = models.IntegerField(default=0)
     
         
 class Subject_Language(models.Model):
