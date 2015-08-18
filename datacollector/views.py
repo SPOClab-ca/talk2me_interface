@@ -122,12 +122,20 @@ def generate_session(subject, session_type):
                                 # Fail, display an error page.
                                 return HttpResponseRedirect(website_root + 'error/501')
                 
-                # Build limit query with Q objects
+                # Build limit query with Q objects: enforce no repetition of the same item in the same task instance,
+                # and no selection of mutually associated items in the same task instance.
                 selected_assoc_ids = [item.assoc_id for item in selected_values]
                 selected_ids = [item.task_field_value_id for item in selected_values]
                 limit_assoc = [~Q(task_field_value_id=i) for i in selected_assoc_ids if i]
                 limit_id = [~Q(task_field_value_id=i) for i in selected_ids if i]
                 limits = limit_assoc + limit_id
+                
+                # Special case: Stroop task. Enforce the special restriction that consecutive items are not of 
+                # the same ink colour, and do not spell out the same colour word.
+                if task.name_id == "stroop" and selected_values:
+                    limits += [ ~Q(response_expected = selected_values[-1].response_expected), \
+                                ~Q(value_display = selected_values[-1].value_display) ]
+                
             
             for index_instance in range(num_instances):
                 instance_value = selected_values[index_instance]
