@@ -1,6 +1,7 @@
 /* Global variables */
 var support_html5 = true;
 var timer_rig = false;
+var timer_rig_max = null;
 var page_start_time = false;
 var website_id = 'talk2me';
 var default_dialog_width = 450;
@@ -381,8 +382,16 @@ function pad(n, width, z) {
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
+/*
+ * If there is still no user input at the end of the timer, 
+ * re-enable the timer button and keep submission disabled.
+ */
 function updateTimerDisplay(start_btn, instance_id) {
-    var new_value = parseInt($("#timer_val_" + instance_id).val()) - 1;
+    var current_value = parseInt($("#timer_val_" + instance_id).val());
+    if (timer_rig_max == null) {
+        timer_rig_max = current_value;
+    }
+    var new_value = current_value - 1;
     $("#timer_val_" + instance_id).val(new_value);
     var display_min = Math.floor(new_value / 60);
     var display_sec = new_value - display_min * 60;
@@ -393,12 +402,22 @@ function updateTimerDisplay(start_btn, instance_id) {
         stopTimerRig();
         
         // (1) disable the response field
-        // (2) enable the submit button
-        // NB: DO NOT re-enable the Start button, since only one response will be accepted
         $(start_btn).parent().find("[name=response]").each(function() {
             $(this).prop('readonly', true).addClass("input-disabled");
         });
-        $("#submit_btn").prop("disabled", false);
+        
+        var unsaved_changes = $("#unsaved_changes").val();
+        if (unsaved_changes != "") {
+            // If the user provided a response, then:
+            // (2) enable the submit button 
+            $("#submit_btn").prop("disabled", false);
+        } else {
+            // Otherwise:
+            // (3) re-enable the timer Start button to allow user to repeat the task
+            // and reset the timer max
+            $(start_btn).prop("disabled", false).text("Start");
+            $("#timer_val_" + instance_id).val(timer_rig_max);
+        }
     }
 }
 
