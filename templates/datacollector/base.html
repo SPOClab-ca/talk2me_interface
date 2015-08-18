@@ -60,9 +60,12 @@
           <a class="navbar-brand" href="/{{ website_id }}">{{ website_name }}</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
-          <p class="navbar-text pull-right">
-            {% block auth_user %}{% endblock %}
-          </p>
+          <div class="navbar-text pull-right">
+                {% if active_notifications %}
+                    <span style="margin-right: 5px;"><img style="height: 32px; margin: 0; padding: 0;" src="{{ STATIC_URL }}img/icon_announce.png" />{{ active_notifications|length }}</span>
+                {% endif %}
+                {% block auth_user %}{% endblock %}
+          </div>
           <ul class="nav navbar-nav">
             <li {% if request.path == "/{{ website_id }}" %}class="active"{% endif %}><a href="/{{ website_id }}">Index</a></li>
             <li {% if request.path == "/{{ website_id }}/about" %}class="active"{% endif %}><a href="/{{ website_id }}/about">About</a></li>
