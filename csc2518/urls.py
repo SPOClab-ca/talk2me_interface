@@ -42,6 +42,7 @@ urlpatterns = patterns('',
     
     # Notifications
     url(r'^' + settings.SUBSITE_ID + 'notify/dismiss/$', 'datacollector.notify.dismiss'),
+    url(r'^' + settings.SUBSITE_ID + 'notify/view/$', 'datacollector.notify.view'),
     
     # Maintenance scripts
     url(r'^' + settings.SUBSITE_ID + 'maintenance/mailer/reminders$', 'datacollector.mailer.reminders'),

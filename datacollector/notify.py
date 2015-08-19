@@ -15,6 +15,18 @@ from csc2518.settings import SUBSITE_ID
 import datetime
 import json
 
+# Set up mail authentication
+global email_username, email_name, website_hostname
+email_username = Settings.objects.get(setting_name="system_email").setting_value
+email_name = Settings.objects.get(setting_name="system_email_name").setting_value
+website_hostname = Settings.objects.get(setting_name="website_hostname").setting_value
+website_name = Settings.objects.get(setting_name="website_name").setting_value
+
+global global_passed_vars, website_root
+global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username }
+website_root = '/'
+if SUBSITE_ID: website_root += SUBSITE_ID
+
 
 '''Return a QuerySet of the active (end date after today's date) and new (non-dismissed) notifications for a given user.
    'subject' is a db object of type Subject. If there are no results, return an empty list.'''
@@ -26,6 +38,34 @@ def get_active_new(subject):
     return notif
     
 
+'''Display all historical notifications for the currently logged in user.'''
+def view(request):
+    is_authenticated = False
+    
+    if request.user.is_authenticated():
+        try:
+            is_authenticated = True
+            subject = Subject.objects.get(user_id=request.user.id)
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
+            
+            # Fetch all notifications that are active and have not been dismissed by the user 
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = get_active_new(subject)
+            
+            # Get all historical notifications for the user
+            all_notifications = Subject_Notifications.objects.filter(subject=subject).order_by('-subject_notification_id')
+            
+            passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'all_notifications': all_notifications}
+            passed_vars.update(global_passed_vars)
+            return render_to_response('datacollector/notification.html', passed_vars, context_instance=RequestContext(request))
+            
+        except Subject.DoesNotExist:
+            return HttpResponseRedirect(website_root)
+    else:
+        return HttpResponseRedirect(website_root)
+    
+    
 '''Receives a POST request with the following parameters: target_notif - either an empty array (target is ALL active and new notifications), or an array of subject_notification_id. For each target notification, set 'dismissed' flag to 1.'''
 def dismiss(request):
     # Dismiss active new notifications for the currently logged on user
