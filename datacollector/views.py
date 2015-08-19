@@ -668,6 +668,7 @@ def activate(request, user_token):
     email_prevalidated = False
     email_validated = False
     email_address = ""
+    active_notifications = []
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -676,6 +677,10 @@ def activate(request, user_token):
             subject = subject[0]
             consent_submitted = subject.date_consent_submitted
             demographic_submitted = subject.date_demographics_submitted
+            
+            # Fetch all notifications that are active and have not been dismissed by the user 
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = notify.get_active_new(subject)
             
     # Determine if the token is valid
     s = Subject.objects.filter(email_token=user_token)
@@ -692,7 +697,7 @@ def activate(request, user_token):
             s.update(email_validated=1)
             email_validated = True
         
-    passed_vars = {'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'email_prevalidated': email_prevalidated, 'email_validated': email_validated, 'email_address': email_address}
+    passed_vars = {'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'email_prevalidated': email_prevalidated, 'email_validated': email_validated, 'email_address': email_address}
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/activate.html', passed_vars, context_instance=RequestContext(request))
@@ -703,6 +708,7 @@ def session(request, session_id):
     is_authenticated = False
     consent_submitted = False
     demographic_submitted = False
+    active_notifications = []
     
     if request.user.is_authenticated():
     
@@ -712,6 +718,10 @@ def session(request, session_id):
             subject = subject[0]
             consent_submitted = subject.date_consent_submitted
             demographic_submitted = subject.date_demographics_submitted
+            
+            # Fetch all notifications that are active and have not been dismissed by the user 
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = notify.get_active_new(subject)
             
         session = Session.objects.filter(session_id=session_id)
         if session:
@@ -1020,7 +1030,7 @@ def session(request, session_id):
                     session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                     counter += 1
                     
-            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'serial_instances': serial_instances, 'serial_startslide': serial_startslide, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'display_thankyou': display_thankyou, 'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
+            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'serial_instances': serial_instances, 'serial_startslide': serial_startslide, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'display_thankyou': display_thankyou, 'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications}
             passed_vars.update(global_passed_vars)
                     
             return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))
@@ -1082,6 +1092,7 @@ def account(request):
     json_data = {}
     json_data['status'] = 'fail'
     json_data['email_change'] = 'false'
+    active_notifications = []
     
     # These two flags are passed to the account page so that the base template included therein can use them
     consent_submitted = False
@@ -1097,6 +1108,10 @@ def account(request):
             consent_submitted = subject.date_consent_submitted
             demographic_submitted = subject.date_demographics_submitted
             is_email_validated = subject.email_validated
+            
+            # Fetch all notifications that are active and have not been dismissed by the user 
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = notify.get_active_new(subject)
             
             if request.method == "GET":
                 # A get form request
@@ -1279,7 +1294,7 @@ def account(request):
                     form_values['cb_preference_email_updates'] = subject.preference_email_updates
                 form_values['email_address'] = request.user.email
             
-            passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm, 'save_msg': save_msg, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'is_email_validated': is_email_validated}
+            passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm, 'save_msg': save_msg, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'is_email_validated': is_email_validated}
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
         else:
@@ -1294,6 +1309,7 @@ def about(request):
     is_authenticated = False
     consent_submitted = False
     demographic_submitted = False
+    active_notifications = []
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -1302,8 +1318,12 @@ def about(request):
             subject = subject[0]
             consent_submitted = subject.date_consent_submitted
             demographic_submitted = subject.date_demographics_submitted
+            
+            # Fetch all notifications that are active and have not been dismissed by the user 
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = notify.get_active_new(subject)
         
-    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
+    passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications}
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/about.html', passed_vars, context_instance=RequestContext(request))
@@ -1312,6 +1332,7 @@ def error(request, error_id):
     is_authenticated = False
     consent_submitted = False
     demographic_submitted = False
+    active_notifications = []
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -1320,8 +1341,12 @@ def error(request, error_id):
             subject = subject[0]
             consent_submitted = subject.date_consent_submitted
             demographic_submitted = subject.date_demographics_submitted
+            
+            # Fetch all notifications that are active and have not been dismissed by the user 
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = notify.get_active_new(subject)
     
-    passed_vars = {'error_id': error_id, 'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted}
+    passed_vars = {'error_id': error_id, 'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications}
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/error.html', passed_vars, context_instance=RequestContext(request))
