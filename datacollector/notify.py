@@ -138,4 +138,24 @@ def generate_notifications(subject, trigger):
             
             if applicable:
                 Subject_Notifications.objects.create(subject=subject, notification=notif, date_start=today, date_end=expiry, dismissed=0)
+
+'''notif is a QuerySet of Subject_Notifications objects (optional). The QuerySet is assumed to contain only *active* subject notifications. If not provided, then ALL active notifications for the user are checked.'''
+def update_notifications(subject, notif = None):
+    if not notif:
+        # Get all active notifications for the user (all need to be checked for updates)
+        notif = get_active(subject)
     
+    for n in notif:
+        # Check if user still eligible for monthly prize draws
+        if n.notification.notification_id == "monthlyprize_eligibility":
+            today = datetime.datetime.now().date()
+            if subject.preference_prizes:
+                # User now wants prizes - extend eligibility to month end
+                new_end_date = datetime.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+            else:
+                # User doesn't want prizes anymore - stop the eligibility for prizes
+                new_end_date = today
+            
+            n.date_end = new_end_date
+            n.save()
+                

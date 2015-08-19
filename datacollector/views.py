@@ -1246,10 +1246,30 @@ def account(request):
                             email_confirm_display = ""
                             
                         
+                        subject = Subject.objects.get(user_id=request.user.id)
+                        today = datetime.datetime.now().date()
+                        existing_notif_prizes = Subject_Notifications.objects.filter(Q(date_end__isnull=True) | Q(date_end__gte = today), subject=subject, notification__notification_id="monthlyprize_eligibility")
                         if 'cb_preference_prizes' in request.POST:
-                            Subject.objects.filter(user_id=request.user.id).update(preference_prizes=1, email_prizes=user_email)
+                            subject.preference_prizes = 1
+                            subject.email_prizes = user_email
+                            subject.save()
+                            
+                            # Trigger notification generation for the user, as they may now be eligible for prizes 
+                            # (i.e. new notifications to be displayed).
+                            if existing_notif_prizes:
+                                notify.update_notifications(subject, existing_notif_prizes)
+                            else:
+                                notify.generate_notifications(subject, "onSessionComplete")
+                                
                         else:
-                            Subject.objects.filter(user_id=request.user.id).update(preference_prizes=0, email_prizes=None)
+                            subject.preference_prizes = 0
+                            subject.email_prizes = None
+                            subject.save()
+                            
+                            # The user is no longer eligible for prizes - trigger a notification update (for existing notifications)
+                            # if there is an existing monthly prize notification
+                            if existing_notif_prizes:
+                                notify.update_notifications(subject, existing_notif_prizes)
                         
                         if 'cb_preference_email_reminders' in request.POST:
                             Subject.objects.filter(user_id=request.user.id).update(preference_email_reminders=1, email_reminders=user_email, preference_email_reminders_freq=request.POST['radio_email_reminders_freq'])
