@@ -126,9 +126,16 @@ def generate_notifications(subject, trigger):
         
         for notif in notif_to_create:
             expiry = None
+            applicable = True
+            
             if notif.notification_id == "monthlyprize_eligibility":
-                # Eligibility for the monthly prize resets at the end of every month
+                # Eligibility for the monthly prize resets at the end of every month.
                 expiry = datetime.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
                 
-            Subject_Notifications.objects.create(subject=subject, notification=notif, date_start=today, date_end=expiry, dismissed=0)
+                # Only create notifications for prizes IFF the user has signed up for prizes.
+                if not subject.preference_prizes:
+                    applicable = False
+            
+            if applicable:
+                Subject_Notifications.objects.create(subject=subject, notification=notif, date_start=today, date_end=expiry, dismissed=0)
     
