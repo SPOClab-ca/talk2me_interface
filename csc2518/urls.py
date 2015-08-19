@@ -40,6 +40,9 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'phone/session$', 'datacollector.phone.session'),
     url(r'^' + settings.SUBSITE_ID + 'phone/test$', 'datacollector.phone.test'),
     
+    # Notifications
+    url(r'^' + settings.SUBSITE_ID + 'notify/dismiss/$', 'datacollector.notify.dismiss'),
+    
     # Maintenance scripts
     url(r'^' + settings.SUBSITE_ID + 'maintenance/mailer/reminders$', 'datacollector.mailer.reminders'),
     url(r'^' + settings.SUBSITE_ID + 'maintenance/prizes/certificate/(?P<subject_id>\d+)/$', 'datacollector.prizes.certificate'),

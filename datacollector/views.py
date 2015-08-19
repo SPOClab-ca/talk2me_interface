@@ -18,8 +18,10 @@ import datetime
 import json
 import random
 import re
+
 import crypto
 import emails
+import notify
 
 # Set up mail authentication
 global email_username, email_name, website_hostname
@@ -527,8 +529,8 @@ def index(request):
             
             # Fetch all notifications that are active and have not been dismissed by the user 
             # (NB: Q objects must appear before keyword parameters in the filter)
-            active_notifications = Subject_Notifications.objects.filter(Q(date_end__isnull=True) | Q(date_end__gte = datetime.datetime.now().date()), subject=subject, dismissed=0)
-    
+            active_notifications = notify.get_active_new(subject)
+            
     dict_language = {}
     dict_language_other = {}
     
