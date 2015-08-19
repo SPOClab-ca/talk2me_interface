@@ -193,6 +193,7 @@ class Notification(models.Model):
     notification_text = models.TextField()
     notification_trigger = models.CharField(max_length=50, null=True, blank=True)
     icon_filename = models.CharField(max_length=100)
+    notification_target = models.CharField(max_length=200, null=True, blank=True)
 
     
 class Subject_Notifications(models.Model):
