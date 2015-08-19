@@ -12,6 +12,7 @@ from datacollector.models import *
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
 
+import calendar
 import datetime
 import json
 
@@ -33,10 +34,18 @@ if SUBSITE_ID: website_root += SUBSITE_ID
 def get_active_new(subject):
     notif = []
     if subject and type(subject) is Subject:
-        notif = Subject_Notifications.objects.filter(Q(date_end__isnull=True) | Q(date_end__gte = datetime.datetime.now().date()), subject=subject, dismissed=0)
+        today = datetime.datetime.now().date()
+        notif = Subject_Notifications.objects.filter(Q(date_end__isnull=True) | Q(date_end__gte = today), subject=subject, dismissed=0, date_start__lte = today)
     
     return notif
+
+def get_active(subject):
+    notif = []
+    if subject and type(subject) is Subject:
+        today = datetime.datetime.now().date()
+        notif = Subject_Notifications.objects.filter(Q(date_end__isnull=True) | Q(date_end__gte = today), subject=subject, date_start__lte = today)
     
+    return notif    
 
 '''Display all historical notifications for the currently logged in user.'''
 def view(request):
@@ -54,7 +63,8 @@ def view(request):
             active_notifications = get_active_new(subject)
             
             # Get all historical notifications for the user
-            all_notifications = Subject_Notifications.objects.filter(subject=subject).order_by('-subject_notification_id')
+            today = datetime.datetime.now().date()
+            all_notifications = Subject_Notifications.objects.filter(subject=subject, date_start__lte = today).order_by('-subject_notification_id')
             
             passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'all_notifications': all_notifications}
             passed_vars.update(global_passed_vars)
@@ -101,5 +111,24 @@ def dismiss(request):
         json_data['status'] = 'error'
         json_data['error'] = 'Unauthorized'
         return HttpResponse(json_dumps(json_data), status=401)
+
+
+'''The trigger has gone off, so check if any notifications need to be created.'''        
+def generate_notifications(subject, trigger):
+    if trigger == "onSessionComplete":
+        # The user now has at least one fully completed session -> if 
+        # there are no existing notifications that have this trigger,
+        # create them.
+        subject_active_notif = get_active(subject)
+        active_notif_id = [n.notification_id for n in subject_active_notif]
+        notif_to_create = Notification.objects.filter(notification_trigger=trigger).exclude(notification_id__in=active_notif_id)
+        today = datetime.datetime.now().date()
         
-        
+        for notif in notif_to_create:
+            expiry = None
+            if notif.notification_id == "monthlyprize_eligibility":
+                # Eligibility for the monthly prize resets at the end of every month
+                expiry = datetime.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+                
+            Subject_Notifications.objects.create(subject=subject, notification=notif, date_start=today, date_end=expiry, dismissed=0)
+    

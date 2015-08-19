@@ -847,7 +847,7 @@ def session(request, session_id):
                 num_tasks = Session_Task.objects.filter(session=session).count()  
                 active_task = Session_Task.objects.filter(session=session,date_completed__isnull=True).order_by('order')
                 if not active_task:
-                    # All tasks in the current session have been completed - mark the session as complete with an end date stamp, and display acknowledgement. Display summary.
+                    # All tasks in the current session have been completed - mark the session as complete with an end date stamp, and display acknowledgement. Display summary. Trigger notification generation.
                     display_thankyou = True
                     
                     completed_date = datetime.datetime.now()
@@ -859,6 +859,9 @@ def session(request, session_id):
                         next_task_instances = Session_Task_Instance.objects.filter(session_task=next_task).aggregate(count_instances=Count('session_task_instance_id'))
                         session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                         counter += 1
+                    
+                    # Trigger notifications that are linked to session completion
+                    notify.generate_notifications(subject, "onSessionComplete")
                     
                 else:
                     active_session_task_id = active_task[0].session_task_id
