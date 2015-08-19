@@ -159,3 +159,17 @@ def update_notifications(subject, notif = None):
             n.date_end = new_end_date
             n.save()
                 
+def generate_all_users(request):
+    json_data = {}
+    json_data['status'] = 'success'
+    if request.user.is_authenticated() and request.user.is_superuser:
+    
+        s = Subject.objects.all()
+        for subj in s:
+            generate_notifications(subj, "onSessionComplete")        
+        return HttpResponse(json.dumps(json_data))
+        
+    else:
+        json_data['status'] = 'error'
+        json_data['error'] = 'Unauthorized'
+        return HttpResponse(json_dumps(json_data), status=401)
