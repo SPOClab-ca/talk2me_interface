@@ -102,6 +102,10 @@ ol li img {
     vertical-align: top;
 }
 
+ol.breadcrumb li {
+    margin-bottom: auto;
+}
+
 .logo {
     margin: 30px;
     margin-bottom: 10px;
@@ -291,15 +295,50 @@ ol li img {
 }
 
 
-/* Dropdown notification menu */
-.dropdown {
+/* Dropdown notification menu. dropdown-toggle is the icon that you click; dropdown-notifications is the actual dropdown. */
+.scrollable-menu {
+    height: auto;
+    max-height: 200px;
+    overflow-x: hidden;
+}
+
+.dropdown-toggle, .dropdown-toggle:visited {
     cursor: pointer;
+    color: #888;
+    text-decoration: none;
+}
+
+.dropdown-toggle:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+.dropdown-toggle:active {
+    color: #fff;
+}
+
+.dropdown-label-new {
+    font-size: 10px; 
+    position: relative; 
+    left: 0px;
+    top: -10px; 
+    background-color: #ff0000; 
+    color: #fff;
+}
+
+.dropdown-label-seen {
+    background-color: none;
 }
 
 .dropdown-notifications {
+    table-layout: fixed;
+    border-collapse: collapse;
+    border-spacing: 0px;
     width: 350px;
     font-size: small;
     color: #333;
+    left: -8px;
+    top: 30px;
 }
 
 .dropdown-notifications tr {
@@ -312,10 +351,56 @@ ol li img {
 
 .dropdown-notifications tr td {
     padding: 5px;
+    vertical-align: top;
+    text-align: left;
 }
 
+.dropdown-menu:before {
+  position: absolute;
+  top: -7px;
+  left: 9px;
+  display: inline-block;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #ccc;
+  border-left: 7px solid transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.2);
+  content: '';
+}
 
+.dropdown-menu:after {
+  position: absolute;
+  top: -6px;
+  left: 10px;
+  display: inline-block;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #ffffff;
+  border-left: 6px solid transparent;
+  content: '';
+}
+
+.dropdown-notifications tbody tr.no-notif {
+    background-color: #fff;
+}
+.dropdown-notifications tbody tr.no-notif:hover {
+    background-color: #fff;
+}
+
+.dropdown-notifications tbody tr.notifications-link {
+    text-transform: uppercase;
+    font-size: 14px;
+    text-align: center;
+    color: #555;
+    font-weight: 300;
+    background-color: #fff;
+}
+
+.dropdown-notifications tbody tr.notifications-link:hover {
+    background-color: #fff;
+    color: #222;
+}
 
 .clickable-row {
     cursor: pointer;
 }
+
+

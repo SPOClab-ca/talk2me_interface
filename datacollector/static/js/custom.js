@@ -103,6 +103,27 @@ $(document).ready(function () {
         window.document.location = $(this).data("href");
     });
     
+    // Notifications
+    $(".dropdown-toggle").click(function() {
+        var toggle = $(this);
+        // Send AJAX request to server to mark all notifications as 'dismissed' (viewed).
+        $.ajax({
+            async: true,
+            type: 'POST',
+            url: '/' + website_id + '/notify/dismiss/',
+            data: {'target_notif': '' },
+            dataType: 'json',
+            error: function(jqXHR, textStatus, errorThrown) { 
+                console.log('Unable to dismiss notifications: ' + textStatus + ", " + errorThrown);
+            },
+            success: function(data, textStatus, jqXHR) {
+                // Update the UI to remove the red notification (the number of 'new' notifications).
+                // Visibility: hidden preserves the space taken up by the label.
+                $(toggle).siblings(".dropdown-label-new").css('visibility','hidden');
+            }
+        });
+    });
+    
     // Measure time spent on page
     page_start_time = new Date().getTime();
 });

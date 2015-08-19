@@ -61,22 +61,40 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <div class="navbar-text pull-right">
-                {% if active_notifications %}
-                    <span class="dropdown" style="margin-right: 5px;">
-                        <img id="dropdown_notifications" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="height: 28px; margin: 0; padding: 0; vertical-align: middle;" src="{{ STATIC_URL }}img/icon_announce.png" />{{ active_notifications|length }}
-                        
-                        <table class="dropdown-menu dropdown-notifications" aria-labelledby="dropdown_notifications">
-                            <tbody>
+            
+                {% if is_authenticated and consent_submitted and demographic_submitted %}
+                <span class="dropdown" style="margin-right: 8px;">
+                    <a id="dropdown_notifications" class="glyphicon glyphicon-bell dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"></a>
+                    
+                    <span class="dropdown-label-new"{% if not active_notifications %} style="visibility: hidden;"{% endif %}>
+                        &nbsp;{{ active_notifications|length }}&nbsp;
+                    </span>
+                    <!-- <img id="dropdown_notifications" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="height: 28px; margin: 0; padding: 0; vertical-align: middle;" src="{{ STATIC_URL }}img/icon_announce.png" /> -->
+                    
+                    <table id="list-notifications" class="dropdown-menu dropdown-notifications" aria-labelledby="dropdown_notifications">
+                        <tbody>
                             {% for notif in active_notifications %}
-                                <tr class='clickable-row' data-href='/talk2me/about'>
+                                <tr class='clickable-row' data-href='{% if notif.notification.notification_target %}/{{ website_id }}/{{ notif.notification.notification_target }}{% else %}/{{ website_id }}/notify/view{% endif %}'>
                                     <td><img src="{{ STATIC_URL }}img/{{ notif.notification.icon_filename }}" style="height: 50px;" /></td>
                                     <td>{{ notif.notification.notification_text }}</td>
                                 </tr>
                             {% endfor %}
-                            </tbody>
-                        </table>
-                    </span>
+                            
+                            {% if not active_notifications %}
+                                <tr class='no-notif'>
+                                    <td colspan="2">Nothing new.</td>
+                                </tr>
+                            {% endif %}
+                            
+                            <!-- Link to the page with all historical notifications -->
+                            <tr class='notifications-link clickable-row' data-href='/{{ website_id }}/notify/view'>
+                                <td colspan="2">View all notifications</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </span>
                 {% endif %}
+                
                 {% block auth_user %}{% endblock %}
           </div>
           <ul class="nav navbar-nav">
