@@ -4,18 +4,37 @@
 
 % Page options
 \usepackage{geometry}
-\geometry{left=1.27cm}
-\geometry{right=1.27cm}
+\geometry{left=3.5cm}
+\geometry{right=3.5cm}
 \geometry{top=1.27cm}
 \geometry{bottom=1.27cm} 
 
 % Used to draw page border
-\usepackage{tikz}
+\usepackage{background}
+\usepackage{color}
+\definecolor{silvergray}{rgb}{.85,.85,.85}
+
 \usetikzlibrary{calc}
-\usetikzlibrary{decorations.pathmorphing}
+\SetBgScale{1}
+\SetBgAngle{0}
+\SetBgColor{silvergray}
+\SetBgContents{
+	\begin{tikzpicture}[overlay,remember picture]
+		\draw [line width=5pt]
+		($ (current page.north west) + (.5cm,-.5cm) $)
+		rectangle
+		($ (current page.south east) + (-.5cm,.5cm) $);
+		\draw [line width=2pt]
+		($ (current page.north west) + (.7cm,-.7cm) $)
+		rectangle
+		($ (current page.south east) + (-.7cm,.7cm) $);
+	\end{tikzpicture}
+}
 
 % Images (logo, signatures)
 \usepackage{graphicx}
+\usepackage{caption}
+%\usepackage[caption=false]{subfig}
 
 % Ignore Latex errors while compiling
 \nonstopmode
@@ -27,7 +46,7 @@
 
 \begin{document}
 \begin{center}
-\begin{vplace}[1]
+\begin{vplace}[1] % use this for vertical centering
 
 \fontsize{12}{14.4}\selectfont
 \fontsize{14.4}{17.3}\selectfont
@@ -36,8 +55,10 @@
 \fontsize{24.9}{29.9}\selectfont
 
 % UofT logo
-% \includegraphics[scale=1]{% templatetag openbrace %}{{ STATIC_URL }}/uoft_logo_web.jpg{% templatetag closebrace %}
-% \includegraphics{uoft_logo_web}
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.5]{C:/Users/Elysian/Documents/thesis/data_collection_tasks/csc2518/templates/datacollector/certificate_uoft_logo.jpg}
+\end{figure}
 
 \large{This is to certify that}\\
 
@@ -51,10 +72,31 @@
 
 \textit{\textbf{\Large{has participated in a longitudinal study for collection of a large-scale dataset of linguistic markers for development of novel research into the preclinical stages and progression of age-related dementia}}}\\
 
-\bigskip
 \medskip
 
 \Large{% templatetag openbrace %}{{ datestamp }}{% templatetag closebrace %}
+
+\bigskip
+\bigskip
+
+\begin{figure}[!htb]
+    \centering
+    \begin{minipage}{.3\textwidth}
+      \centering
+      \includegraphics[scale=1]{C:/Users/Elysian/Documents/thesis/data_collection_tasks/csc2518/templates/datacollector/certificate_signature_mariayancheva.jpg}
+      \captionsetup{labelformat=empty}
+      \caption{Principal Investigator}
+      \label{fig:signature_my}
+    \end{minipage}%
+    \begin{minipage}{.3\textwidth}
+      \centering
+      \includegraphics[scale=1]{C:/Users/Elysian/Documents/thesis/data_collection_tasks/csc2518/templates/datacollector/certificate_signature_frankrudzicz.jpg}
+      \captionsetup{labelformat=empty}
+      \caption{Faculty Supervisor}
+      \label{fig:signature_fr}
+    \end{minipage}
+\end{figure}
+
 
 \end{vplace}
 \end{center}

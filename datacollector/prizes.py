@@ -44,7 +44,10 @@ def certificate(request, subject_id):
             date_format_cert = '%d %B %Y'
             now = datetime.now()
             datestamp = now.strftime(date_format_cert)
-            ctx = { "username": u.username, "datestamp": datestamp }
+            logofile = os.path.join(os.path.abspath(__file__), "static/img/uoft_logo_web.jpg")
+            logofile = "uoft_logo_web.jpg"
+            ctx = { "username": u.username, "datestamp": datestamp, "logofile": logofile }
+            json_data['logofile'] = logofile
             
             # Store the generated pdf in the current directory
             date_format = '%Y%m%d_%H%M%S'
@@ -92,8 +95,8 @@ def certificate(request, subject_id):
                         
                     except:
                         raise RuntimeError("PDF generation error. Please contact the website administrators.")
-                    finally:
-                        shutil.rmtree(tmp)
+                    #finally:
+                    #    shutil.rmtree(tmp)
 
                     if pdf:
                         cache.set(cache_key, pdf, CACHE_TIMEOUT)
