@@ -918,7 +918,7 @@ def session(request, session_id):
                                 # Default duration
                                 dur_sec = 60
                                 
-                            display_field = re.sub(timer_duration, "<br /><br /><button class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />", instance_value.value)
+                            display_field = re.sub(timer_duration, "<br /><br /><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />", instance_value.value)
                             
                             # Associated textarea where the user will type out the RIG response
                             display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea class='form-control form-field input-disabled' name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
