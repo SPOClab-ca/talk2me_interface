@@ -9,8 +9,12 @@ import json
 import subprocess
 import os
 
+from csc2518.settings import SUBSITE_ID
 from datacollector.models import *
 
+global website_root
+website_root = '/'
+if SUBSITE_ID: website_root += SUBSITE_ID
 
 # Generate a personalized certificate of completion of the study
 def certificate(request, subject_id):
