@@ -32,52 +32,52 @@ def certificate(request, subject_id):
         sess = Session.objects.filter(subject=s, end_date__isnull=False)
         if sess:
 
-            try:
-                # Locate the template for the pdf
-                template = "datacollector/certificate.tex"
-                doc = template.rsplit('/', 1)[-1].rsplit('.', 1)[0]
-                
-                # Set up the personalized details (name of user and today's date)
-                date_format_cert = '%d %B %Y'
-                now = datetime.now()
-                datestamp = now.strftime(date_format_cert)
-                ctx = { "username": u.username, "datestamp": datestamp }
-                
-                # Define directories to be used
-                date_format = '%Y%m%d_%H%M%S'
-                current_dir = os.getcwd()
-                img_dir = os.path.join(current_dir, os.sep.join(["datacollector", "static", "img"]))
-                template_dir = os.path.join(current_dir, os.sep.join(["templates", "datacollector"]))
-                output_dir = os.path.join(current_dir, os.sep.join(["datacollector", "prizes"]))
-                output_file = "%s_%s" % (u.username, now.strftime(date_format))
+            #try:
+            # Locate the template for the pdf
+            template = "datacollector/certificate.tex"
+            doc = template.rsplit('/', 1)[-1].rsplit('.', 1)[0]
+            
+            # Set up the personalized details (name of user and today's date)
+            date_format_cert = '%d %B %Y'
+            now = datetime.now()
+            datestamp = now.strftime(date_format_cert)
+            ctx = { "username": u.username, "datestamp": datestamp }
+            
+            # Define directories to be used
+            date_format = '%Y%m%d_%H%M%S'
+            current_dir = os.getcwd()
+            img_dir = os.path.join(current_dir, os.sep.join(["datacollector", "static", "img"]))
+            template_dir = os.path.join(current_dir, os.sep.join(["templates", "datacollector"]))
+            output_dir = os.path.join(current_dir, os.sep.join(["datacollector", "prizes"]))
+            output_file = "%s_%s" % (u.username, now.strftime(date_format))
 
-                # Fill out the template with the personalized details
-                body = get_template(template).render(Context(ctx)).encode("utf-8")
-                if '\\nonstopmode' not in body:
-                    raise ValueError("\\nonstopmode not present in document, cowardly refusing to process.")
-                
-                # Create a temporary file for storing the personalized latex file during creation
-                tmp_file = os.path.join(template_dir, output_file) + ".tex"
-                with open(tmp_file, "w") as f:
-                    f.write(body)
-                
-                # Generate the pdf! Have to run three times in order to render all borders correctly.
-                for i in range(3):
-                    p = subprocess.call(["pdflatex", tmp_file, "-output-directory", output_dir], cwd=img_dir)
-                
-                # Clean up temp file
-                os.remove(tmp_file)
-                
-                # Return the newly generated file to the user
-                #pdf = open(os.path.join(output_dir, output_file) + ".pdf")
-                #res = HttpResponse(pdf, mimetype="application/pdf")
-                #return res
-                
-                # Redirect to a page that displays the pdf to the user
-                
-                return HttpResponse(json.dumps(json_data))
-            except:
-                return HttpResponseRedirect(website_root + 'error/501')
+            # Fill out the template with the personalized details
+            body = get_template(template).render(Context(ctx)).encode("utf-8")
+            if '\\nonstopmode' not in body:
+                raise ValueError("\\nonstopmode not present in document, cowardly refusing to process.")
+            
+            # Create a temporary file for storing the personalized latex file during creation
+            tmp_file = os.path.join(template_dir, output_file) + ".tex"
+            with open(tmp_file, "w") as f:
+                f.write(body)
+            
+            # Generate the pdf! Have to run three times in order to render all borders correctly.
+            for i in range(3):
+                p = subprocess.call(["pdflatex", tmp_file, "-output-directory", output_dir], cwd=img_dir)
+            
+            # Clean up temp file
+            os.remove(tmp_file)
+            
+            # Return the newly generated file to the user
+            #pdf = open(os.path.join(output_dir, output_file) + ".pdf")
+            #res = HttpResponse(pdf, mimetype="application/pdf")
+            #return res
+            
+            # Redirect to a page that displays the pdf to the user
+            
+            return HttpResponse(json.dumps(json_data))
+            #except:
+            #    return HttpResponseRedirect(website_root + 'error/501')
         else:
             json_data['status'] = 'error'
             json_data['error'] = 'Unauthorized: you have not fully completed any sessions.'
