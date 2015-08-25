@@ -1,6 +1,6 @@
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist, Context
-from django.http import HttpResponse, Http404, HttpResponseNotModified
+from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotModified
 from django.core.cache import cache
 from django.conf import settings
 
