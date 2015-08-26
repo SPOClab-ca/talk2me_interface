@@ -12,16 +12,17 @@ import os
 from csc2518.settings import SUBSITE_ID
 from datacollector.models import *
 
-global website_root
+email_username = Settings.objects.get(setting_name="system_email").setting_value
+website_name = Settings.objects.get(setting_name="website_name").setting_value
+
+global website_root, global_passed_vars
+global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username }
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 
 
 # Display a PDF certificate
 def certificate(request):
-    
-    json_data = {}
-    json_data['status'] = 'success'
     
     if request.user.is_authenticated():
         # Verify user is valid
@@ -37,27 +38,18 @@ def certificate(request):
                 sess = Session.objects.filter(subject=s, end_date__isnull=False)
                 if sess:
                     cert = gen_certificate(request.user)
-                else:
-                    json_data['error'] = "No completed sessions"
                 
             if cert:
                 cert = cert[0]
                 current_dir = os.path.abspath(os.path.dirname(__file__))
                 cert_filename = os.path.join(current_dir, os.sep.join(["prizes", cert.filename]))
-                #json_data['filename'] = cert_filename
-                #return HttpResponse(json.dumps(json_data))
                 with open(cert_filename, "rb") as pdf:
                     response = HttpResponse(pdf.read(), content_type="application/pdf")
-                    response['Content-Disposition'] = 'filename="talk2me_certificate_' + request.user.username + '.pdf"'
+                    response['Content-Disposition'] = 'filename="' + global_passed_vars['website_id'] + '_certificate.pdf"'
                     return response
-            else:
-                json_data['error'] = "No certificate"
-        else:
-            json_data['error'] = "Subject does not exist"
             
     # The user is not authenticated, or there was an error that occurred
-    return HttpResponse(json.dumps(json_data))
-    #return HttpResponseRedirect(website_root)
+    return HttpResponseRedirect(website_root)
     
     
 # Helper function.
@@ -83,7 +75,7 @@ def gen_certificate(user):
         img_dir = os.path.join(current_dir, os.sep.join(["static", "img"]))
         template_dir = os.path.join(os.path.join(current_dir, os.pardir), os.sep.join(["templates", "datacollector"]))
         output_dir = os.path.join(current_dir, os.sep.join(["prizes"]))
-        output_file = "%s_%s" % (user.username, now.strftime(date_format))
+        output_file = "%s_%s" % (str(user.id), now.strftime(date_format))
 
         # Fill out the template with the personalized details
         body = get_template(template).render(Context(ctx)).encode("utf-8")
