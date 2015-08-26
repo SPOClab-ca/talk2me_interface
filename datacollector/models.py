@@ -195,6 +195,15 @@ class Notification(models.Model):
     icon_filename = models.CharField(max_length=100)
     notification_target = models.CharField(max_length=200, null=True, blank=True)
 
+class Prize(models.Model):
+    
+    def __unicode__(self):
+        return "Prize " + str(self.prize_name) + ", Value: " + str(self.prize_value)
+    
+    prize_id = models.CharField(max_length=50, primary_key=True)
+    prize_name = models.CharField(max_length=200)
+    prize_value = models.DecimalField(max_digits=6, decimal_places=2)
+    
     
 class Subject_Notifications(models.Model):
     # Records all historical notifications displayed to the user
@@ -208,6 +217,17 @@ class Subject_Notifications(models.Model):
     date_start = models.DateField()
     date_end = models.DateField(null=True, blank=True)
     dismissed = models.IntegerField(default=0)
+
+class Subject_Prizes(models.Model):
+    
+    def __unicode__(self):
+        return "Subject: " + str(self.subject.user_id) + ", Prize " + str(self.prize)
+    
+    subject_prize_id = models.IntegerField(primary_key=True)
+    subject = models.ForeignKey(Subject)
+    prize = models.ForeignKey(Prize)
+    date_received = models.DateTimeField()
+    filename = models.CharField(max_length=200, null=True, blank=True)
     
         
 class Subject_Language(models.Model):
