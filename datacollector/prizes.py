@@ -64,11 +64,12 @@ def gen_certificate(user):
         template = "datacollector/certificate.tex"
         doc = template.rsplit('/', 1)[-1].rsplit('.', 1)[0]
         
-        # Set up the personalized details (name of user and today's date)
+        # Set up the personalized details (name of user and today's date).
+        # Escape the username for underscore, since latex can't process them unescaped.
         date_format_cert = '%d %B %Y'
         now = datetime.now()
         datestamp = now.strftime(date_format_cert)
-        ctx = { "username": user.username, "datestamp": datestamp }
+        ctx = { "username": user.username.replace("_", "\_"), "datestamp": datestamp }
         
         # Define directories to be used. Current directory is where this script is located.
         date_format = '%Y%m%d_%H%M%S'
