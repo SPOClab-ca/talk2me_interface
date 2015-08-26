@@ -43,12 +43,13 @@ def certificate(request):
             if cert:
                 cert = cert[0]
                 current_dir = os.path.abspath(os.path.dirname(__file__))
-                json_data['filename'] = os.path.join(current_dir, os.sep.join(["prizes", cert.filename]))
+                cert_filename = os.path.join(current_dir, os.sep.join(["prizes", cert.filename]))
+                #json_data['filename'] = cert_filename
                 #return HttpResponse(json.dumps(json_data))
-                #with open(cert.filename, "rb") as pdf:
-                #    response = HttpResponse(pdf.read(), content_type="application/pdf")
-                #    response['Content-Disposition'] = 'filename="talk2me_certificate_' + request.user.username + '.pdf"'
-                #    return response
+                with open(cert_filename, "rb") as pdf:
+                    response = HttpResponse(pdf.read(), content_type="application/pdf")
+                    response['Content-Disposition'] = 'filename="talk2me_certificate_' + request.user.username + '.pdf"'
+                    return response
             else:
                 json_data['error'] = "No certificate"
         else:
