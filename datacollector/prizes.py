@@ -38,9 +38,10 @@ def certificate(request):
                 sess = Session.objects.filter(subject=s, end_date__isnull=False)
                 if sess:
                     cert = gen_certificate(request.user)
+            else:
+                cert = cert[0]
                 
             if cert:
-                cert = cert[0]
                 current_dir = os.path.abspath(os.path.dirname(__file__))
                 cert_filename = os.path.join(current_dir, os.sep.join(["prizes", cert.filename]))
                 with open(cert_filename, "rb") as pdf:
