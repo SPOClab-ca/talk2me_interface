@@ -175,4 +175,4 @@ def generate_all_users(request):
     else:
         json_data['status'] = 'error'
         json_data['error'] = 'Unauthorized'
-        return HttpResponse(json_dumps(json_data), status=401)
+        return HttpResponse(json.dumps(json_data), status=401)
