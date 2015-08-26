@@ -1053,38 +1053,43 @@ def results(request, subject_id):
     
     return render_to_response('datacollector/result.html', passed_vars)
 
-def audiotest(request):
-    if request.method == "POST":
-        # Get the audio data, save it as a wav file 
-        # to the server media directory, 
-        # and return a success message
+def audiorecord(request):
+    
+    if request.user.is_authenticated():
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            if request.method == "POST":
+                # Get the audio data, save it as a wav file 
+                # to the server media directory, 
+                # and return a success message
 
-        # Test: create a text file in the media directory
-        msg = "Received " + ", ".join(request.POST.keys())
-        files = "Received " + ", ".join(request.FILES.keys())
-        instanceid = request.POST['instanceid']
-        instance = Session_Task_Instance.objects.filter(session_task_instance_id=instanceid)
-        session_response = None
-        if instance:
-            instance = instance[0]
-            session_response = Session_Response.objects.filter(session_task_instance=instance)
-            if session_response:
-                session_response = session_response[0]
-        
-            
-        for f in request.FILES:
-            # Upload to responses
-            if session_response:
-                file_content = ContentFile(request.FILES[f].read())
-                session_response.value_audio.save('',file_content)
+                msg = "Received " + ", ".join(request.POST.keys())
+                files = "Received " + ", ".join(request.FILES.keys())
+                instanceid = request.POST['instanceid']
+                instance = Session_Task_Instance.objects.filter(session_task_instance_id=instanceid)
+                session_response = None
+                if instance:
+                    instance = instance[0]
+                    session_response = Session_Response.objects.filter(session_task_instance=instance)
+                    if session_response:
+                        session_response = session_response[0]
                 
-                # Update the Session Response date of completion
-                Session_Response.objects.filter(session_task_instance=instance).update(date_completed=datetime.datetime.now())
+                    
+                for f in request.FILES:
+                    # Upload to responses
+                    if session_response:
+                        file_content = ContentFile(request.FILES[f].read())
+                        session_response.value_audio.save('',file_content)
+                        
+                        # Update the Session Response date of completion
+                        Session_Response.objects.filter(session_task_instance=instance).update(date_completed=datetime.datetime.now())
+                
+                return_dict = {"status": "success", "msg": msg, "files": files}
+                json = simplejson.dumps(return_dict)
+                return HttpResponse(json, mimetype="application/x-javascript")
         
-        return_dict = {"status": "success", "msg": msg, "files": files}
-        json = simplejson.dumps(return_dict)
-        return HttpResponse(json, mimetype="application/x-javascript")
-    return render_to_response('datacollector/audiotest.html', context_instance=RequestContext(request))
+    return HttpResponseRedirect(website_root)
 
 def account(request):
     is_authenticated = False

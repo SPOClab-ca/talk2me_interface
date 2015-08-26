@@ -25,7 +25,7 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'session/(?P<session_id>\d+)$', 'datacollector.views.session'),
 
     # Testing
-    url(r'^' + settings.SUBSITE_ID + 'audiotest$', 'datacollector.views.audiotest'),
+    url(r'^' + settings.SUBSITE_ID + 'audiorecord$', 'datacollector.views.audiorecord'),
     url(r'^' + settings.SUBSITE_ID + 'results/(?P<subject_id>\d+)/$', 'datacollector.views.results'),
     
     # Miscellaneous

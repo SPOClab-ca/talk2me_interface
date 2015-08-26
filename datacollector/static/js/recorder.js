@@ -137,13 +137,15 @@ DEALINGS IN THE SOFTWARE.
         $("#status_recording_" + instanceid).removeClass("invisible");
     }
     
+    // NB: the wav name provided here doesn't matter because the server-side view automatically assigns a name based on the date/time
+    // (see Django's "save" method on db audio fields)
     var fd = new FormData();
-    fd.append('fname', 'test.wav');
+    fd.append('fname', 'test.wav'); 
     fd.append('data', blob);
     fd.append('instanceid', instanceid);
     $.ajax({
         type: 'POST',
-        url: '/talk2me/audiotest',
+        url: '/talk2me/audiorecord',
         data: fd,
         processData: false,
         contentType: false,        
