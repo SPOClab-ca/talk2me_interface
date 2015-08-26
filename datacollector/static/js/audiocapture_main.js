@@ -222,15 +222,6 @@ function gotStream(stream) {
     //updateAnalysers();
 }
 
-function testPost() {
-    
-    $.ajax({
-        type: 'POST',
-        url: '/datacollector/audiotest',
-        data: { 'var1': 'test', 'var2': 'asdf' }
-    });
-}
-
 function initAudio() {
         if (!navigator.getUserMedia)
             navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
