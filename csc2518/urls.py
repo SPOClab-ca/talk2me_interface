@@ -45,9 +45,11 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'notify/view/$', 'datacollector.notify.view'),
     url(r'^' + settings.SUBSITE_ID + 'notify/generate_all_users/$', 'datacollector.notify.generate_all_users'),
     
+    # Prizes
+    url(r'^' + settings.SUBSITE_ID + 'prizes/certificate/$', 'datacollector.prizes.certificate'),
+    
     # Maintenance scripts
     url(r'^' + settings.SUBSITE_ID + 'maintenance/mailer/reminders$', 'datacollector.mailer.reminders'),
-    url(r'^' + settings.SUBSITE_ID + 'maintenance/prizes/certificate/(?P<subject_id>\d+)/$', 'datacollector.prizes.certificate'),
     
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
