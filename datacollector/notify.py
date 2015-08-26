@@ -166,7 +166,10 @@ def generate_all_users(request):
     
         s = Subject.objects.all()
         for subj in s:
-            generate_notifications(subj, "onSessionComplete")        
+            # If the subject has at least one completed session, then generate the onSessionComplete notifications
+            sess = Session.objects.filter(subject=subj)
+            if sess:
+                generate_notifications(subj, "onSessionComplete")        
         return HttpResponse(json.dumps(json_data))
         
     else:
