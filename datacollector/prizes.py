@@ -42,7 +42,7 @@ def certificate(request):
                 
             if cert:
                 cert = cert[0]
-                current_dir = os.getcwd()
+                current_dir = os.path.abspath(os.path.dirname(__file__))
                 json_data['filename'] = os.path.join(current_dir, os.sep.join(["prizes", cert.filename]))
                 #return HttpResponse(json.dumps(json_data))
                 #with open(cert.filename, "rb") as pdf:
