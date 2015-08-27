@@ -133,11 +133,13 @@ def monthlydraw(request):
                 month_end = datetime.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
                 
                 # Build a probability distribution over the users who have
-                # at least one completed session over the past month. The probability
-                # of winning is equal to the number of completed sessions over the 
+                # at least one completed session over the past month, and have elected
+                # to participate in the monthly prize draws, and have a valid email 
+                # address. 
+                # The probability of winning is equal to the number of completed sessions over the 
                 # past month / total number of completed sessions over the past month.
                 # NB: it doesn't matter when the session was started.
-                subj_eligible = Subject.objects.filter(session__isnull=False, session__end_date__isnull=False, session__end_date__gte=month_start, session__end_date__lte=month_end).distinct().annotate(Count('session'))
+                subj_eligible = Subject.objects.filter(preference_prizes=1, email_prizes__isnull=False, email_validated=1, session__isnull=False, session__end_date__isnull=False, session__end_date__gte=month_start, session__end_date__lte=month_end).distinct().annotate(Count('session'))
                 total_sess = sum([x.session__count for x in subj_eligible])
                 
                 distribution_values = np.array([x.user_id for x in subj_eligible])
