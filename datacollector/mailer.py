@@ -1,12 +1,16 @@
 from datacollector.models import *
+from django.db.models import Count
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
+import calendar
 import datetime
 import emails
 import json
+import numpy as np
+from numpy.random import random_sample
 
 
 # Set up mail authentication
@@ -106,3 +110,55 @@ def reminders(request):
         json_data['status'] = 'error'
         json_data['error'] = 'Unauthorized'
         return HttpResponse(json.dumps(json_data), status=401)
+
+
+@csrf_exempt
+def monthlydraw(request):
+    json_data = {}
+    json_data['status'] = "success"
+    email_type = 'prize_notification'
+    NUM_WINNERS = 5
+    
+    # Authenticate the request - has to be issued by a superuser
+    if 'auth_name' in request.POST and 'auth_pass' in request.POST:
+        username = request.POST['auth_name']
+        password = request.POST['auth_pass']
+        system_user = authenticate(username=username, password=password)
+        output = ""
+        if system_user is not None:
+            if system_user.is_active and system_user.is_superuser:
+            
+                today = datetime.datetime.now().date()
+                month_start = datetime.date(today.year, today.month, 1)
+                month_end = datetime.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+                
+                # Build a probability distribution over the users who have
+                # at least one completed session over the past month. The probability
+                # of winning is equal to the number of completed sessions over the 
+                # past month / total number of completed sessions over the past month.
+                subj_eligible = Subject.objects.filter(session__isnull=False, session__start_date__gte=month_start, session__end_date__isnull=False, session__end_date__lte=month_end).distinct().annotate(Count('session'))
+                total_sess = sum([x.session__count for x in subj_eligible])
+                
+                distribution_values = np.array([x.user_id for x in subj_eligible])
+                distribution_prob = np.array([x.session__count * 1.0 / total_sess for x in subj_eligible])
+                
+                # The number of winners is either the pre-specified number, or the number of eligible subjects
+                # (if the latter is smaller).
+                NUM_WINNERS = min(NUM_WINNERS, len(subj_eligible))
+                
+                # Select the winners randomly by sampling the distribution, without replacement.
+                winners = []
+                for run in range(NUM_WINNERS):
+                    bins = np.add.accumulate(distribution_prob)
+                    winners += [distribution_values[np.digitize(random_sample(1), bins)]]
+                    
+                    # Update the distribution (remove the winner that was just selected).
+                    distribution_values = np.delete(distribution_values, winners[-1])
+                    distribution_prob = np.delete(distribution_prob, winners[-1])
+                    normalization_factor = sum(distribution_prob)
+                    distribution_prob = np.divide(distribution_prob, normalization_factor)
+                
+                json_data['winners'] = " || ".join(winners)
+                
+    return HttpResponse(json.dumps(json_data))
+    
