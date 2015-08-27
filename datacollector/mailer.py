@@ -158,7 +158,7 @@ def monthlydraw(request):
                     normalization_factor = sum(distribution_prob)
                     distribution_prob = np.divide(distribution_prob, normalization_factor)
                 
-                json_data['winners'] = " || ".join(winners)
+                json_data['winners'] = " || ".join([str(w) for w in winners])
                 
     return HttpResponse(json.dumps(json_data))
     
