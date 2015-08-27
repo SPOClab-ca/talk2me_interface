@@ -136,7 +136,8 @@ def monthlydraw(request):
                 # at least one completed session over the past month. The probability
                 # of winning is equal to the number of completed sessions over the 
                 # past month / total number of completed sessions over the past month.
-                subj_eligible = Subject.objects.filter(session__isnull=False, session__start_date__gte=month_start, session__end_date__isnull=False, session__end_date__lte=month_end).distinct().annotate(Count('session'))
+                # NB: it doesn't matter when the session was started.
+                subj_eligible = Subject.objects.filter(session__isnull=False, session__end_date__isnull=False, session__end_date__lte=month_end).distinct().annotate(Count('session'))
                 total_sess = sum([x.session__count for x in subj_eligible])
                 
                 distribution_values = np.array([x.user_id for x in subj_eligible])
@@ -150,11 +151,12 @@ def monthlydraw(request):
                 winners = []
                 for run in range(NUM_WINNERS):
                     bins = np.add.accumulate(distribution_prob)
-                    winners += [distribution_values[np.digitize(random_sample(1), bins)]]
+                    winner_ind = np.digitize(random_sample(1), bins)
+                    winners += [int(distribution_values[winner_ind])]
                     
                     # Update the distribution (remove the winner that was just selected).
-                    distribution_values = np.delete(distribution_values, winners[-1])
-                    distribution_prob = np.delete(distribution_prob, winners[-1])
+                    distribution_values = np.delete(distribution_values, winner_ind)
+                    distribution_prob = np.delete(distribution_prob, winner_ind)
                     normalization_factor = sum(distribution_prob)
                     distribution_prob = np.divide(distribution_prob, normalization_factor)
                 
