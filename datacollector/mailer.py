@@ -137,7 +137,7 @@ def monthlydraw(request):
                 # of winning is equal to the number of completed sessions over the 
                 # past month / total number of completed sessions over the past month.
                 # NB: it doesn't matter when the session was started.
-                subj_eligible = Subject.objects.filter(session__isnull=False, session__end_date__isnull=False, session__end_date__lte=month_end).distinct().annotate(Count('session'))
+                subj_eligible = Subject.objects.filter(session__isnull=False, session__end_date__isnull=False, session__end_date__gte=month_start, session__end_date__lte=month_end).distinct().annotate(Count('session'))
                 total_sess = sum([x.session__count for x in subj_eligible])
                 
                 distribution_values = np.array([x.user_id for x in subj_eligible])
