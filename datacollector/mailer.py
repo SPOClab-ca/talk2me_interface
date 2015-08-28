@@ -84,7 +84,7 @@ def reminders(request):
                                     email_subject = "%s - %s Reminder" % (website_name, reminder_freq[user_pref_freq])
                                     email_sender = email_username
                                     email_receiver = user_email
-                                    email_text = "Dear <b>%s</b>, \r\n\r\nIt's time for your next session on %s! When you are ready for some new language puzzles, <a href='%s'>click here</a>. Your participation in this project is important to us, and directly helps enable research into language pattern changes over time.\r\n\r\n- The SPOClab team!\r\n\r\nSPOClab: Signal Processing and Oral Communication lab\r\n550 University Avenue, 12-175\r\nToronto, Ontario M5G 2A2\r\n<a href='http://spoclab.ca'>http://spoclab.ca</a>\r\n\r\nYou are receiving this email because you have chosen to receive session reminders. To unsubscribe, please visit <a href='%s'>your Account Settings page</a>." % (username, website_name, website_hostname, website_hostname + '/account')
+                                    email_text = "Dear <b>%s</b>, \r\n\r\nIt's time for your next session on %s! When you are ready for some new language puzzles, <a href='%s'>click here</a>. Your participation in this project is important to us, and directly helps enable research into language pattern changes over time.\r\n\r\n- The SPOClab team!\r\n\r\nSPOClab: Signal Processing and Oral Communication lab\r\n550 University Avenue, 12-175\r\nToronto, Ontario M5G 2A2\r\n<a href='http://spoclab.ca'>http://spoclab.ca</a>\r\n\r\nYou are receiving this email due to your account preferences. To unsubscribe, please visit <a href='%s'>your Account Settings page</a>." % (username, website_name, website_hostname, website_hostname + '/account')
                                     email_html = """<h2 style="Margin-top: 0;color: #44a8c7;font-weight: 700;font-size: 24px;Margin-bottom: 16px;font-family: Lato,sans-serif;line-height: 32px;text-align: center">Dear %s, it's time for your next session on %s!</h2><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">When you are ready for some new language puzzles, <a style="text-decoration: none;color: #5c91ad;border-bottom: 1px dotted #5c91ad" data-emb-href-display="undefined" href='%s'>click here</a>. Your participation in this project is important to us, and directly helps enable research into language pattern changes over time.</p><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">&mdash; The SPOClab team</p>""" % (username, website_name, website_hostname)
                                     
                                     output += ", Message from %s (%s) to %s, body: %s" % (email_sender, email_subject, email_receiver, email_text)
@@ -117,6 +117,7 @@ def monthlydraw(request):
     json_data = {}
     json_data['status'] = "success"
     email_type = 'prize_notification'
+    notification_type = Notification.objects.get(notification_id='monthlyprize_winner')
     NUM_WINNERS = 5
     
     # Authenticate the request - has to be issued by a superuser
@@ -131,6 +132,9 @@ def monthlydraw(request):
                 today = datetime.datetime.now().date()
                 month_start = datetime.date(today.year, today.month, 1)
                 month_end = datetime.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+                
+                # Build a list of all available prizes
+                prizes_list = [p.prize_name for p in Prize.objects.filter(prize_value__gt=0)]
                 
                 # Build a probability distribution over the users who have
                 # at least one completed session over the past month, and have elected
@@ -154,14 +158,34 @@ def monthlydraw(request):
                 for run in range(NUM_WINNERS):
                     bins = np.add.accumulate(distribution_prob)
                     winner_ind = np.digitize(random_sample(1), bins)
-                    winners += [int(distribution_values[winner_ind])]
+                    winner_id = int(distribution_values[winner_ind])
+                    winner_subject = Subject.objects.get(user_id=winner_id)
+                    winner_user = User.objects.get(id=winner_id)
+                    winners += [winner_id]
                     
                     # Update the distribution (remove the winner that was just selected).
                     distribution_values = np.delete(distribution_values, winner_ind)
                     distribution_prob = np.delete(distribution_prob, winner_ind)
                     normalization_factor = sum(distribution_prob)
                     distribution_prob = np.divide(distribution_prob, normalization_factor)
-                
+                    
+                    # 1) Send an email to the winner
+                    email_subject = "%s - Monthly Prize Winner" % (website_name)
+                    email_sender = email_username
+                    #email_receiver = winner_user.email
+                    email_receiver = "maria.yancheva@gmail.com" # testing
+                    email_text = "Dear <b>%s</b>, \r\n\r\nYou won a prize from the Monthly Prize Draw on %s!\r\n\r\nTo claim your prize, please respond to this email with the following information: 1) your e-mail address where you would like to receive the prize; 2) your choice of prize: %s\r\n\r\nThank you for your participation this month. You're awesome!\r\n\r\n- The SPOClab team!\r\n\r\nSPOClab: Signal Processing and Oral Communication lab\r\n550 University Avenue, 12-175\r\nToronto, Ontario M5G 2A2\r\n<a href='http://spoclab.ca'>http://spoclab.ca</a>\r\n\r\nYou are receiving this email due to your account preferences. To unsubscribe, please visit <a href='%s'>your Account Settings page</a>." % (winner_user.username, website_name, "; ".join(prizes_list), website_hostname + '/account')
+                    email_html = """<h2 style="Margin-top: 0;color: #44a8c7;font-weight: 700;font-size: 24px;Margin-bottom: 16px;font-family: Lato,sans-serif;line-height: 32px;text-align: center">Dear %s, you won a prize from the Monthly Prize Draw on %s!</h2><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">To claim your prize, please respond to this email with the following information: <ol><li>Your e-mail address where you would like to receive the prize</li><li>Your choice of prize: %s</li></ol></p><p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">&mdash; The SPOClab team</p>""" % (winner_user.username, website_name, "; ".join(prizes_list))
+                    
+                    #result_flag = emails.sendEmail(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
+                                    
+                    # If the send was successful, record it in the database
+                    #if result_flag:
+                    #    Subject_Emails.objects.create(date_sent=today, subject=winner_subject, email_from=email_sender, email_to=email_receiver, email_type=email_type)
+                    
+                    # 2) Issue a notification to the winner (to be seen within the website). There is no expiry/end date for prizes.
+                    #Subject_Notifications.objects.create(subject=winner_subject, notification=notification_type, date_start=today, dismissed=0)
+                    
                 json_data['winners'] = " || ".join([str(w) for w in winners])
                 
     return HttpResponse(json.dumps(json_data))
