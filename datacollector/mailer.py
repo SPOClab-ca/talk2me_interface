@@ -172,19 +172,18 @@ def monthlydraw(request):
                     # 1) Send an email to the winner
                     email_subject = "%s - Monthly Prize Winner" % (website_name)
                     email_sender = email_username
-                    #email_receiver = winner_user.email
-                    email_receiver = "maria.yancheva@gmail.com" # testing
+                    email_receiver = winner_user.email
                     email_text = "Dear <b>%s</b>, \r\n\r\nYou won a prize from the monthly draw on %s!\r\n\r\nTo claim your prize, please respond to this email with the following information:\r\n\r\n1. Your e-mail address where you would like to receive the prize\r\n2. Your choice of prize (choose ONE of the following):\r\n%s\r\n\r\nThank you for your participation this month. You're awesome!\r\n\r\n- The SPOClab team!\r\n\r\nSPOClab: Signal Processing and Oral Communication lab\r\n550 University Avenue, 12-175\r\nToronto, Ontario M5G 2A2\r\n<a href='http://spoclab.ca'>http://spoclab.ca</a>\r\n\r\nYou are receiving this email due to your account preferences. To unsubscribe, please visit <a href='%s'>your Account Settings page</a>." % (winner_user.username, website_name, "\r\n".join(prizes_list), website_hostname + '/account')
                     email_html = """<h2 style="Margin-top: 0;color: #44a8c7;font-weight: 700;font-size: 24px;Margin-bottom: 16px;font-family: Lato,sans-serif;line-height: 32px;text-align: center">Dear %s, you won a prize from the monthly draw on %s!</h2>\r\n<p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">To claim your prize, please respond to this email with the following information:\r\n<ol style="font-size: 15px;font-family: sans-serif;line-height: 24px;text-align: left; margin-bottom: 24px;color: #000000;">\r\n<li>Your e-mail address where you would like to receive the prize</li>\r\n<li>Your choice of prize (choose ONE of the following):<br />%s</li></ol></p>\r\n<p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">&mdash; The SPOClab team</p>""" % (winner_user.username, website_name, "<br />".join(prizes_list))
                     
                     result_flag = emails.sendEmail(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
                     
                     # If the send was successful, record it in the database
-                    #if result_flag:
-                    #    Subject_Emails.objects.create(date_sent=today, subject=winner_subject, email_from=email_sender, email_to=email_receiver, email_type=email_type)
+                    if result_flag:
+                        Subject_Emails.objects.create(date_sent=today, subject=winner_subject, email_from=email_sender, email_to=email_receiver, email_type=email_type)
                     
                     # 2) Issue a notification to the winner (to be seen within the website). There is no expiry/end date for prizes.
-                    #Subject_Notifications.objects.create(subject=winner_subject, notification=notification_type, date_start=today, dismissed=0)
+                    Subject_Notifications.objects.create(subject=winner_subject, notification=notification_type, date_start=today, dismissed=0)
                     
                 json_data['winners'] = " || ".join([str(w) for w in winners])
                 
