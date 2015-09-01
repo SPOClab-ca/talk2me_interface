@@ -23,12 +23,13 @@ urlpatterns = patterns('',
     # Sessions 
     url(r'^' + settings.SUBSITE_ID + 'startsession$', 'datacollector.views.startsession'),
     url(r'^' + settings.SUBSITE_ID + 'session/(?P<session_id>\d+)$', 'datacollector.views.session'),
+    url(r'^' + settings.SUBSITE_ID + 'audiorecord$', 'datacollector.views.audiorecord'),
 
     # Testing
-    url(r'^' + settings.SUBSITE_ID + 'audiorecord$', 'datacollector.views.audiorecord'),
     url(r'^' + settings.SUBSITE_ID + 'results/(?P<subject_id>\d+)/$', 'datacollector.views.results'),
     
     # Miscellaneous
+    url(r'^' + settings.SUBSITE_ID + 'admin$', 'datacollector.adminui.dashboard'),
     url(r'^' + settings.SUBSITE_ID + 'pagetime$', 'datacollector.views.pagetime'),
     url(r'^' + settings.SUBSITE_ID + 'about/$', 'datacollector.views.about'),
     url(r'^' + settings.SUBSITE_ID + 'account/$', 'datacollector.views.account'),
@@ -56,5 +57,5 @@ urlpatterns = patterns('',
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     
     # Uncomment the next line to enable the admin:
-    url(r'^' + settings.SUBSITE_ID + 'admin/', include(admin.site.urls)),
+    #url(r'^' + settings.SUBSITE_ID + 'admin/', include(admin.site.urls)),
 )
