@@ -674,7 +674,7 @@ function ajaxToPhoneAPI() {
 
 function stroopTaskBegin(btn) {
     // Start recording audio
-    toggleRecordingSilent(btn, stroopTaskNextItemHelper, null);
+    toggleRecordingSilent(btn, stroopTaskNextItemHelper, null, {"verboseFlag": true, "displayMsg": "Saving audio..."});
     
     // Display the first item
     $(btn).closest("div.stroop-slide").addClass("invisible");
@@ -691,7 +691,7 @@ function stroopTaskNextItemHelper(audioRecordingInstance) {
     if ($(btn_current).closest("div.stroop-slide").next("div.stroop-slide").length > 0) {
         
         // Start recording audio for the next instance, and display the next instance
-        toggleRecordingSilent(btn_current, stroopTaskNextItemHelper, null);
+        toggleRecordingSilent(btn_current, stroopTaskNextItemHelper, null, {"verboseFlag": true, "displayMsg": "Saving audio..."});
         
         $(btn_current).closest("div.stroop-slide").addClass("invisible");
         $(btn_current).closest("div.stroop-slide").next("div.stroop-slide").removeClass("invisible");
@@ -704,5 +704,5 @@ function stroopTaskNextItemHelper(audioRecordingInstance) {
 
 function stroopTaskNextItem(btn) {
     // Stop recording audio for the previous instance
-    toggleRecordingSilent(btn, stroopTaskNextItemHelper, null);
+    toggleRecordingSilent(btn, stroopTaskNextItemHelper, null, {"verboseFlag": true, "displayMsg": "Saving audio..."});
 }

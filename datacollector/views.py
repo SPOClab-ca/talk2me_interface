@@ -940,7 +940,7 @@ def session(request, session_id):
                             if count_inst+1 < len(active_task_instance_values):
                                 next_instance_id = str(active_task_instance_values[count_inst+1].session_task_instance.session_task_instance_id)
                                 if next_instance_id:
-                                    append_audio_response = "<input class='form-field' type='hidden' id='response_audio_" + next_instance_id + "' name='response_audio_" + next_instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + next_instance_id + "' />"
+                                    append_audio_response = "<div class='invisible status_recording' style='margin-top: 5px;'><img src='" + STATIC_URL + "img/ajax_loader.gif' /> <span class='status_recording_msg small'></div><input class='form-field' type='hidden' id='response_audio_" + next_instance_id + "' name='response_audio_" + next_instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + next_instance_id + "' />"
                             
                             serial_startslide += "<div class='invisible stroop-slide'><div style='font-size: 72px; font-weight: bold; color: #" + colour_hex + ";'>" + word_stimulus.upper() + "</div><button type='button' class='btn btn-success btn-med btn-fixedwidth recording' onClick='javascript: stroopTaskNextItem(this);'>Next</button>" + append_audio_response + "</div>"
                         else:

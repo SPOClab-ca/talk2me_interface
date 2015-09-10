@@ -55,13 +55,28 @@ function doneEncoding( blob ) {
 
 // Turn the audio recording on/off. if turning off, then transmit the
 // data to the server, and invoke the callback function on success/failure,
-// if one is provided. Pass in "null" if cb is not needed.
-function toggleRecordingSilent(e, cbSuccess, cbFailure) {
+// if one is provided. Pass in "null" if cb is not needed. If "options['verboseFlag']" 
+// is set to True, then a message is displayed to the user to notify them that
+// data is being transmitted (specified by "options['displayMsg']").
+function toggleRecordingSilent(e, cbSuccess, cbFailure, options) {
     // Toggle the audio recording, without making any changes to the UI (such as button labels, AJAX indicators, etc)
     if (e.classList.contains("recording")) {
         // stop recording
         audioRecorder.stop();
         e.classList.remove("recording");
+        
+        // Disable the button while the audio is being transmitted to server
+        $(e).prop("disabled", true);
+        
+        // If the verboseFlag option is set, then display a message 
+        // to the user
+        if (options != null) {
+            if (options['verboseFlag'] == true) {
+                $(e).siblings(".status_recording").children(".status_recording_msg").html(options['displayMsg']);
+                $(e).siblings(".status_recording").removeClass("invisible");
+            }
+        }
+        
         audioRecorder.getBuffers( gotBuffers );
     } else {
         var instance_id = $(e).siblings("[name=instanceid]").val();
