@@ -24,12 +24,17 @@ global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "w
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 
+global DATA_ROW_SEP, DATA_COL_SEP
+DATA_ROW_SEP = "#"
+DATA_COL_SEP = "|"
 
+    
 def dashboard(request):
     is_authenticated = False
     consent_submitted = None
     demographic_submitted = None
     active_notifications = None
+    adminui_data = ""
     
     if request.user.is_authenticated() and request.user.is_superuser:
         is_authenticated = True
@@ -42,8 +47,19 @@ def dashboard(request):
             # Fetch all notifications that are active and have not been dismissed by the user 
             # (NB: Q objects must appear before keyword parameters in the filter)
             active_notifications = notify.get_active_new(subject)
-        
-        passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user }
+            
+            # Get all the statistical data to be displayed in graphs and charts
+            # - Number of users by gender (pie chart)
+            # - Number of users in different age brackets, by gender (bar graph). Bin the age in decades.
+            # - Number of tasks completed over time (by month since inception)
+            # - Breakdown of each type of task that has been completed (task as IV and number of completions as DV)
+            piechart_gender = [DATA_COL_SEP.join(["Gender", "Number of users"])]
+            piechart_gender += [DATA_COL_SEP.join([x.name, str(x.subject__count)]) for x in Gender.objects.annotate(Count('subject'))]
+            adminui_data += "<input class='adminui_data' type='hidden' data-title='Number of users by gender' value='" + DATA_ROW_SEP.join(piechart_gender) + "'>"
+            
+            
+            
+        passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user, 'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP, 'data_col_sep': DATA_COL_SEP }
         passed_vars.update(global_passed_vars)
         return render_to_response('datacollector/adminui.html', passed_vars, context_instance=RequestContext(request))
     else:

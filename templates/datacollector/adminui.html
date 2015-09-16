@@ -19,6 +19,10 @@
   <li class="active">Admin Dashboard</li>
 </ol>
 
+{{ adminui_data|safe }}
+<input type="hidden" id="data_row_sep" value="{{ data_row_sep }}" />
+<input type="hidden" id="data_col_sep" value="{{ data_col_sep }}" />
+
 <div id="chart_div"></div>
 
 {% endblock %}

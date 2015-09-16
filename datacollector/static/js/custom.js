@@ -128,35 +128,55 @@ $(document).ready(function () {
     if ($("#chart_div").length > 0) {
         // Load the Visualization API and the piechart package.
         google.load('visualization', '1.0', {'packages':['corechart'],
-                                             'callback': function() { drawChart(); } });
+                                             'callback': function() { populateAdminUI(); } });
     }
     
     // Measure time spent on page
     page_start_time = new Date().getTime();
 });
 
+
+function populateAdminUI() {
+    // Get all relevant statistics and visualize them
+    var chart_width = 400;
+    var chart_height = 300;
+    var data_col_sep = $("#data_col_sep").val();
+    var data_row_sep = $("#data_row_sep").val();
+    
+    $(".adminui_data").each(function() {
+        var next_title = $(this).attr("data-title");
+        var next_val = $(this).val();
+        
+        // Convert to DataTable (array of arrays)
+        var dta = [];
+        var rows = next_val.split(data_row_sep);
+        for (i = 0; i < rows.length; i++) {
+            var clean_row = rows[i].split(data_col_sep);
+            for (j = 0; j < clean_row.length; j++) {
+                if (!(isNaN(clean_row[j]))) {
+                    clean_row[j] = parseFloat(clean_row[j]);
+                }
+            }
+            dta.push(clean_row);
+        }
+        drawChart(dta, next_title, chart_width, chart_height);
+    });
+}
+
+
 // Callback that creates and populates a data table,
 // instantiates the pie chart, passes in the data and
 // draws it.
-function drawChart() {
+function drawChart(dataTableArray, chartTitle, w, h) {
 
     // Create the data table.
-    var data = new google.visualization.DataTable();
-    data.addColumn('string', 'Topping');
-    data.addColumn('number', 'Slices');
-    data.addRows([
-      ['Mushrooms', 3],
-      ['Onions', 1],
-      ['Olives', 1],
-      ['Zucchini', 1],
-      ['Pepperoni', 2]
-    ]);
-
+    var data = new google.visualization.arrayToDataTable(dataTableArray, false);
+    
     // Set chart options
-    var options = {'title':'How Much Pizza I Ate Last Night',
-                   'width':400,
-                   'height':300};
-
+    var options = {'title':chartTitle,
+                   'width':w,
+                   'height':h};
+    
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
     chart.draw(data, options);
