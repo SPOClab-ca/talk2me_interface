@@ -50,12 +50,15 @@ def dashboard(request):
             
             # Get all the statistical data to be displayed in graphs and charts
             # - Number of users by gender (pie chart)
-            # - Number of users in different age brackets, by gender (bar graph). Bin the age in decades.
-            # - Number of tasks completed over time (by month since inception)
-            # - Breakdown of each type of task that has been completed (task as IV and number of completions as DV)
             piechart_gender = [DATA_COL_SEP.join(["Gender", "Number of users"])]
             piechart_gender += [DATA_COL_SEP.join([x.name, str(x.subject__count)]) for x in Gender.objects.annotate(Count('subject'))]
             adminui_data += "<input class='adminui_data' type='hidden' data-title='Number of users by gender' value='" + DATA_ROW_SEP.join(piechart_gender) + "'>"
+            
+            # - Number of users in different age brackets (bar graph). Bin the age in decades.
+            
+            
+            # - Number of tasks completed over time (by month since inception)
+            # - Breakdown of each type of task that has been completed (task as IV and number of completions as DV)
             
             
             
