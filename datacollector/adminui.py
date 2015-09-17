@@ -8,7 +8,9 @@ from datacollector.models import *
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
 
+import datetime
 import notify
+import numpy
 
 
 # Set up mail authentication
@@ -24,9 +26,11 @@ global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "w
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 
-global DATA_ROW_SEP, DATA_COL_SEP
+global DATA_ROW_SEP, DATA_COL_SEP, date_format, DAYS_PER_YEAR
 DATA_ROW_SEP = "#"
 DATA_COL_SEP = "|"
+date_format = "%Y-%m-%d"
+DAYS_PER_YEAR = 365.2425 # average length of year taking into account leap years
 
     
 def dashboard(request):
@@ -39,6 +43,8 @@ def dashboard(request):
     if request.user.is_authenticated() and request.user.is_superuser:
         is_authenticated = True
         subject = Subject.objects.filter(user_id=request.user.id)
+        today = datetime.datetime.now().date()
+        
         if subject:
             subject = subject[0]
             consent_submitted = subject.date_consent_submitted
@@ -52,10 +58,20 @@ def dashboard(request):
             # - Number of users by gender (pie chart)
             piechart_gender = [DATA_COL_SEP.join(["Gender", "Number of users"])]
             piechart_gender += [DATA_COL_SEP.join([x.name, str(x.subject__count)]) for x in Gender.objects.annotate(Count('subject'))]
-            adminui_data += "<input class='adminui_data' type='hidden' data-title='Number of users by gender' value='" + DATA_ROW_SEP.join(piechart_gender) + "'>"
+            adminui_data += "<input class='adminui_data' type='hidden' chart-type='pie' data-title='Number of users by gender' value='" + DATA_ROW_SEP.join(piechart_gender) + "' />"
             
             # - Number of users in different age brackets (bar graph). Bin the age in decades.
-            
+            bin_interval = 10
+            min_age = 1
+            max_age = 100
+            age_bins = numpy.arange(min_age,max_age,bin_interval)
+            age_data = [int((today - x.dob).days / DAYS_PER_YEAR) for x in Subject.objects.filter(dob__isnull=False)]
+            age_data_binned = list(numpy.digitize(age_data, age_bins))
+            list_bins = list(age_bins)
+            # Get the number of subjects in each bin, in the format e.g.: ["1-10"|"0", "11-20"|"0", "21-30"|"5", ...]
+            bargraph_age = [DATA_COL_SEP.join(["Age", "Number of users"])]
+            bargraph_age += [DATA_COL_SEP.join([str(b) + "-" + str(b+bin_interval), str(age_data_binned.count(list_bins.index(b)+1))]) for b in list_bins]
+            adminui_data += "<input class='adminui_data' type='hidden' chart-type='bar' data-title='Number of users by age' value='" + DATA_ROW_SEP.join(bargraph_age) + "' />"
             
             # - Number of tasks completed over time (by month since inception)
             # - Breakdown of each type of task that has been completed (task as IV and number of completions as DV)

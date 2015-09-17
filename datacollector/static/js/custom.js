@@ -125,7 +125,11 @@ $(document).ready(function () {
     });
     
     // If we're on the admin page, load the Google Charts API
-    if ($("#chart_div").length > 0) {
+    var page_name = document.location.pathname;
+    if (page_name.lastIndexOf("/") != -1) {
+        page_name = page_name.substring(page_name.lastIndexOf("/")+1);
+    }
+    if (page_name == "admin") {
         // Load the Visualization API and the piechart package.
         google.load('visualization', '1.0', {'packages':['corechart'],
                                              'callback': function() { populateAdminUI(); } });
@@ -144,6 +148,7 @@ function populateAdminUI() {
     var data_row_sep = $("#data_row_sep").val();
     
     $(".adminui_data").each(function() {
+        var chart_type = $(this).attr("chart-type");
         var next_title = $(this).attr("data-title");
         var next_val = $(this).val();
         
@@ -159,7 +164,7 @@ function populateAdminUI() {
             }
             dta.push(clean_row);
         }
-        drawChart(dta, next_title, chart_width, chart_height);
+        drawChart(chart_type, dta, next_title, chart_width, chart_height);
     });
 }
 
@@ -167,7 +172,7 @@ function populateAdminUI() {
 // Callback that creates and populates a data table,
 // instantiates the pie chart, passes in the data and
 // draws it.
-function drawChart(dataTableArray, chartTitle, w, h) {
+function drawChart(chartType, dataTableArray, chartTitle, w, h) {
 
     // Create the data table.
     var data = new google.visualization.arrayToDataTable(dataTableArray, false);
@@ -178,7 +183,12 @@ function drawChart(dataTableArray, chartTitle, w, h) {
                    'height':h};
     
     // Instantiate and draw our chart, passing in some options.
-    var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+    var new_chart = $("<div></div>").appendTo("#chart_div");
+    if (chartType == 'pie') {
+        var chart = new google.visualization.PieChart(new_chart[0]);
+    } else if (chartType == 'bar') {
+        var chart = new google.visualization.BarChart(new_chart[0]);
+    }
     chart.draw(data, options);
 }
 
