@@ -84,9 +84,12 @@ def dashboard(request):
             adminui_data += "<input class='adminui_data' type='hidden' chart-type='bar' data-title='Number of tasks completed by month' value='" + DATA_ROW_SEP.join(bargraph_tasks_by_month) + "' />"
             
             
-            # - Breakdown of each type of task that has been completed (task as IV and number of completions as DV)
-            
-            
+            # - Breakdown of each type of task that has been completed (task as IV and number of completions as DV) - pie chart
+            completed_tasks = Session_Task.objects.filter(date_completed__isnull=False)
+            tasks_by_type = completed_tasks.values('task__name').annotate(Count('session_task_id')).order_by('task__name')
+            piechart_tasks_by_type = [DATA_COL_SEP.join(["Task Type", "Tasks"])]
+            piechart_tasks_by_type += [DATA_COL_SEP.join([x['task__name'], str(x['session_task_id__count'])]) for x in tasks_by_type]
+            adminui_data += "<input class='adminui_data' type='hidden' chart-type='bar' data-title='Number of tasks completed by type' value='" + DATA_ROW_SEP.join(piechart_tasks_by_type) + "' />"
             
         passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user, 'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP, 'data_col_sep': DATA_COL_SEP }
         passed_vars.update(global_passed_vars)
