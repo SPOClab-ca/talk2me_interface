@@ -339,6 +339,9 @@
         
         <div class="unsupported_html5">
             <h4><a href="/{{ website_id }}/startsession" onClick="preventResubmission(this, '');">Start a new session</a><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></h4>
+            {% if user.is_superuser %}
+            <hr/><h4><a href="/{{ website_id }}/admin">Admin Dashboard</a></h4>
+            {% endif %}
         </div>
         
             {% if active_sessions %}
