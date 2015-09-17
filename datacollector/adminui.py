@@ -1,4 +1,5 @@
-from django.db.models import Q, Count
+from django.db import connection
+from django.db.models import Q, Count, Min
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
@@ -26,10 +27,11 @@ global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "w
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 
-global DATA_ROW_SEP, DATA_COL_SEP, date_format, DAYS_PER_YEAR
+global DATA_ROW_SEP, DATA_COL_SEP, date_format, month_format, DAYS_PER_YEAR
 DATA_ROW_SEP = "#"
 DATA_COL_SEP = "|"
 date_format = "%Y-%m-%d"
+month_format = "%Y-%m"
 DAYS_PER_YEAR = 365.2425 # average length of year taking into account leap years
 
     
@@ -73,7 +75,15 @@ def dashboard(request):
             bargraph_age += [DATA_COL_SEP.join([str(b) + "-" + str(b+bin_interval-1), str(age_data_binned.count(list_bins.index(b)+1))]) for b in list_bins]
             adminui_data += "<input class='adminui_data' type='hidden' chart-type='bar' data-title='Number of users by age' value='" + DATA_ROW_SEP.join(bargraph_age) + "' />"
             
-            # - Number of tasks completed over time (by month since inception)
+            # - Number of tasks completed over time (by month since inception, where inception = first task completion date)
+            truncate_date = connection.ops.date_trunc_sql('month', 'date_completed')
+            completed_tasks = Session_Task.objects.filter(date_completed__isnull=False).extra({'month': truncate_date})
+            tasks_by_month = completed_tasks.values('month').annotate(Count('session_task_id')).order_by('month')
+            bargraph_tasks_by_month = [DATA_COL_SEP.join(["Month", "Tasks"])]
+            bargraph_tasks_by_month += [DATA_COL_SEP.join([x['month'].strftime(month_format), str(x['session_task_id__count'])]) for x in tasks_by_month]
+            adminui_data += "<input class='adminui_data' type='hidden' chart-type='bar' data-title='Number of tasks completed by month' value='" + DATA_ROW_SEP.join(bargraph_tasks_by_month) + "' />"
+            
+            
             # - Breakdown of each type of task that has been completed (task as IV and number of completions as DV)
             
             
