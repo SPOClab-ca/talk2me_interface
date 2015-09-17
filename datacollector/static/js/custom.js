@@ -142,7 +142,7 @@ $(document).ready(function () {
 
 function populateAdminUI() {
     // Get all relevant statistics and visualize them
-    var chart_width = 400;
+    var chart_width = 600;
     var chart_height = 300;
     var data_col_sep = $("#data_col_sep").val();
     var data_row_sep = $("#data_row_sep").val();
