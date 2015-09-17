@@ -56,7 +56,7 @@ def dashboard(request):
             
             # Get all the statistical data to be displayed in graphs and charts
             # - Number of users by gender (pie chart)
-            piechart_gender = [DATA_COL_SEP.join(["Gender", "Number of users"])]
+            piechart_gender = [DATA_COL_SEP.join(["Gender", "Users"])]
             piechart_gender += [DATA_COL_SEP.join([x.name, str(x.subject__count)]) for x in Gender.objects.annotate(Count('subject'))]
             adminui_data += "<input class='adminui_data' type='hidden' chart-type='pie' data-title='Number of users by gender' value='" + DATA_ROW_SEP.join(piechart_gender) + "' />"
             
@@ -69,8 +69,8 @@ def dashboard(request):
             age_data_binned = list(numpy.digitize(age_data, age_bins))
             list_bins = list(age_bins)
             # Get the number of subjects in each bin, in the format e.g.: ["1-10"|"0", "11-20"|"0", "21-30"|"5", ...]
-            bargraph_age = [DATA_COL_SEP.join(["Age", "Number of users"])]
-            bargraph_age += [DATA_COL_SEP.join([str(b) + "-" + str(b+bin_interval), str(age_data_binned.count(list_bins.index(b)+1))]) for b in list_bins]
+            bargraph_age = [DATA_COL_SEP.join(["Age", "Users"])]
+            bargraph_age += [DATA_COL_SEP.join([str(b) + "-" + str(b+bin_interval-1), str(age_data_binned.count(list_bins.index(b)+1))]) for b in list_bins]
             adminui_data += "<input class='adminui_data' type='hidden' chart-type='bar' data-title='Number of users by age' value='" + DATA_ROW_SEP.join(bargraph_age) + "' />"
             
             # - Number of tasks completed over time (by month since inception)
