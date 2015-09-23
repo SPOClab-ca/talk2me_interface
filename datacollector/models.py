@@ -5,6 +5,14 @@ from datetime import datetime
 
 # HELPER CLASSES (defining dropdown values) -----------------------------------
 
+class Bundle(models.Model):
+    def __unicode__(self):
+        return str(self.name_id)
+        
+    bundle_id = models.AutoField(primary_key=True)
+    name_id = models.CharField(max_length=50)
+    description = models.TextField(null=True, blank=True)
+    
 class Education_Level(models.Model):
     # the possible education levels
 
@@ -266,7 +274,16 @@ class Subject_Ethnicity(models.Model):
     
     subject = models.ForeignKey(Subject)
     ethnicity = models.ForeignKey(Ethnicity)
+
+class Subject_Bundle(models.Model):
+    def __unicode__(self):
+        return "Subject " + User.objects.get(id=self.user_id).username + ", Bundle " + self.bundle.name_id
     
+    subject_bundle_id = models.AutoField(primary_key=True)
+    subject = models.ForeignKey(Subject)
+    bundle = models.ForeignKey(Bundle)
+    active_startdate = models.DateField()
+    active_enddate = models.DateField(null=True, blank=True)
 
 class Task(models.Model):
     # represents every type of question the subjects have to answer
@@ -342,6 +359,14 @@ class Task_Field_Value(models.Model):
     assoc = models.ForeignKey("self", null=True, blank=True)
     response_expected = models.TextField(null=True, blank=True)
 
+class Bundle_Task(models.Model):
+    def __unicode__(self):
+        return "Bundle " + self.bundle.name_id + ", Task " + self.task.name
+    
+    bundle_task_id = models.AutoField(primary_key=True)
+    bundle = models.ForeignKey(Bundle)
+    task = models.ForeignKey(Task)
+    
 class Session_Type(models.Model):
     
     def __unicode__(self):
