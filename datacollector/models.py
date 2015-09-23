@@ -277,7 +277,7 @@ class Subject_Ethnicity(models.Model):
 
 class Subject_Bundle(models.Model):
     def __unicode__(self):
-        return "Subject " + User.objects.get(id=self.user_id).username + ", Bundle " + self.bundle.name_id
+        return "Subject " + User.objects.get(id=self.subject.user_id).username + ", Bundle " + self.bundle.name_id
     
     subject_bundle_id = models.AutoField(primary_key=True)
     subject = models.ForeignKey(Subject)
