@@ -47,9 +47,19 @@ regex_date = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 # Common lib functions ------------------------------------------------------
 def generate_session(subject, session_type):
     
-    active_tasks = Task.objects.filter(is_active=1)
-    if session_type.text_only:
-        active_tasks = Task.objects.filter(is_active=1, instruction_phone__isnull=False)
+    # If the user has any active task bundles, then generate the tasks from the bundles only. 
+    # The active date range for the bundle is inclusive.
+    today = datetime.datetime.now().date()
+    active_bundles = Subject_Bundle.objects.filter( Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today )
+    if active_bundles:
+        active_tasks = []
+        for subj_bundle in active_bundles:
+            active_tasks += [x.task for x in subj_bundle.bundle.bundle_task_set.all()]
+    # Otherwise, generate all active tasks.
+    else:
+        active_tasks = Task.objects.filter(is_active=1)
+        if session_type.text_only:
+            active_tasks = Task.objects.filter(is_active=1, instruction_phone__isnull=False)
         
     active_task_ids = [t.task_id for t in active_tasks]
     
