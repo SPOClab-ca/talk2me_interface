@@ -608,8 +608,12 @@ def register(request):
     if request.user.is_authenticated():
         return HttpResponseRedirect(website_root)
     
-    # If the form has been submitted, validate the data and 
+    # If the form has been submitted, validate the data and login the user automatically
     errors = []
+    bundle_id = None
+    bundle_token = None
+    today = datetime.datetime.now().date()
+    
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -619,15 +623,37 @@ def register(request):
             # Create a corresponding subject in the app
             new_subject = Subject.objects.create(user_id=new_user.id, date_created=datetime.datetime.now())
             
+            # Validate the passed in bundle parameters
+            bundle_exists = False
+            bundle_valid = False
+            if 'bundle_id' in request.POST and 'bundle_token' in request.POST:
+                bundle_id = request.POST['bundle_id']
+                bundle_token = request.POST['bundle_token']
+                if bundle_id and bundle_token and bundle_id.isdigit():
+                    bundle_exists = Bundle.objects.filter(bundle_id=bundle_id)
+                    if bundle_exists:
+                        bundle_exists = bundle_exists[0]    
+                        if bundle_exists.bundle_token == bundle_token:
+                            bundle_valid = True
+                    
+            # If the passed in bundle parameter is valid, then assign the newly created user
+            # on this page to the relevant task bundle
+            if bundle_exists and bundle_valid:
+                new_subject_bundle = Subject_Bundle.objects.create(subject=new_subject, bundle=bundle_exists, active_startdate=today)
+            
             # Automatically log the user in and redirect to index page
             new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
             auth_login(request,new_user)
             
             return HttpResponseRedirect(website_root)
     else:
+        if 'bid' in request.GET and 'bt' in request.GET:
+            bundle_id = request.GET['bid']
+            bundle_token = request.GET['bt']
+            
         form = UserCreationForm()
 
-    passed_vars = {'form': form}
+    passed_vars = {'form': form, 'bundle_id': bundle_id, 'bundle_token': bundle_token}
     passed_vars.update(global_passed_vars)
     
     return render_to_response('datacollector/register.html', passed_vars, context_instance=RequestContext(request))

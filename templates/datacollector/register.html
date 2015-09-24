@@ -31,6 +31,11 @@
         </tbody>
     </table>
     {% csrf_token %}
+    
+    {% if bundle_id and bundle_token %}
+    <input type="hidden" id="bundle_id" name="bundle_id" value="{{ bundle_id }}" />
+    <input type="hidden" id="bundle_token" name="bundle_token" value="{{ bundle_token }}" />
+    {% endif %}
     <button type="submit" class="btn btn-primary btn-lg">Create account</button>
 </form>
 
