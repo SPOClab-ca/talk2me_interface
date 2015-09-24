@@ -12,6 +12,7 @@ class Bundle(models.Model):
     bundle_id = models.AutoField(primary_key=True)
     name_id = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
+    bundle_token = models.CharField(max_length=1000)
     
 class Education_Level(models.Model):
     # the possible education levels
@@ -158,7 +159,7 @@ class Subject(models.Model):
     date_last_session_access = models.DateField(null=True,blank=True)
     consent_alternate = models.IntegerField(default=0)
     email_validated = models.IntegerField(default=0)
-    email_token = models.CharField(max_length=100,null=True,blank=True)
+    email_token = models.CharField(max_length=1000,null=True,blank=True)
     preference_email_reminders = models.IntegerField(default=0)
     preference_email_reminders_freq = models.IntegerField(null=True,blank=True)
     email_reminders = models.CharField(max_length=100,null=True,blank=True)
