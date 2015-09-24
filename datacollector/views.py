@@ -222,7 +222,8 @@ def index(request):
                     
                 # Dictionary of options which require a user email
                 options_req_email = {'cb_preference_email_reminders': 'scheduled e-mail reminders', 
-                                     'cb_preference_email_updates': 'electronic communication regarding study outcomes'}
+                                     'cb_preference_email_updates': 'electronic communication regarding study outcomes',
+                                     'cb_preference_prizes': 'monthly prize draws'}
                 options_selected = set(options_req_email.keys()).intersection(set(request.POST.keys()))
                 if options_selected and not user_email:
                     connector = " || "
@@ -278,6 +279,10 @@ def index(request):
                     # Preference for receiving email updates about related future research/publications
                     if 'cb_preference_email_updates' in request.POST:
                         Subject.objects.filter(user_id=request.user.id).update(preference_email_updates=1,email_updates=user_email)
+                    
+                    # Preference for participation in monthly prize draws
+                    if 'cb_preference_prizes' in request.POST:
+                        Subject.objects.filter(user_id=request.user.id).update(preference_prizes=1,email_prizes=user_email)
             
             elif form_type == 'demographic':
             
