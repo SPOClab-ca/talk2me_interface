@@ -644,7 +644,8 @@ def register(request):
             # If the passed in bundle parameter is valid, then assign the newly created user
             # on this page to the relevant task bundle
             if bundle_exists and bundle_valid:
-                new_subject_bundle = Subject_Bundle.objects.create(subject=new_subject, bundle=bundle_exists, active_startdate=today)
+                subj_bundle_token = crypto.generate_confirmation_token(str(new_subject.user_id) + str(bundle_exists.bundle_id) + str(bundle_exists.completion_req_sessions))
+                new_subject_bundle = Subject_Bundle.objects.create(subject=new_subject, bundle=bundle_exists, active_startdate=today, completion_token=subj_bundle_token, completion_req_sessions=bundle_exists.completion_req_sessions)
             
             # Automatically log the user in and redirect to index page
             new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
