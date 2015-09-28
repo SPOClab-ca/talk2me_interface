@@ -1482,7 +1482,15 @@ def bundle_completion_validate(request):
     is_valid = False
     today = datetime.datetime.now().date()
     
-    if request.method == "POST":
+    # Respond to a preflight OPTIONS request from external (CORS) requestor, by adding the necessary response headers
+    if request.method == "OPTIONS":
+        response = HttpResponse(json.dumps(json_data))
+        response["Content-type"] = "application/json"
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, POST"
+        response["Access-Control-Allow-Headers"] = "Accept, Content-Type, X-CSRFToken, X-Requested-With"
+        return response
+    elif request.method == "POST":
         if "username" in request.POST and "completion_token" in request.POST:
             username = request.POST["username"]
             completion_token = request.POST["completion_token"]
@@ -1505,9 +1513,10 @@ def bundle_completion_validate(request):
                             if completed_sessions and (not sb.completion_req_sessions or len(completed_sessions) >= sb.completion_req_sessions):
                                 is_valid = True
     
-    if is_valid:
-        json_data["valid"] = "yes"
-    else:
-        json_data["valid"] = "no"
-    json = simplejson.dumps(json_data)
-    return HttpResponse(json, mimetype="application/x-javascript")
+        if is_valid:
+            json_data["valid"] = "yes"
+        else:
+            json_data["valid"] = "no"
+        json = simplejson.dumps(json_data)
+        return HttpResponse(json, mimetype="application/x-javascript")
+    return HttpResponse("Unauthorized", status=401)
