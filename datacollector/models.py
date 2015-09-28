@@ -13,6 +13,7 @@ class Bundle(models.Model):
     name_id = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
     bundle_token = models.CharField(max_length=1000)
+    completion_req_sessions = models.IntegerField(null=True, blank=True)
     
 class Education_Level(models.Model):
     # the possible education levels
@@ -285,6 +286,8 @@ class Subject_Bundle(models.Model):
     bundle = models.ForeignKey(Bundle)
     active_startdate = models.DateField()
     active_enddate = models.DateField(null=True, blank=True)
+    completion_token = models.CharField(max_length=1000, null=True, blank=True)
+    completion_req_sessions = models.IntegerField(null=True, blank=True)
 
 class Task(models.Model):
     # represents every type of question the subjects have to answer
