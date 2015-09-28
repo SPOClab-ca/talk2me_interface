@@ -1482,15 +1482,7 @@ def bundle_completion_validate(request):
     is_valid = False
     today = datetime.datetime.now().date()
     
-    # Respond to a preflight OPTIONS request from external (CORS) requestor, by adding the necessary response headers
-    if request.method == "OPTIONS":
-        response = HttpResponse(json.dumps(json_data))
-        response["Content-type"] = "application/json"
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "GET, POST"
-        response["Access-Control-Allow-Headers"] = "Accept, Content-Type, X-CSRFToken, X-Requested-With"
-        return response
-    elif request.method == "POST":
+    if request.method == "POST":
         if "username" in request.POST and "completion_token" in request.POST:
             username = request.POST["username"]
             completion_token = request.POST["completion_token"]
@@ -1518,5 +1510,11 @@ def bundle_completion_validate(request):
         else:
             json_data["valid"] = "no"
         json = simplejson.dumps(json_data)
-        return HttpResponse(json, mimetype="application/x-javascript")
+        
+        response = HttpResponse(json)
+        response["Content-type"] = "application/json"
+        response["Access-Control-Allow-Origin"] = "*" # https://tasks.crowdflower.com
+        response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Accept, Content-Type, X-CSRFToken, X-Requested-With"
+        return response
     return HttpResponse("Unauthorized", status=401)
