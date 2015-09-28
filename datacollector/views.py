@@ -197,6 +197,11 @@ def index(request):
     form_languages_other_fluency = []
     form_errors = []
     subject_bundle = None
+    bundle_id = None
+    bundle_token = None
+    if 'bid' in request.GET and 'bt' in request.GET:
+        bundle_id = request.GET['bid']
+        bundle_token = request.GET['bt']
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -552,7 +557,25 @@ def index(request):
             subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
             if subject_bundle:
                 subject_bundle = subject_bundle[0]
-            
+            else:    
+                # If the URL contains a bundle association, then create it if it doesn't already exist.
+                # A user is assumed to be a part of one bundle at a time only.
+                # Validate the passed in bundle parameters:
+                bundle_exists = False
+                bundle_valid = False
+                if bundle_id and bundle_token and bundle_id.isdigit():
+                    bundle_exists = Bundle.objects.filter(bundle_id=bundle_id)
+                    if bundle_exists:
+                        bundle_exists = bundle_exists[0]    
+                        if bundle_exists.bundle_token == bundle_token:
+                            bundle_valid = True
+                        
+                # If the passed in bundle parameter is valid, then assign the logged in user
+                # on this page to the relevant task bundle, if they are not already assigned
+                if bundle_exists and bundle_valid:
+                    subj_bundle_token = crypto.generate_confirmation_token(str(subject.user_id) + str(bundle_exists.bundle_id) + str(bundle_exists.completion_req_sessions))
+                    new_subject_bundle = Subject_Bundle.objects.create(subject=subject, bundle=bundle_exists, active_startdate=today, active_enddate=bundle_exists.active_enddate, completion_token=subj_bundle_token, completion_req_sessions=bundle_exists.completion_req_sessions)
+                
     dict_language = {}
     dict_language_other = {}
     
@@ -616,14 +639,20 @@ def logout(request):
 
 def register(request):
 
+    bundle_id = None
+    bundle_token = None
+    get_querystring = ""
+    if 'bid' in request.GET and 'bt' in request.GET:
+        bundle_id = request.GET['bid']
+        bundle_token = request.GET['bt']
+        get_querystring = "?bid=" + bundle_id + "&bt=" + bundle_token
+        
     # If there is a currently logged in user, just redirect to home page
     if request.user.is_authenticated():
-        return HttpResponseRedirect(website_root)
+        return HttpResponseRedirect(website_root + get_querystring)
     
     # If the form has been submitted, validate the data and login the user automatically
     errors = []
-    bundle_id = None
-    bundle_token = None
     today = datetime.datetime.now().date()
     
     if request.method == 'POST':
@@ -652,7 +681,7 @@ def register(request):
             # on this page to the relevant task bundle
             if bundle_exists and bundle_valid:
                 subj_bundle_token = crypto.generate_confirmation_token(str(new_subject.user_id) + str(bundle_exists.bundle_id) + str(bundle_exists.completion_req_sessions))
-                new_subject_bundle = Subject_Bundle.objects.create(subject=new_subject, bundle=bundle_exists, active_startdate=today, completion_token=subj_bundle_token, completion_req_sessions=bundle_exists.completion_req_sessions)
+                new_subject_bundle = Subject_Bundle.objects.create(subject=new_subject, bundle=bundle_exists, active_startdate=today, active_enddate=bundle_exists.active_enddate, completion_token=subj_bundle_token, completion_req_sessions=bundle_exists.completion_req_sessions)
             
             # Automatically log the user in and redirect to index page
             new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
@@ -660,10 +689,6 @@ def register(request):
             
             return HttpResponseRedirect(website_root)
     else:
-        if 'bid' in request.GET and 'bt' in request.GET:
-            bundle_id = request.GET['bid']
-            bundle_token = request.GET['bt']
-            
         form = UserCreationForm()
 
     passed_vars = {'form': form, 'bundle_id': bundle_id, 'bundle_token': bundle_token}
