@@ -196,6 +196,7 @@ def index(request):
     form_languages_fluency = []
     form_languages_other_fluency = []
     form_errors = []
+    subject_bundle = None
     
     if request.user.is_authenticated():
         is_authenticated = True
@@ -546,6 +547,12 @@ def index(request):
             # (NB: Q objects must appear before keyword parameters in the filter)
             active_notifications = notify.get_active_new(subject)
             
+            # Check if the user is associated with any active bundles
+            today = datetime.datetime.now().date()
+            subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+            if subject_bundle:
+                subject_bundle = subject_bundle[0]
+            
     dict_language = {}
     dict_language_other = {}
     
@@ -565,7 +572,7 @@ def index(request):
             dict_language_other[form_languages_other[i]] = ""
     
     # , 'form_languages': form_languages, 'form_languages_other': form_languages_other, 'form_languages_fluency': form_languages_fluency
-    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options }
+    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options, 'subject_bundle': subject_bundle }
     passed_vars.update(global_passed_vars)
     return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
 

@@ -347,6 +347,12 @@
             {% if user.is_superuser %}
             <hr/><h4><a href="/{{ website_id }}/admin">Admin Dashboard</a></h4>
             {% endif %}
+            
+            {% if subject_bundle and subject_bundle.completion_req_sessions and completed_sessions|length >= subject_bundle.completion_req_sessions %}
+            <div class='bs-callout bs-callout-info'>
+                <h4>Completion confirmation token:</h4><div class='small'>{{ subject_bundle.completion_token }}</div>
+            </div>
+            {% endif %}
         </div>
         
             {% if active_sessions %}
