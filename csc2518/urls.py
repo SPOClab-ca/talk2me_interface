@@ -36,6 +36,7 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + '404/$', 'datacollector.views.notfound'),
     url(r'^' + settings.SUBSITE_ID + 'error/(?P<error_id>\d{3})/$', 'datacollector.views.error'),
     url(r'^' + settings.SUBSITE_ID + 'media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+    url(r'^' + settings.SUBSITE_ID + 'bundle/completion/validate$', 'datacollector.views.bundle_completion_validate'),
     
     # API for phone system
     url(r'^' + settings.SUBSITE_ID + 'phone/session$', 'datacollector.phone.session'),

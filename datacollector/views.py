@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.utils import simplejson
+from django.views.decorators.csrf import csrf_exempt
 from datacollector.forms import *
 from datacollector.models import *
 from csc2518.settings import STATIC_URL
@@ -1471,3 +1472,42 @@ def pagetime(request):
         json = simplejson.dumps(return_dict)
         return HttpResponse(json, mimetype="application/x-javascript")
     return HttpResponseRedirect(website_root)
+    
+    
+@csrf_exempt
+def bundle_completion_validate(request):
+    # Takes: POST request with parameters "username" and "confirmation_token"
+    # Returns: JSON with parameters "status" ("success"/"fail"), "valid" ("yes"/"no")
+    json_data = {"status": "success"}
+    is_valid = False
+    today = datetime.datetime.now().date()
+    
+    if request.method == "POST":
+        if "username" in request.POST and "completion_token" in request.POST:
+            username = request.POST["username"]
+            completion_token = request.POST["completion_token"]
+            if username and completion_token and len(completion_token) == 128 and completion_token.isalnum():
+                
+                # Check user exists
+                u = User.objects.filter(username=username)
+                if u:
+                    u = u[0]
+                    # Check associated subject exists
+                    s = Subject.objects.filter(user_id=u.id)
+                    if s:
+                        s = s[0]
+                        # Check if token exists in database for a Subject_Bundle pair for the same subject, and that it hasn't been used before
+                        sb = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), active_startdate__lte=today, completion_token=completion_token, subject=s, completion_token_usedate__isnull=True)
+                        if sb:
+                            sb = sb[0]
+                            # Check if the subject has completed all required sessions
+                            completed_sessions = Session.objects.filter(subject=s, end_date__isnull=False, start_date__gte=sb.active_startdate)
+                            if completed_sessions and (not sb.completion_req_sessions or len(completed_sessions) >= sb.completion_req_sessions):
+                                is_valid = True
+    
+    if is_valid:
+        json_data["valid"] = "yes"
+    else:
+        json_data["valid"] = "no"
+    json = simplejson.dumps(json_data)
+    return HttpResponse(json, mimetype="application/x-javascript")
