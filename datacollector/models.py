@@ -14,6 +14,7 @@ class Bundle(models.Model):
     description = models.TextField(null=True, blank=True)
     bundle_token = models.CharField(max_length=1000)
     completion_req_sessions = models.IntegerField(null=True, blank=True)
+    active_enddate = models.DateField(null=True, blank=True)
     
 class Education_Level(models.Model):
     # the possible education levels
