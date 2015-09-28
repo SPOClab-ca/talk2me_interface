@@ -288,6 +288,7 @@ class Subject_Bundle(models.Model):
     active_startdate = models.DateField()
     active_enddate = models.DateField(null=True, blank=True)
     completion_token = models.CharField(max_length=1000, null=True, blank=True)
+    completion_token_usedate = models.DateField(null=True, blank=True)
     completion_req_sessions = models.IntegerField(null=True, blank=True)
 
 class Task(models.Model):
