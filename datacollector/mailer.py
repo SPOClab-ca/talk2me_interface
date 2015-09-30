@@ -9,6 +9,7 @@ import calendar
 import datetime
 import emails
 import json
+import math
 import numpy as np
 from numpy.random import random_sample
 
@@ -133,7 +134,7 @@ def monthlydraw(request):
                 month_start = datetime.date(today.year, today.month, 1)
                 month_end = datetime.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
                 
-                # Build a list of all available prizes
+                # Build a list of all available monetary prizes
                 prizes_list = [p.prize_name for p in Prize.objects.filter(prize_value__gt=0).order_by('prize_name')]
                 
                 # Build a probability distribution over the users who have
@@ -143,11 +144,20 @@ def monthlydraw(request):
                 # The probability of winning is equal to the number of completed sessions over the 
                 # past month / total number of completed sessions over the past month.
                 # NB: it doesn't matter when the session was started.
-                subj_eligible = Subject.objects.filter(preference_prizes=1, email_prizes__isnull=False, email_validated=1, session__isnull=False, session__end_date__isnull=False, session__end_date__gte=month_start, session__end_date__lte=month_end).distinct().annotate(Count('session'))
+                subj_eligible = Subject.objects.filter(preference_prizes=1, email_prizes__isnull=False, email_validated=1, session__isnull=False, session__end_date__isnull=False, session__end_date__gte=month_start, session__end_date__lte=month_end).distinct().annotate(Count('session', distinct=True))
                 total_sess = sum([x.session__count for x in subj_eligible])
                 
                 distribution_values = np.array([x.user_id for x in subj_eligible])
                 distribution_prob = np.array([x.session__count * 1.0 / total_sess for x in subj_eligible])
+                
+                # Adjust the distribution probabilities by penalizing previous prize winners, 
+                # where the penalty is proportional to the number of wins
+                penalty_past_win = 0.5
+                past_wins = [x.subject_notifications_set.filter(notification=notification_type).count() for x in subj_eligible]
+                penalty_factors = [ float(math.pow(penalty_past_win, x)) for x in past_wins]
+                penalized_prob = [distribution_prob[x] * penalty_factors[x] for x in range(len(subj_eligible))]
+                adjustment_factor = sum(penalized_prob)
+                distribution_prob = [ x / adjustment_factor for x in penalized_prob]
                 
                 # The number of winners is either the pre-specified number, or the number of eligible subjects
                 # (if the latter is smaller).
@@ -176,7 +186,7 @@ def monthlydraw(request):
                     email_text = "Dear <b>%s</b>, \r\n\r\nYou won a prize from the monthly draw on %s!\r\n\r\nTo claim your prize, please respond to this email with the following information:\r\n\r\n1. Your e-mail address where you would like to receive the prize\r\n2. Your choice of prize (choose ONE of the following):\r\n%s\r\n\r\nThank you for your participation this month. You're awesome!\r\n\r\n- The SPOClab team!\r\n\r\nSPOClab: Signal Processing and Oral Communication lab\r\n550 University Avenue, 12-175\r\nToronto, Ontario M5G 2A2\r\n<a href='http://spoclab.ca'>http://spoclab.ca</a>\r\n\r\nYou are receiving this email due to your account preferences. To unsubscribe, please visit <a href='%s'>your Account Settings page</a>." % (winner_user.username, website_name, "\r\n".join(prizes_list), website_hostname + '/account')
                     email_html = """<h2 style="Margin-top: 0;color: #44a8c7;font-weight: 700;font-size: 24px;Margin-bottom: 16px;font-family: Lato,sans-serif;line-height: 32px;text-align: center">Dear %s, you won a prize from the monthly draw on %s!</h2>\r\n<p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">To claim your prize, please respond to this email with the following information:\r\n<ol style="font-size: 15px;font-family: sans-serif;line-height: 24px;text-align: left; margin-bottom: 24px;color: #000000;">\r\n<li>Your e-mail address where you would like to receive the prize</li>\r\n<li>Your choice of prize (choose ONE of the following):<br />%s</li></ol></p>\r\n<p style="Margin-top: 0;color: #60666d;font-size: 15px;font-family: sans-serif;line-height: 24px;Margin-bottom: 24px;text-align: center">&mdash; The SPOClab team</p>""" % (winner_user.username, website_name, "<br />\r\n".join(prizes_list))
                     
-                    result_flag = emails.sendEmail(email_sender, email_name, [email_receiver], [], [], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
+                    result_flag = emails.sendEmail(email_sender, email_name, [email_receiver], [], [email_sender], email_subject, email_text, emails.emailPre + email_html + emails.emailPost)
                     
                     # If the send was successful, record it in the database
                     if result_flag:
