@@ -306,7 +306,7 @@ class Task(models.Model):
     name = models.CharField(max_length=50)
     instruction = models.TextField()
     instruction_phone = models.TextField(null=True, blank=True)
-    default_num_instances = models.IntegerField(default=1)
+    default_num_instances = models.IntegerField(default=1,null=True,blank=True)
     default_order = models.IntegerField()
     is_order_fixed = models.IntegerField(default=0)
     default_delay = models.IntegerField(default=0)
@@ -332,6 +332,7 @@ class Task_Field(models.Model):
     keep_visible = models.IntegerField(default=1)
     generate_value = models.IntegerField(default=0)
     assoc = models.ForeignKey("self",null=True,blank=True)
+    default_num_instances = models.IntegerField(null=True,blank=True)
 
     
 class Task_Field_Data_Attribute(models.Model):
