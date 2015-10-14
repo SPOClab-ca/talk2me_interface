@@ -333,6 +333,7 @@ class Task_Field(models.Model):
     generate_value = models.IntegerField(default=0)
     assoc = models.ForeignKey("self",null=True,blank=True)
     default_num_instances = models.IntegerField(null=True,blank=True)
+    preserve_order = models.IntegerField(null=True, blank=True)
 
     
 class Task_Field_Data_Attribute(models.Model):
