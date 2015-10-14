@@ -1029,7 +1029,7 @@ def session(request, session_id):
                             if response_field.date_completed:
                                 existing_responses = True
                                 
-                            input_field = Task_Field.objects.get(task=active_task, field_type__name='input')
+                            input_field = Task_Field.objects.get(task=active_task, field_type__name='input', assoc=instance_value.task_field)
                             field_data_type = input_field.field_data_type.name
                             
                             # Construct style attributes string from the specified field data attributes
