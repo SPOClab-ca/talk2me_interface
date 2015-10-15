@@ -1,7 +1,7 @@
 # Create your views here.
 
 from django import forms
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Sum
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.forms import UserCreationForm
 from django.core.files.base import ContentFile
@@ -15,6 +15,7 @@ from datacollector.models import *
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
 
+import copy
 import datetime
 import json
 import random
@@ -80,6 +81,9 @@ def generate_session(subject, session_type):
     for task_id in active_task_ids:
         task = Task.objects.get(task_id=task_id)
         num_instances = task.default_num_instances
+        if not num_instances:
+            # Sum up the instances for each display field for the task
+            num_instances = Task_Field.objects.filter(task=task, field_type__name='display').aggregate(Sum('default_num_instances'))['default_num_instances__sum']
         task_order = task.default_order
         shuffled_order = active_task_order[counter_task][0]
         task_delay = task.default_delay
@@ -102,7 +106,13 @@ def generate_session(subject, session_type):
         task_fields_display = Task_Field.objects.filter(task=task,field_type__name='display',generate_value=1)
         
         # For each display field, select random <num_instances> which the user hasn't seen before
+        cumulative_field_instances = 0
         for field in task_fields_display:
+            
+            # If the field doesn't have a specified number of instances, then use the task-level number of instances. 
+            field_num_instances = field.default_num_instances
+            if not field_num_instances:
+                field_num_instances = num_instances
             
             existing_instances = Session_Task_Instance_Value.objects.filter(task_field=field, session_task_instance__session_task__session__subject=subject)
             existing_values = [v.value for v in existing_instances]
@@ -110,7 +120,7 @@ def generate_session(subject, session_type):
             # Add to selected values. Make sure not to add field values that are associated with each other, or are already selected, or have been seen by the subject before in previous sessions. NB: here we are assuming that the total number of values for each field in the db is at least as big as the default number of instances for the field.
             selected_values = []
             limits = []
-            while len(selected_values) < num_instances:
+            while len(selected_values) < field_num_instances:
                 
                 field_values = Task_Field_Value.objects.filter(task_field=field,*limits).exclude(value__in=existing_values)
                 if field_values:
@@ -150,26 +160,30 @@ def generate_session(subject, session_type):
                                 ~Q(value_display = selected_values[-1].value_display) ]
                 
             
-            for index_instance in range(num_instances):
+            for index_instance in range(field_num_instances):
                 instance_value = selected_values[index_instance]
-                new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
+                new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
                 
                 # Using the task field value ("instance_value"), update the expected session response
-                Session_Response.objects.filter(session_task_instance=new_task_instances[index_instance]).update(value_expected=instance_value.response_expected)
+                Session_Response.objects.filter(session_task_instance=new_task_instances[cumulative_field_instances+index_instance]).update(value_expected=instance_value.response_expected)
 
                 # If there are any associated fields (e.g., answer field instances associated with the currently selected question field instances), add them to the session as well.
                 # Note that for select options, all options must be added, not just the one that is the correct response.
                 linked_field_instances = list(Task_Field_Value.objects.filter(Q(assoc=instance_value) | Q(assoc=instance_value.assoc)).exclude(task_field=field).exclude(assoc__isnull=True))
                 
-                # Scramble the order of the linked instances randomly, so the subject won't know the order of the correct options.
-                random.shuffle(linked_field_instances)
+                # Unless the order of the options is supposed to remain fixed (e.g.,yes/no questions), we need to scramble 
+                # the order of the linked instances randomly, so the subject won't know the order of the correct options.
+                if not field.preserve_order:
+                    random.shuffle(linked_field_instances)
                 
                 for linked_instance in linked_field_instances:
                     score = 0
                     if linked_instance.assoc.task_field_value_id == instance_value.task_field_value_id:
                         score = 1
                     
-                    new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[index_instance], task_field=linked_instance.task_field, value=linked_instance.value, value_display=linked_instance.value_display, difficulty=linked_instance.difficulty)
+                    new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=linked_instance.task_field, value=linked_instance.value, value_display=linked_instance.value_display, difficulty=linked_instance.difficulty)
+                    
+            cumulative_field_instances += field_num_instances
         counter_task += 1
         
     return new_session  
@@ -833,84 +847,94 @@ def session(request, session_id):
                     
                     active_task = Session_Task.objects.filter(session=session,date_completed__isnull=True).order_by('order')
                     if active_task:
-                        active_task = active_task[0].task
+                        active_task = active_task[0]
                         
                         # Validate the form first
-                        if 'response' in request.POST and 'instanceid' in request.POST:
-                            responses = request.POST.getlist('response')
-                            instances = request.POST.getlist('instanceid')
-                            for i in range(len(responses)):
-                                response = responses[i]
-                                next_instance = instances[i]
-                                if not response:
-                                    form_errors += ['You did not provide a response for question #' + str(i+1) + '.']
-                                if not next_instance:
-                                    form_errors += ['Question #' + str(i+1) + ' is invalid.']
-                                else:
-                                    instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
-                                    if not instance:
-                                        form_errors += ['Question #' + str(i+1) + ' is invalid.']
-                        
-                        elif 'instanceid' in request.POST:
-                            instances = request.POST.getlist('instanceid')
-                            for i in range(len(instances)):
-                                # The audio questions are already transmitted to db, ignore those
-                                audio_label = 'response_audio_' + str(instances[i])
+                        # Determine the order of the questions associated with this task (e.g., non-select questions have 'response' fields, whereas
+                        # select questions have 'response_{instanceid}' fields).
+                        active_task_questions = Session_Task_Instance_Value.objects.filter(session_task_instance__session_task=active_task, task_field__field_type__name='display')
+                        form_responses = request.POST.getlist('response')
+                        form_instances = request.POST.getlist('instanceid')
+                        responses = copy.deepcopy(form_responses)
+                        instances = copy.deepcopy(form_instances)
+                        counter_question = 0
+                        for question in active_task_questions:
+                            question_response = Task_Field.objects.get(assoc=question.task_field)
+                            
+                            next_instance = instances.pop(0)
+                            if question_response.field_data_type.name == 'select' or question_response.field_data_type.name == 'audio':
+                                # If the associated response field is 'select' or 'audio', then there will be 'response_{instanceid}' fields
+                                audio_label = 'response_audio_' + str(next_instance)
                                 if not audio_label in request.POST:
-                                    response_label = 'response_' + str(instances[i])
+                                    response_label = 'response_' + str(next_instance)
                                     if response_label in request.POST:
-                                        response = request.POST[response_label]
-                                        next_instance = instances[i]
-                                        if not response:
-                                            form_errors += ['You did not provide a response for question #' + str(i+1) + '.']
+                                        next_response = request.POST[response_label]
+                                        if not next_response:
+                                            form_errors += ['You did not provide a response for question #' + str(counter_question+1) + '.']
                                         if not next_instance:
-                                            form_errors += ['Question #' + str(i+1) + ' is invalid.']
+                                            form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
                                         else:
                                             instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
                                             if not instance:
-                                                form_errors += ['Question #' + str(i+1) + ' is invalid.']
+                                                form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
                                     else:
-                                        form_errors += ['You did not provide a response for question #' + str(i+1) + '.']
-                            
+                                        form_errors += ['You did not provide a response for question #' + str(counter_question+1) + '.']
+                            else:
+                                # Otherwise, look for 'response' fields
+                                next_response = responses.pop(0)
+                                if not next_response:
+                                    form_errors += ['You did not provide a response for question #' + str(counter_question+1) + '.']
+                                if not next_instance:
+                                    form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
+                                else:
+                                    instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
+                                    if not instance:
+                                        form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
+                            counter_question += 1     
+                        
+                        
                         # Process any input, textarea (text), and multiselect responses
                         if not form_errors:
-                            if 'response' in request.POST and 'instanceid' in request.POST:
-                                responses = request.POST.getlist('response')
-                                instances = request.POST.getlist('instanceid')
-                                for i in range(len(responses)):
-                                    response = responses[i]
-                                    instance = Session_Task_Instance.objects.filter(session_task_instance_id=instances[i])[0]
+                            responses = copy.deepcopy(form_responses)
+                            instances = copy.deepcopy(form_instances)
+                            
+                            for question in active_task_questions:
+                                question_response = Task_Field.objects.get(assoc=question.task_field)
+                                
+                                next_instance = instances.pop(0)
+                                if question_response.field_data_type.name == 'select' or question_response.field_data_type.name == 'audio':
+                                    # If the associated response field is 'select' or 'audio', then there will be 'response_{instanceid}' fields
+                                    audio_label = 'response_audio_' + str(next_instance)
+                                    if not audio_label in request.POST:
+                                        response_label = 'response_' + str(next_instance)
+                                        if response_label in request.POST:
+                                            next_response = request.POST[response_label]
+                                            instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)[0]
+                                            
+                                            # Find the response field type for this task
+                                            response_data_type = Task_Field.objects.filter(task=instance.session_task.task,field_type__name='input')[0].field_data_type
+                                            
+                                            if response_data_type == 'select':
+                                                Session_Response.objects.filter(session_task_instance=instance).update(value_text=next_response,date_completed=datetime.datetime.now())
+                                            else:
+                                                Session_Response.objects.filter(session_task_instance=instance).update(value_text=next_response,date_completed=datetime.datetime.now())
+                                else:
+                                    # Otherwise, look for 'response' fields
+                                    next_response = responses.pop(0)
+                                    instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)[0]
                                     
                                     # Find the response field type for this task
                                     response_data_type = Task_Field.objects.filter(task=instance.session_task.task,field_type__name='input')[0].field_data_type
                                     
                                     # Update the appropriate entry in the database (NB: 'audio' responses are not handled here; they are saved to database as soon as they are recorded, to avoid loss of data)                         
                                     if response_data_type == 'multiselect':
-                                        Session_Response.objects.filter(session_task_instance=instance).update(value_multiselect=response,date_completed=datetime.datetime.now())
+                                        Session_Response.objects.filter(session_task_instance=instance).update(value_multiselect=next_response,date_completed=datetime.datetime.now())
                                     else:
-                                        Session_Response.objects.filter(session_task_instance=instance).update(value_text=response,date_completed=datetime.datetime.now())
-                                        
-                            # Process any radio selection responses (different ID for the radio group for each instance of the task)
-                            if 'instanceid' in request.POST:
-                                instances = request.POST.getlist('instanceid')
-                                for i in range(len(instances)):
-                                    audio_label = 'response_audio_' + str(instances[i])
-                                    if not audio_label in request.POST:
-                                        response_label = 'response_' + str(instances[i])
-                                        if response_label in request.POST:
-                                            response = request.POST[response_label]
-                                            instance = Session_Task_Instance.objects.filter(session_task_instance_id=instances[i])[0]
-                                            
-                                            # Find the response field type for this task
-                                            response_data_type = Task_Field.objects.filter(task=instance.session_task.task,field_type__name='input')[0].field_data_type
-                                            
-                                            if response_data_type == 'select':
-                                                Session_Response.objects.filter(session_task_instance=instance).update(value_text=response,date_completed=datetime.datetime.now())
-                                            else:
-                                                Session_Response.objects.filter(session_task_instance=instance).update(value_text=response,date_completed=datetime.datetime.now())
+                                        Session_Response.objects.filter(session_task_instance=instance).update(value_text=next_response,date_completed=datetime.datetime.now())
+                            
                             
                             # Mark the task as submitted
-                            Session_Task.objects.filter(session=session,task=active_task).update(date_completed=datetime.datetime.now())
+                            Session_Task.objects.filter(session=session,task=active_task.task).update(date_completed=datetime.datetime.now())
                             
                             json_data['status'] = 'success'
                         
