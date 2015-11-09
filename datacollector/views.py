@@ -1150,8 +1150,14 @@ def results(request, subject_id):
     passed_vars = {'subject': subject}
     passed_vars.update(global_passed_vars)
     
-    return render_to_response('datacollector/result.html', passed_vars)
+    return render_to_response('datacollector/result.html', passed_vars, context_instance=RequestContext(request))
 
+def survey_usability(request):
+    
+    passed_vars = {}
+    passed_vars.update(global_passed_vars)
+    return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
+    
 def audiorecord(request):
     
     if request.user.is_authenticated():
