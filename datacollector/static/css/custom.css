@@ -403,4 +403,7 @@ ol.breadcrumb li {
     cursor: pointer;
 }
 
-
+/* Class that makes table cells be vertically top aligned */
+.table-vtop > tbody > tr > td, .table-vtop > thead > tr > th {
+    vertical-align: top;
+}

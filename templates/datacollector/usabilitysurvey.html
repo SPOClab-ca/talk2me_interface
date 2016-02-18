@@ -23,15 +23,270 @@
 
 <form action="" method="POST">
     <ol>
-        <li>On a scale from 1 (strongly disagree) to 5 (strongly agree), please rate your agreement with the following statements related to website usability, and your satisfaction with the website. Please mark only one option for each statement.</li>
-        <li>Do you own a computer with an Internet connection?</li>
-        <li>How often do you use a computer?</li>
-        <li>How often do you experience frustration when using a computer?</li>
-        <li>What do you use a computer for?</li>
-        <li>Would you use the Talk2Me website after the end of the study?</li>
-        <li>Did you have any difficulties using the website?</li>
-        <li>Is there any way you think the website could be improved?</li>
-        <li>Do you prefer an online or in-person language assessment?</li>
+        <li>On a scale from 1 (very poor) to 5 (very good), please rank the website's usability on the following dimensions:
+        
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th style="width: 50%;">Heuristic</th>
+                <th style="width: 10%;">Very poor</th>
+                <th style="width: 10%;">Poor</th>
+                <th style="width: 10%;">Moderate</th>
+                <th style="width: 10%;">Good</th>
+                <th style="width: 10%;">Very good</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Content and instructions are easy to understand</strong><br />If specialized terminology is used, it is explained in terms you can understand.</td>
+                <td><input name="h1" type="radio" value="1" /></td>
+                <td><input name="h1" type="radio" value="2" /></td>
+                <td><input name="h1" type="radio" value="3" /></td>
+                <td><input name="h1" type="radio" value="4" /></td>
+                <td><input name="h1" type="radio" value="5" /></td>
+                </tr>
+                <tr><td><strong>Web site use does not require use of memory to locate information</strong><br />Example: Web site organization makes content easy to find.</td>
+                <td><input name="h2" type="radio" value="1" /></td>
+                <td><input name="h2" type="radio" value="2" /></td>
+                <td><input name="h2" type="radio" value="3" /></td>
+                <td><input name="h2" type="radio" value="4" /></td>
+                <td><input name="h2" type="radio" value="5" /></td>
+                </tr>
+                <tr><td><strong>Consistency</strong><br />Web site uses consistent navigation and terminology.</td>
+                <td><input name="h3" type="radio" value="1" /></td>
+                <td><input name="h3" type="radio" value="2" /></td>
+                <td><input name="h3" type="radio" value="3" /></td>
+                <td><input name="h3" type="radio" value="4" /></td>
+                <td><input name="h3" type="radio" value="5" /></td>
+                </tr>
+                <tr><td><strong>Feedback</strong><br />Web site always keeps you informed of what is going on (e.g., your progress), through appropriate notifications.</td>
+                <td><input name="h4" type="radio" value="1" /></td>
+                <td><input name="h4" type="radio" value="2" /></td>
+                <td><input name="h4" type="radio" value="3" /></td>
+                <td><input name="h4" type="radio" value="4" /></td>
+                <td><input name="h4" type="radio" value="5" /></td>
+                </tr>
+                <tr><td><strong>Clearly marked exits</strong><br />Example: Web site always gives you a way out (e.g., a "Cancel" or "Withdraw" option is available at any time).</td>
+                <td><input name="h5" type="radio" value="1" /></td>
+                <td><input name="h5" type="radio" value="2" /></td>
+                <td><input name="h5" type="radio" value="3" /></td>
+                <td><input name="h5" type="radio" value="4" /></td>
+                <td><input name="h5" type="radio" value="5" /></td>
+                </tr>
+                <tr><td><strong>Shortcuts</strong><br />If you are familiar with the Web site, you can use special shortcuts to speed up actions (e.g., keyboard shortcuts used for navigation).</td>
+                <td><input name="h6" type="radio" value="1" /></td>
+                <td><input name="h6" type="radio" value="2" /></td>
+                <td><input name="h6" type="radio" value="3" /></td>
+                <td><input name="h6" type="radio" value="4" /></td>
+                <td><input name="h6" type="radio" value="5" /></td>
+                </tr>
+                <tr><td><strong>Good error messages</strong><br />Error messages help you recognize, diagnose, and recover from the errors, rather than being cryptic and technical.</td>
+                <td><input name="h7" type="radio" value="1" /></td>
+                <td><input name="h7" type="radio" value="2" /></td>
+                <td><input name="h7" type="radio" value="3" /></td>
+                <td><input name="h7" type="radio" value="4" /></td>
+                <td><input name="h7" type="radio" value="5" /></td>
+                </tr>
+                <tr><td><strong>Prevent errors</strong><br />Web site minimizes the likelihood of severe errors through validation of user input (e.g., system checks if your input is blank before submission, instead of failing when it receives empty responses).</td>
+                <td><input name="h8" type="radio" value="1" /></td>
+                <td><input name="h8" type="radio" value="2" /></td>
+                <td><input name="h8" type="radio" value="3" /></td>
+                <td><input name="h8" type="radio" value="4" /></td>
+                <td><input name="h8" type="radio" value="5" /></td>
+                </tr>
+                <tr><td><strong>Help and documentation</strong><br />Easy to find and to search.</td>
+                <td><input name="h9" type="radio" value="1" /></td>
+                <td><input name="h9" type="radio" value="2" /></td>
+                <td><input name="h9" type="radio" value="3" /></td>
+                <td><input name="h9" type="radio" value="4" /></td>
+                <td><input name="h9" type="radio" value="5" /></td>
+                </tr>
+            </tbody>
+        </table>
+        </li>
+        
+        <li>On a scale from 1 (very unsatisfied) to 7 (very satisfied), please rank your satisfaction with the following aspects of the website:
+        
+        <table class="table table-striped table-vtop">
+            <thead>
+            <tr>
+                <th style="width: 30%;">Criterion</th>
+                <th style="width: 15%;">1<br />(Very unsatisfied)</th>
+                <th style="width: 8%;">2</th>
+                <th style="width: 8%;">3</th>
+                <th style="width: 8%;">4</th>
+                <th style="width: 8%;">5</th>
+                <th style="width: 8%;">6</th>
+                <th style="width: 15%;">7<br />(Very satisfied)</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr><td>Ease of finding specific information</td>
+                <td><input name="s1" type="radio" value="1" /></td>
+                <td><input name="s1" type="radio" value="2" /></td>
+                <td><input name="s1" type="radio" value="3" /></td>
+                <td><input name="s1" type="radio" value="4" /></td>
+                <td><input name="s1" type="radio" value="5" /></td>
+                <td><input name="s1" type="radio" value="6" /></td>
+                <td><input name="s1" type="radio" value="7" /></td>
+                </tr>
+                <tr><td>Ease of reading the information given</td>
+                <td><input name="s2" type="radio" value="1" /></td>
+                <td><input name="s2" type="radio" value="2" /></td>
+                <td><input name="s2" type="radio" value="3" /></td>
+                <td><input name="s2" type="radio" value="4" /></td>
+                <td><input name="s2" type="radio" value="5" /></td>
+                <td><input name="s2" type="radio" value="6" /></td>
+                <td><input name="s2" type="radio" value="7" /></td>
+                </tr>
+                <tr><td>Overall appearance of the site</td>
+                <td><input name="s3" type="radio" value="1" /></td>
+                <td><input name="s3" type="radio" value="2" /></td>
+                <td><input name="s3" type="radio" value="3" /></td>
+                <td><input name="s3" type="radio" value="4" /></td>
+                <td><input name="s3" type="radio" value="5" /></td>
+                <td><input name="s3" type="radio" value="6" /></td>
+                <td><input name="s3" type="radio" value="7" /></td>
+                </tr>
+                <tr><td>Overall quality of graphics</td>
+                <td><input name="s4" type="radio" value="1" /></td>
+                <td><input name="s4" type="radio" value="2" /></td>
+                <td><input name="s4" type="radio" value="3" /></td>
+                <td><input name="s4" type="radio" value="4" /></td>
+                <td><input name="s4" type="radio" value="5" /></td>
+                <td><input name="s4" type="radio" value="6" /></td>
+                <td><input name="s4" type="radio" value="7" /></td>
+                </tr>
+            </tbody>
+        </table>
+        </li>
+        
+        <li>On a scale from 1 (strongly disagree) to 7 (strongly agree), please provide your opinion on the following aspects of the website:
+        <table class="table table-striped table-vtop">
+            <thead>
+            <tr>
+                <th style="width: 40%;">Criterion</th>
+                <th style="width: 10%;">1<br />(Strongly disagree)</th>
+                <th style="width: 8%;">2</th>
+                <th style="width: 8%;">3</th>
+                <th style="width: 8%;">4</th>
+                <th style="width: 8%;">5</th>
+                <th style="width: 8%;">6</th>
+                <th style="width: 10%;">7<br />(Strongly agree)</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr><td>I found the use of this Web site easy to learn</td>
+                <td><input name="e1" type="radio" value="1" /></td>
+                <td><input name="e1" type="radio" value="2" /></td>
+                <td><input name="e1" type="radio" value="3" /></td>
+                <td><input name="e1" type="radio" value="4" /></td>
+                <td><input name="e1" type="radio" value="5" /></td>
+                <td><input name="e1" type="radio" value="6" /></td>
+                <td><input name="e1" type="radio" value="7" /></td>
+                </tr>
+                <tr><td>Finding information on this Web site requires a lot of mental effort</td>
+                <td><input name="e2" type="radio" value="1" /></td>
+                <td><input name="e2" type="radio" value="2" /></td>
+                <td><input name="e2" type="radio" value="3" /></td>
+                <td><input name="e2" type="radio" value="4" /></td>
+                <td><input name="e2" type="radio" value="5" /></td>
+                <td><input name="e2" type="radio" value="6" /></td>
+                <td><input name="e2" type="radio" value="7" /></td>
+                </tr>
+                <tr><td>Providing answers to questions on this Web site is easy</td>
+                <td><input name="e3" type="radio" value="1" /></td>
+                <td><input name="e3" type="radio" value="2" /></td>
+                <td><input name="e3" type="radio" value="3" /></td>
+                <td><input name="e3" type="radio" value="4" /></td>
+                <td><input name="e3" type="radio" value="5" /></td>
+                <td><input name="e3" type="radio" value="6" /></td>
+                <td><input name="e3" type="radio" value="7" /></td>
+                </tr>
+                <tr><td>Recording audio-answers to questions on this Web site is difficult</td>
+                <td><input name="e4" type="radio" value="1" /></td>
+                <td><input name="e4" type="radio" value="2" /></td>
+                <td><input name="e4" type="radio" value="3" /></td>
+                <td><input name="e4" type="radio" value="4" /></td>
+                <td><input name="e4" type="radio" value="5" /></td>
+                <td><input name="e4" type="radio" value="6" /></td>
+                <td><input name="e4" type="radio" value="7" /></td>
+                </tr>
+                <tr><td>Overall, I find this Web site easy to use</td>
+                <td><input name="e5" type="radio" value="1" /></td>
+                <td><input name="e5" type="radio" value="2" /></td>
+                <td><input name="e5" type="radio" value="3" /></td>
+                <td><input name="e5" type="radio" value="4" /></td>
+                <td><input name="e5" type="radio" value="5" /></td>
+                <td><input name="e5" type="radio" value="6" /></td>
+                <td><input name="e5" type="radio" value="7" /></td>
+                </tr>
+                <tr><td>Using this Web site will help me monitor changes in my language use</td>
+                <td><input name="e6" type="radio" value="1" /></td>
+                <td><input name="e6" type="radio" value="2" /></td>
+                <td><input name="e6" type="radio" value="3" /></td>
+                <td><input name="e6" type="radio" value="4" /></td>
+                <td><input name="e6" type="radio" value="5" /></td>
+                <td><input name="e6" type="radio" value="6" /></td>
+                <td><input name="e6" type="radio" value="7" /></td>
+                </tr>
+                <tr><td>Using this Web site will help researchers improve their knowledge about specific health problems</td>
+                <td><input name="e7" type="radio" value="1" /></td>
+                <td><input name="e7" type="radio" value="2" /></td>
+                <td><input name="e7" type="radio" value="3" /></td>
+                <td><input name="e7" type="radio" value="4" /></td>
+                <td><input name="e7" type="radio" value="5" /></td>
+                <td><input name="e7" type="radio" value="6" /></td>
+                <td><input name="e7" type="radio" value="7" /></td>
+                </tr>
+            </tbody>
+        </table>
+        </li>
+        
+        <li>Have you ever participated in a test for cognitive ability before? If yes, where and how was it administered?
+        <textarea style="width: 100%; height: 120px;"></textarea>
+        </li>
+        
+        <li>Do you prefer an online or in-person clinical examination of cognitive and linguistic ability? If you can, list 3 reasons why you prefer one method over the other.
+        <textarea style="width: 100%; height: 120px;"></textarea>
+        </li>
+        
+        <li>What were the top 3 things you did not like about the Web site? For example, were there any features which were confusing, difficult to locate, or did not work as you expected?
+        <textarea style="width: 100%; height: 120px;"></textarea>
+        </li>
+        
+        <li>How often do you use a computer to browse the web?
+        <div class="radio"><label><input name="comp_browse" value="daily" type="radio" />&nbsp;Daily</label></div>
+        <div class="radio"><label><input name="comp_browse" value="weekly" type="radio" />&nbsp;Weekly</label></div>
+        <div class="radio"><label><input name="comp_browse" value="monthly" type="radio" />&nbsp;Monthly</label></div>
+        <div class="radio"><label><input name="comp_browse" value="almost_never" type="radio" />&nbsp;Almost never</label></div>
+        <div class="radio"><label><input name="comp_browse" value="never" type="radio" />&nbsp;Never</label></div>
+        </li>
+        
+        <li>How often do you experience frustration when using a computer?
+        <div class="radio"><label><input name="comp_frustration" value="every_time" type="radio" />&nbsp;Every time</label></div>
+        <div class="radio"><label><input name="comp_frustration" value="most_times" type="radio" />&nbsp;Most times</label></div>
+        <div class="radio"><label><input name="comp_frustration" value="sometimes" type="radio" />&nbsp;Sometimes</label></div>
+        <div class="radio"><label><input name="comp_frustration" value="almost_never" type="radio" />&nbsp;Almost never</label></div>
+        <div class="radio"><label><input name="comp_frustration" value="never" type="radio" />&nbsp;Never</label></div>
+        </li>
+        
+        <li>What do you use a computer for? (Select all that apply)
+        <div class="checkbox"><label><input name="comp_use" value="communication" type="checkbox" />&nbsp;To communicate with others (e.g., e-mail, chat, social networks)</label></div>
+        <div class="checkbox"><label><input name="comp_use" value="information" type="checkbox" />&nbsp;To search for information (e.g., news, health information)</label></div>
+        <div class="checkbox"><label><input name="comp_use" value="services" type="checkbox" />&nbsp;To use online services (e.g., online banking, shopping, travel agents)</label></div>
+        <div class="checkbox"><label><input name="comp_use" value="games" type="checkbox" />&nbsp;To play games</label></div>
+        <div class="checkbox"><label><input name="comp_use" value="other" type="checkbox" />&nbsp;Other</label></div>
+        </li>
+        
+        <li>How many times have you used the {{ website_name }} Web site to provide language data?
+        <div class="radio"><label><input name="t2m_use" value="once" type="radio" />&nbsp;Once</label></div>
+        <div class="radio"><label><input name="t2m_use" value="one_to_ten" type="radio" />&nbsp;1-10 times</label></div>
+        <div class="radio"><label><input name="t2m_use" value="more_than_ten" type="radio" />&nbsp;More than 10 times</label></div>
+        </li>
+        
+        <li>Would you use the {{ website_name }} Web site again? Why or why not?
+        <textarea style="width: 100%; height: 120px;"></textarea>
+        </li>
     </ol>
 </form>
 
