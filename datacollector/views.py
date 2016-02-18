@@ -1182,14 +1182,16 @@ def survey_usability(request):
             for question_type in questions:
                 question_names = questions[question_type]
                 for n in question_names:
-                    if n not in request.POST:
+                    if n not in request.POST or not request.POST[n]:
                         form_errors += ['You did not provide a response to question #%d' % (question_numbers[n])]
             
             # Save the submitted survey responses if there are no errors
             if not form_errors:
                 pass
-            
-        passed_vars = {'is_authenticated': is_authenticated, 'form_errors': form_errors}
+        
+        # Sort the errors and unique only
+        form_errors = sorted(list(set(form_errors)))
+        passed_vars = {'is_authenticated': is_authenticated, 'form_errors': form_errors, 'form_values': request.POST}
         passed_vars.update(global_passed_vars)
         return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
     else:
