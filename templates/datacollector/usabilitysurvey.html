@@ -19,7 +19,16 @@
   <li class="active">Usability Survey</li>
 </ol>
 
-<div id="form_errors" class="bs-callout bs-callout-danger invisible"></div>
+{% if form_errors %}
+<div class="bs-callout bs-callout-danger">
+    <strong>The form could not be submitted. Please correct the following error{{ form_errors|pluralize }}:</strong>
+    <ul>
+    {% for err in form_errors %}
+        <li>{{ err }}</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
 
 <form action="" method="POST">
     <ol>
@@ -243,15 +252,15 @@
         </li>
         
         <li>Have you ever participated in a test for cognitive ability before? If yes, where and how was it administered?
-        <textarea style="width: 100%; height: 120px;"></textarea>
+        <textarea name="prev_tests" style="width: 100%; height: 120px;"></textarea>
         </li>
         
         <li>Do you prefer an online or in-person clinical examination of cognitive and linguistic ability? If you can, list 3 reasons why you prefer one method over the other.
-        <textarea style="width: 100%; height: 120px;"></textarea>
+        <textarea name="online_vs_inperson" style="width: 100%; height: 120px;"></textarea>
         </li>
         
         <li>What were the top 3 things you did not like about the Web site? For example, were there any features which were confusing, difficult to locate, or did not work as you expected?
-        <textarea style="width: 100%; height: 120px;"></textarea>
+        <textarea name="complaints" style="width: 100%; height: 120px;"></textarea>
         </li>
         
         <li>How often do you use a computer to browse the web?
@@ -285,7 +294,7 @@
         </li>
         
         <li>Would you use the {{ website_name }} Web site again? Why or why not?
-        <textarea style="width: 100%; height: 120px;"></textarea>
+        <textarea name="future_use" style="width: 100%; height: 120px;"></textarea>
         </li>
     </ol>
 </form>

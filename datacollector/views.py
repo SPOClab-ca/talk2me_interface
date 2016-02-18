@@ -1153,10 +1153,47 @@ def results(request, subject_id):
     return render_to_response('datacollector/result.html', passed_vars, context_instance=RequestContext(request))
 
 def survey_usability(request):
-    
-    passed_vars = {}
-    passed_vars.update(global_passed_vars)
-    return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
+    is_authenticated = False
+    form_errors = []
+    # The HTML IDs/names of the questions in the survey template
+    questions = {'radio': ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 
+                        's1', 's2', 's3', 's4',
+                        'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7',
+                        'comp_browse', 'comp_frustration', 't2m_use'
+                        ],
+                 'textarea': ['prev_tests', 'online_vs_inperson', 'complaints', 'future_use'],     
+                 'checkbox': ['comp_use']
+                }
+    question_numbers = {'h1': 1, 'h2': 1, 'h3': 1, 'h4': 1, 'h5': 1, 'h6': 1, 'h7': 1, 'h8': 1, 'h9': 1,   
+                        's1': 2, 's2': 2, 's3': 2, 's4': 2,
+                        'e1': 3, 'e2': 3, 'e3': 3, 'e4': 3, 'e5': 3, 'e6': 3, 'e7': 3,
+                        'prev_tests': 4,
+                        'online_vs_inperson': 5,
+                        'complaints': 6,
+                        'comp_browse': 7, 
+                        'comp_frustration': 8, 
+                        'comp_use': 9,
+                        't2m_use': 10,
+                        'future_use': 11}
+    if request.user.is_authenticated():
+        is_authenticated = True
+        if request.method == "POST":
+            # Check for missing responses
+            for question_type in questions:
+                question_names = questions[question_type]
+                for n in question_names:
+                    if n not in request.POST:
+                        form_errors += ['You did not provide a response to question #%d' % (question_numbers[n])]
+            
+            # Save the submitted survey responses if there are no errors
+            if not form_errors:
+                pass
+            
+        passed_vars = {'is_authenticated': is_authenticated, 'form_errors': form_errors}
+        passed_vars.update(global_passed_vars)
+        return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
+    else:
+        return HttpResponseRedirect(website_root)
     
 def audiorecord(request):
     
