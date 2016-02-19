@@ -295,7 +295,7 @@ class Subject_UsabilitySurvey(models.Model):
     def __unicode__(self):
         return "Subject Usability Survey (" + User.objects.get(id=self.subject.user_id).username + ", question " + self.question_id + ")"
         
-    subject_survey_id = models.AutoField(primary_key=True)
+    subjectsurvey_id = models.AutoField(primary_key=True)
     subject = models.ForeignKey(Subject)
     question_id = models.CharField(max_length=50)
     question = models.TextField()
