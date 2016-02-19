@@ -1186,7 +1186,7 @@ def survey_usability(request):
             for question_type in questions:
                 question_names = questions[question_type]
                 if question_type == 'checkbox':
-                    # Only one needs to be checked
+                    # Only one checkbox needs to be checked
                     checked_exists = False
                     for n in question_names:
                         if n in request.POST and request.POST[n]:
@@ -1201,7 +1201,22 @@ def survey_usability(request):
                 
             # Save the submitted survey responses if there are no errors
             if not form_errors:
-                pass
+                subject = Subject.objects.filter(user_id=request.user.id)
+                if subject:
+                    subject = subject[0]
+                    date_completed = datetime.datetime.now()
+                    
+                    for question_type in questions:
+                        for n in questions[question_type]:
+                            if n in request.POST and request.POST[n]:
+                                response_id = request.POST[n]
+                                question = request.POST['%s_question' % n]
+                                key_response = '%s_%s_response' % (n, response_id)
+                                if key_response in request.POST:
+                                    response = request.POST[key_response]
+                                else:
+                                    response = response_id
+                                Subject_UsabilitySurvey.objects.create(subject=subject, question_id=n, question=question, question_type=question_type, response_id=response_id, response=response, date_completed=date_completed)
         
         # Sort the errors and unique only
         form_errors = sorted(list(set(form_errors)))
