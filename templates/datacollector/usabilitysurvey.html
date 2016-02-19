@@ -20,7 +20,7 @@
 </ol>
 
 {% if survey_date_completed %}
-    <p>Thank you, your survey has been submitted on {{ survey_date_completed }}</p>
+    <div class="bs-callout bs-callout-info">Thank you, your survey has been submitted on {{ survey_date_completed }}</div>
 {% else %}
 
     {% if form_errors %}
