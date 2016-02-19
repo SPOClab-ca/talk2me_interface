@@ -1196,31 +1196,32 @@ def survey_usability(request):
                         'future_use']
     if request.user.is_authenticated():
         is_authenticated = True
-        if request.method == "POST":
-            # Check for missing responses
-            for question_type in questions:
-                question_names = questions[question_type]
-                if question_type == 'checkbox':
-                    # Only one checkbox needs to be checked
-                    checked_exists = False
-                    for n in question_names:
-                        if n in request.POST and request.POST[n]:
-                            checked_exists = True
-                            break
-                    if not checked_exists:
-                        form_errors += ['You did not provide a response to question #%d' % (question_numbers[n])]
-                else:
-                    for n in question_names:
-                        if n not in request.POST or not request.POST[n]:
+        date_completed = None
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            
+            if request.method == "POST":
+                # Check for missing responses
+                for question_type in questions:
+                    question_names = questions[question_type]
+                    if question_type == 'checkbox':
+                        # Only one checkbox needs to be checked
+                        checked_exists = False
+                        for n in question_names:
+                            if n in request.POST and request.POST[n]:
+                                checked_exists = True
+                                break
+                        if not checked_exists:
                             form_errors += ['You did not provide a response to question #%d' % (question_numbers[n])]
-                
-            # Save the submitted survey responses if there are no errors
-            if not form_errors:
-                subject = Subject.objects.filter(user_id=request.user.id)
-                if subject:
-                    subject = subject[0]
-                    date_completed = datetime.datetime.now()
+                    else:
+                        for n in question_names:
+                            if n not in request.POST or not request.POST[n]:
+                                form_errors += ['You did not provide a response to question #%d' % (question_numbers[n])]
                     
+                # Save the submitted survey responses if there are no errors
+                if not form_errors:
+                    date_completed = datetime.datetime.now()
                     for question_type in questions:
                         for n in questions[question_type]:
                             if n in request.POST and request.POST[n]:
@@ -1232,12 +1233,20 @@ def survey_usability(request):
                                 else:
                                     response = response_id
                                 Subject_UsabilitySurvey.objects.create(subject=subject, question_id=n, question=question, question_type=question_type, question_order=question_order.index(n), response_id=response_id, response=response, date_completed=date_completed)
-        
-        # Sort the errors and unique only
-        form_errors = sorted(list(set(form_errors)))
-        passed_vars = {'is_authenticated': is_authenticated, 'form_errors': form_errors, 'form_values': request.POST}
-        passed_vars.update(global_passed_vars)
-        return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
+                else:
+                    # Sort the errors and unique only
+                    form_errors = sorted(list(set(form_errors)))
+            
+            # Check if the survey has been submitted previously
+            existing_survey = Subject_UsabilitySurvey.objects.filter(subject=subject)
+            if existing_survey:
+                survey_date_completed = existing_survey[0].date_completed
+                
+            passed_vars = {'is_authenticated': is_authenticated, 'form_errors': form_errors, 'form_values': request.POST, 'survey_date_completed': date_completed}
+            passed_vars.update(global_passed_vars)
+            return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
+        else:
+            return HttpResponseRedirect(website_root)
     else:
         return HttpResponseRedirect(website_root)
     
