@@ -300,6 +300,7 @@ class Subject_UsabilitySurvey(models.Model):
     question_id = models.CharField(max_length=50)
     question = models.TextField()
     question_type = models.CharField(max_length=50)
+    question_order = models.IntegerField()
     response_id = models.CharField(max_length=50, null=True, blank=True)
     response = models.TextField(null=True, blank=True)
     date_completed = models.DateField()
