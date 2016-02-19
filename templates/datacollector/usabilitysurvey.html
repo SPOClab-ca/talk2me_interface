@@ -265,33 +265,36 @@
         </li>
         
         <li>How often do you use a computer to browse the web?
-        <div class="radio"><label><input name="comp_browse" value="daily" type="radio" />&nbsp;Daily</label></div>
-        <div class="radio"><label><input name="comp_browse" value="weekly" type="radio" />&nbsp;Weekly</label></div>
-        <div class="radio"><label><input name="comp_browse" value="monthly" type="radio" />&nbsp;Monthly</label></div>
-        <div class="radio"><label><input name="comp_browse" value="almost_never" type="radio" />&nbsp;Almost never</label></div>
-        <div class="radio"><label><input name="comp_browse" value="never" type="radio" />&nbsp;Never</label></div>
+        <div class="radio"><label><input name="comp_browse" value="daily" type="radio"{% if form_values.comp_browse == 'daily' %} checked="checked"{% endif %} />&nbsp;Daily</label></div>
+        <div class="radio"><label><input name="comp_browse" value="weekly" type="radio"{% if form_values.comp_browse == 'weekly' %} checked="checked"{% endif %} />&nbsp;Weekly</label></div>
+        <div class="radio"><label><input name="comp_browse" value="monthly" type="radio"{% if form_values.comp_browse == 'monthly' %} checked="checked"{% endif %} />&nbsp;Monthly</label></div>
+        <div class="radio"><label><input name="comp_browse" value="almost_never" type="radio"{% if form_values.comp_browse == 'almost_never' %} checked="checked"{% endif %} />&nbsp;Almost never</label></div>
+        <div class="radio"><label><input name="comp_browse" value="never" type="radio"{% if form_values.comp_browse == 'never' %} checked="checked"{% endif %} />&nbsp;Never</label></div>
         </li>
         
         <li>How often do you experience frustration when using a computer?
-        <div class="radio"><label><input name="comp_frustration" value="every_time" type="radio" />&nbsp;Every time</label></div>
-        <div class="radio"><label><input name="comp_frustration" value="most_times" type="radio" />&nbsp;Most times</label></div>
-        <div class="radio"><label><input name="comp_frustration" value="sometimes" type="radio" />&nbsp;Sometimes</label></div>
-        <div class="radio"><label><input name="comp_frustration" value="almost_never" type="radio" />&nbsp;Almost never</label></div>
-        <div class="radio"><label><input name="comp_frustration" value="never" type="radio" />&nbsp;Never</label></div>
+        <div class="radio"><label><input name="comp_frustration" value="every_time" type="radio"{% if form_values.comp_frustration == 'every_time' %} checked="checked"{% endif %} />&nbsp;Every time</label></div>
+        <div class="radio"><label><input name="comp_frustration" value="most_times" type="radio"{% if form_values.comp_frustration == 'most_times' %} checked="checked"{% endif %} />&nbsp;Most times</label></div>
+        <div class="radio"><label><input name="comp_frustration" value="sometimes" type="radio"{% if form_values.comp_frustration == 'sometimes' %} checked="checked"{% endif %} />&nbsp;Sometimes</label></div>
+        <div class="radio"><label><input name="comp_frustration" value="almost_never" type="radio"{% if form_values.comp_frustration == 'almost_never' %} checked="checked"{% endif %} />&nbsp;Almost never</label></div>
+        <div class="radio"><label><input name="comp_frustration" value="never" type="radio"{% if form_values.comp_frustration == 'never' %} checked="checked"{% endif %} />&nbsp;Never</label></div>
         </li>
         
+        {{ form_values.comp_use.communication }}
+        {{ form_values.comp_use.information }}
+        {{ form_values.comp_use.services }}
         <li>What do you use a computer for? (Select all that apply)
-        <div class="checkbox"><label><input name="comp_use" value="communication" type="checkbox" />&nbsp;To communicate with others (e.g., e-mail, chat, social networks)</label></div>
-        <div class="checkbox"><label><input name="comp_use" value="information" type="checkbox" />&nbsp;To search for information (e.g., news, health information)</label></div>
-        <div class="checkbox"><label><input name="comp_use" value="services" type="checkbox" />&nbsp;To use online services (e.g., online banking, shopping, travel agents)</label></div>
-        <div class="checkbox"><label><input name="comp_use" value="games" type="checkbox" />&nbsp;To play games</label></div>
-        <div class="checkbox"><label><input name="comp_use" value="other" type="checkbox" />&nbsp;Other</label></div>
+        <div class="checkbox"><label><input name="comp_use_communication" value="comp_use_communication" type="checkbox"{% if form_values.comp_use_communication %} checked="checked"{% endif %} />&nbsp;To communicate with others (e.g., e-mail, chat, social networks)</label></div>
+        <div class="checkbox"><label><input name="comp_use_information" value="comp_use_information" type="checkbox"{% if form_values.comp_use_information %} checked="checked"{% endif %} />&nbsp;To search for information (e.g., news, health information)</label></div>
+        <div class="checkbox"><label><input name="comp_use_services" value="comp_use_services" type="checkbox"{% if form_values.comp_use_services %} checked="checked"{% endif %} />&nbsp;To use online services (e.g., online banking, shopping, travel agents)</label></div>
+        <div class="checkbox"><label><input name="comp_use_games" value="comp_use_games" type="checkbox"{% if form_values.comp_use_games %} checked="checked"{% endif %} />&nbsp;To play games</label></div>
+        <div class="checkbox"><label><input name="comp_use_other" value="comp_use_other" type="checkbox"{% if form_values.comp_use_other %} checked="checked"{% endif %} />&nbsp;Other</label></div>
         </li>
         
         <li>How many times have you used the {{ website_name }} Web site to provide language data?
-        <div class="radio"><label><input name="t2m_use" value="once" type="radio" />&nbsp;Once</label></div>
-        <div class="radio"><label><input name="t2m_use" value="one_to_ten" type="radio" />&nbsp;1-10 times</label></div>
-        <div class="radio"><label><input name="t2m_use" value="more_than_ten" type="radio" />&nbsp;More than 10 times</label></div>
+        <div class="radio"><label><input name="t2m_use" value="once" type="radio"{% if form_values.t2m_use == 'once' %} checked="checked"{% endif %} />&nbsp;Once</label></div>
+        <div class="radio"><label><input name="t2m_use" value="one_to_ten" type="radio"{% if form_values.t2m_use == 'one_to_ten' %} checked="checked"{% endif %} />&nbsp;1-10 times</label></div>
+        <div class="radio"><label><input name="t2m_use" value="more_than_ten" type="radio"{% if form_values.t2m_use == 'more_than_ten' %} checked="checked"{% endif %} />&nbsp;More than 10 times</label></div>
         </li>
         
         <li>Would you use the {{ website_name }} Web site again? Why or why not?

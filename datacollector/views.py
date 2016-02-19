@@ -1162,7 +1162,7 @@ def survey_usability(request):
                         'comp_browse', 'comp_frustration', 't2m_use'
                         ],
                  'textarea': ['prev_tests', 'online_vs_inperson', 'complaints', 'future_use'],     
-                 'checkbox': ['comp_use']
+                 'checkbox': ['comp_use_communication', 'comp_use_information', 'comp_use_services', 'comp_use_games', 'comp_use_other']
                 }
     question_numbers = {'h1': 1, 'h2': 1, 'h3': 1, 'h4': 1, 'h5': 1, 'h6': 1, 'h7': 1, 'h8': 1, 'h9': 1,   
                         's1': 2, 's2': 2, 's3': 2, 's4': 2,
@@ -1172,7 +1172,11 @@ def survey_usability(request):
                         'complaints': 6,
                         'comp_browse': 7, 
                         'comp_frustration': 8, 
-                        'comp_use': 9,
+                        'comp_use_communication': 9,
+                        'comp_use_information': 9,
+                        'comp_use_services': 9,
+                        'comp_use_games': 9,
+                        'comp_use_other': 9,
                         't2m_use': 10,
                         'future_use': 11}
     if request.user.is_authenticated():
@@ -1181,10 +1185,20 @@ def survey_usability(request):
             # Check for missing responses
             for question_type in questions:
                 question_names = questions[question_type]
-                for n in question_names:
-                    if n not in request.POST or not request.POST[n]:
+                if question_type == 'checkbox':
+                    # Only one needs to be checked
+                    checked_exists = False
+                    for n in question_names:
+                        if n in request.POST and request.POST[n]:
+                            checked_exists = True
+                            break
+                    if not checked_exists:
                         form_errors += ['You did not provide a response to question #%d' % (question_numbers[n])]
-            
+                else:
+                    for n in question_names:
+                        if n not in request.POST or not request.POST[n]:
+                            form_errors += ['You did not provide a response to question #%d' % (question_numbers[n])]
+                
             # Save the submitted survey responses if there are no errors
             if not form_errors:
                 pass
