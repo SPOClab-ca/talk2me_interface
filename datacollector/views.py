@@ -1179,6 +1179,21 @@ def survey_usability(request):
                         'comp_use_other': 9,
                         't2m_use': 10,
                         'future_use': 11}
+    question_order = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9',   
+                        's1', 's2', 's3', 's4',
+                        'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7',
+                        'prev_tests',
+                        'online_vs_inperson',
+                        'complaints',
+                        'comp_browse', 
+                        'comp_frustration', 
+                        'comp_use_communication',
+                        'comp_use_information',
+                        'comp_use_services',
+                        'comp_use_games',
+                        'comp_use_other',
+                        't2m_use',
+                        'future_use']
     if request.user.is_authenticated():
         is_authenticated = True
         if request.method == "POST":
@@ -1216,7 +1231,7 @@ def survey_usability(request):
                                     response = request.POST[key_response]
                                 else:
                                     response = response_id
-                                Subject_UsabilitySurvey.objects.create(subject=subject, question_id=n, question=question, question_type=question_type, response_id=response_id, response=response, date_completed=date_completed)
+                                Subject_UsabilitySurvey.objects.create(subject=subject, question_id=n, question=question, question_type=question_type, question_order=question_order.index(n), response_id=response_id, response=response, date_completed=date_completed)
         
         # Sort the errors and unique only
         form_errors = sorted(list(set(form_errors)))
