@@ -1154,6 +1154,9 @@ def results(request, subject_id):
 
 def survey_usability(request):
     is_authenticated = False
+    consent_submitted = False
+    demographic_submitted = False
+    active_notifications = []
     form_errors = []
     # The HTML IDs/names of the questions in the survey template
     questions = {'radio': ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 
@@ -1200,6 +1203,12 @@ def survey_usability(request):
         subject = Subject.objects.filter(user_id=request.user.id)
         if subject:
             subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
+            
+            # Fetch all notifications that are active and have not been dismissed by the user 
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = notify.get_active_new(subject)
             
             if request.method == "POST":
                 # Check for missing responses
@@ -1243,7 +1252,7 @@ def survey_usability(request):
             if existing_survey:
                 survey_date_completed = existing_survey[0].date_completed
                 
-            passed_vars = {'is_authenticated': is_authenticated, 'form_errors': form_errors, 'form_values': request.POST, 'survey_date_completed': survey_date_completed}
+            passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'form_errors': form_errors, 'form_values': request.POST, 'survey_date_completed': survey_date_completed}
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
         else:
