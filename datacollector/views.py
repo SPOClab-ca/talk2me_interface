@@ -1233,16 +1233,17 @@ def survey_usability(request):
                                 else:
                                     response = response_id
                                 Subject_UsabilitySurvey.objects.create(subject=subject, question_id=n, question=question, question_type=question_type, question_order=question_order.index(n), response_id=response_id, response=response, date_completed=date_completed)
+                    survey_date_completed = date_completed
                 else:
                     # Sort the errors and unique only
                     form_errors = sorted(list(set(form_errors)))
             
             # Check if the survey has been submitted previously
-            existing_survey = Subject_UsabilitySurvey.objects.filter(subject=subject)
+            existing_survey = Subject_UsabilitySurvey.objects.filter(subject=subject, date_completed__isnull=False)
             if existing_survey:
                 survey_date_completed = existing_survey[0].date_completed
                 
-            passed_vars = {'is_authenticated': is_authenticated, 'form_errors': form_errors, 'form_values': request.POST, 'survey_date_completed': date_completed}
+            passed_vars = {'is_authenticated': is_authenticated, 'form_errors': form_errors, 'form_values': request.POST, 'survey_date_completed': survey_date_completed}
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
         else:
