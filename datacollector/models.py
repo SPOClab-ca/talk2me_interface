@@ -291,6 +291,19 @@ class Subject_Bundle(models.Model):
     completion_token_usedate = models.DateField(null=True, blank=True)
     completion_req_sessions = models.IntegerField(null=True, blank=True)
 
+class Subject_UsabilitySurvey(models.Model):
+    def __unicode__(self):
+        return "Subject Usability Survey (" + User.objects.get(id=self.subject.user_id).username + ", question " + self.question_id + ")"
+        
+    subject_survey_id = models.AutoField(primary_key=True)
+    subject = models.ForeignKey(Subject)
+    question_id = models.CharField(max_length=50)
+    question = models.TextField()
+    question_type = models.CharField(max_length=50)
+    response_id = models.CharField(max_length=50, null=True, blank=True)
+    response = models.TextField(null=True, blank=True)
+    date_completed = models.DateField()
+
 class Task(models.Model):
     # represents every type of question the subjects have to answer
     # default_order = the place the question is shown in (e.g., if 1, then the
