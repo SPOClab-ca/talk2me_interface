@@ -41,6 +41,7 @@ def dashboard(request):
     demographic_submitted = None
     active_notifications = None
     adminui_data = ""
+    longitudinal_data = ""
     
     if request.user.is_authenticated() and request.user.is_superuser:
         is_authenticated = True
@@ -91,7 +92,20 @@ def dashboard(request):
             piechart_tasks_by_type += [DATA_COL_SEP.join([x['task__name'], str(x['session_task_id__count'])]) for x in tasks_by_type]
             adminui_data += "<input class='adminui_data' type='hidden' chart-type='bar' data-title='Number of tasks completed by type' value='" + DATA_ROW_SEP.join(piechart_tasks_by_type) + "' />"
             
-        passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user, 'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP, 'data_col_sep': DATA_COL_SEP }
+            # Show the avg number of completed samples per subject, for each task and overall
+            num_samples_by_task_subject = Session_Task.objects.filter(date_completed__isnull=False).values('task', 'session__subject').annotate(Count('session_task_id'))
+            longitudinal_data = "<thead><tr><th>Task ID</th><th>Task Name</th><th>No. samples</th><th>No. subjects</th><th>Avg no. samples per subject</th></tr></thead><tbody>"
+            for task in Task.objects.all().order_by('task_id'):
+                total_task_samples = sum([elem['session_task_id__count'] for elem in num_samples_by_task_subject if elem['task'] == task.task_id])
+                total_task_subjects = len([elem for elem in num_samples_by_task_subject if elem['task'] == task.task_id])
+                if total_task_subjects > 0:
+                    avg_samples_per_subject = total_task_samples * 1.0 / total_task_subjects
+                else:
+                    avg_samples_per_subject = 0
+                longitudinal_data += "<tr><td>" + str(task.task_id) + "</td><td>" + task.name + "</td><td>" + str(total_task_samples) + "</td><td>" + str(total_task_subjects) + "</td><td>" + "%.2f" % avg_samples_per_subject + "</td></tr>"
+            longitudinal_data += "</tbody>"
+            
+        passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user, 'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP, 'data_col_sep': DATA_COL_SEP, 'longitudinal_data': longitudinal_data }
         passed_vars.update(global_passed_vars)
         return render_to_response('datacollector/adminui.html', passed_vars, context_instance=RequestContext(request))
     else:
