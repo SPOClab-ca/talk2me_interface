@@ -95,17 +95,29 @@ def dashboard(request):
             # Show the avg number of completed samples per subject, for each task and overall
             num_samples_by_task_subject = Session_Task.objects.filter(date_completed__isnull=False).values('task', 'session__subject').annotate(Count('session_task_id'))
             longitudinal_data = "<thead><tr><th>Task ID</th><th>Task Name</th><th>No. samples</th><th>No. subjects</th><th>Avg no. samples per subject</th></tr></thead><tbody>"
-            for task in Task.objects.all().order_by('task_id'):
+            overall_avg_samples_per_subject = [0,0]
+            for task in Task.objects.filter(is_active=1).order_by('task_id'):
                 total_task_samples = sum([elem['session_task_id__count'] for elem in num_samples_by_task_subject if elem['task'] == task.task_id])
                 total_task_subjects = len([elem for elem in num_samples_by_task_subject if elem['task'] == task.task_id])
+                overall_avg_samples_per_subject[0] += total_task_samples
+                overall_avg_samples_per_subject[1] += total_task_subjects
                 if total_task_subjects > 0:
                     avg_samples_per_subject = total_task_samples * 1.0 / total_task_subjects
                 else:
                     avg_samples_per_subject = 0
                 longitudinal_data += "<tr><td>" + str(task.task_id) + "</td><td>" + task.name + "</td><td>" + str(total_task_samples) + "</td><td>" + str(total_task_subjects) + "</td><td>" + "%.2f" % avg_samples_per_subject + "</td></tr>"
+            if overall_avg_samples_per_subject[1] > 0:
+                overall_avg = overall_avg_samples_per_subject[0] * 1.0 / overall_avg_samples_per_subject[1]
+            else:
+                overall_avg = 0
+            longitudinal_data += "<tr><td colspan='2'>TOTALS</td><td>" + str(overall_avg_samples_per_subject[0]) + "</td><td>" + str(overall_avg_samples_per_subject[1]) + "</td><td>" + "%.2f" % overall_avg + "</td></tr>"
             longitudinal_data += "</tbody>"
             
-        passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user, 'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP, 'data_col_sep': DATA_COL_SEP, 'longitudinal_data': longitudinal_data }
+            users_with_session = len(Session.objects.filter(end_date__isnull=False).values('subject').distinct())
+            users_with_session_task = len(Session_Task.objects.filter(date_completed__isnull=False).values('session__subject').distinct())
+            users_with_active_session = len(Session.objects.filter(end_date__isnull=True).values('subject').distinct())
+            
+        passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user, 'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP, 'data_col_sep': DATA_COL_SEP, 'longitudinal_data': longitudinal_data, 'users_with_session': users_with_session, 'users_with_session_task': users_with_session_task, 'users_with_active_session': users_with_active_session }
         passed_vars.update(global_passed_vars)
         return render_to_response('datacollector/adminui.html', passed_vars, context_instance=RequestContext(request))
     else:
