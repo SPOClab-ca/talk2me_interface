@@ -26,7 +26,7 @@
         <div id="form_errors" class="invisible bs-callout bs-callout-danger">
         </div>
 
-        <form id='session_form' method="post" action="">
+        <form id='session_form' method="post" action="" autocomplete="off">
         {% csrf_token %}
         <input type='hidden' id='session_task_id' value='{{ active_session_task_id }}' />
         <h2>{{ active_task.name }}</h2>    
