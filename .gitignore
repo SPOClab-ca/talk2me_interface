@@ -22,3 +22,7 @@ media/datacollector/
 datacollector/prizes/*.aux
 datacollector/prizes/*.log
 datacollector/prizes/*.pdf
+
+# Ignore temp docker files
+docker/mysql_data/
+docker/logs/
