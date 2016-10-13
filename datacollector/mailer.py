@@ -131,6 +131,7 @@ def monthlydraw(request):
             if system_user.is_active and system_user.is_superuser:
             
                 today = datetime.datetime.now().date()
+		#today = datetime.datetime.strptime('2016-02-28', '%Y-%m-%d').date()
                 month_start = datetime.date(today.year, today.month, 1)
                 month_end = datetime.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
                 

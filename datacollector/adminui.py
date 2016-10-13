@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.utils import simplejson
+import simplejson
 from datacollector.models import *
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
