@@ -8,7 +8,7 @@ from django.core.files.base import ContentFile
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.utils import simplejson
+import simplejson
 from django.views.decorators.csrf import csrf_exempt
 from datacollector.forms import *
 from datacollector.models import *
@@ -1301,7 +1301,7 @@ def audiorecord(request):
                 
                 return_dict = {"status": "success", "msg": msg, "files": files}
                 json = simplejson.dumps(return_dict)
-                return HttpResponse(json, mimetype="application/x-javascript")
+                return HttpResponse(json, content_type="application/x-javascript")
         
     return HttpResponseRedirect(website_root)
 
@@ -1609,7 +1609,7 @@ def pagetime(request):
         
         return_dict = {"status": "success"}
         json = simplejson.dumps(return_dict)
-        return HttpResponse(json, mimetype="application/x-javascript")
+        return HttpResponse(json, content_type="application/x-javascript")
     return HttpResponseRedirect(website_root)
     
     
