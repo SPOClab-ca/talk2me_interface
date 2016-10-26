@@ -55,8 +55,15 @@ def generate_session(subject, session_type):
     active_bundles = Subject_Bundle.objects.filter( Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today )
     if active_bundles:
         active_tasks = []
+        active_tasks_num_instances = {} # key=task_id, value=num_instances in bundle
+        active_bundle_tasks = {} # key=task_id, value=bundle_task
         for subj_bundle in active_bundles:
-            active_tasks += [x.task for x in subj_bundle.bundle.bundle_task_set.all()]
+            # For each Bundle_Task record the task and the num instances
+            for x in subj_bundle.bundle.bundle_task_set.all():
+                active_tasks += [x.task]
+                active_tasks_num_instances[x.task.task_id] = x.default_num_instances
+                active_bundle_tasks[x.task.task_id] = x
+                
     # Otherwise, generate all active tasks.
     else:
         active_tasks = Task.objects.filter(is_active=1)
@@ -76,11 +83,20 @@ def generate_session(subject, session_type):
     startdate = datetime.datetime.now()
     new_session = Session.objects.create(subject=subject, start_date=startdate, end_date=None, session_type=session_type)
     
-    # Select random task questions for the session  
+    # Select random task questions for the session, OR use the specified task questions if they 
+    # are provided for the bundle.
     counter_task = 0
     for task_id in active_task_ids:
         task = Task.objects.get(task_id=task_id)
-        num_instances = task.default_num_instances
+        bundle_task = active_bundle_tasks[task_id]
+        
+        # Check if there is a specified number of instances in the bundle task.
+        if task_id in active_tasks_num_instances:
+            num_instances = active_tasks_num_instances[task_id]
+        # Otherwise, use default task num instances.
+        else:
+            num_instances = task.default_num_instances
+        
         if not num_instances:
             # Sum up the instances for each display field for the task
             num_instances = Task_Field.objects.filter(task=task, field_type__name='display').aggregate(Sum('default_num_instances'))['default_num_instances__sum']
@@ -91,7 +107,7 @@ def generate_session(subject, session_type):
         
         # Add the task to the current session in the database
         new_task = Session_Task.objects.create(session=new_session, task=task, order=shuffled_order, delay=task_delay, embedded_delay=task_embedded_delay)
-
+        
         # Update the database to reflect <num_instances> instances of this task for this session
         new_task_instances = []
         for num in range(num_instances):
@@ -105,7 +121,8 @@ def generate_session(subject, session_type):
         # (only for the fields that need to have generated values, i.e. for display fields)
         task_fields_display = Task_Field.objects.filter(task=task,field_type__name='display',generate_value=1)
         
-        # For each display field, select random <num_instances> which the user hasn't seen before
+        # For each display field, select random <num_instances> which the user hasn't seen before OR use the 
+        # specified task instances values for the bundle task.
         cumulative_field_instances = 0
         for field in task_fields_display:
             
@@ -117,49 +134,56 @@ def generate_session(subject, session_type):
             existing_instances = Session_Task_Instance_Value.objects.filter(task_field=field, session_task_instance__session_task__session__subject=subject)
             existing_values = [v.value for v in existing_instances]
             
-            # Add to selected values. Make sure not to add field values that are associated with each other, or are already selected, or have been seen by the subject before in previous sessions. NB: here we are assuming that the total number of values for each field in the db is at least as big as the default number of instances for the field.
             selected_values = []
-            limits = []
-            while len(selected_values) < field_num_instances:
-                
-                field_values = Task_Field_Value.objects.filter(task_field=field,*limits).exclude(value__in=existing_values)
-                if field_values:
-                    selected_values += [random.choice(field_values)]
-                else:
-                    # If there aren't any results, relax the query by restricting only to values that haven't been seen before
-                    field_values = Task_Field_Value.objects.filter(task_field=field).exclude(value__in=existing_values)
+            
+            # If there are specified task field values in the bundle task, select those.
+            specified_values = Bundle_Task_Field_Value.objects.filter(bundle_task=bundle_task).order_by('bundle_task_field_value_id')
+            if len(specified_values) > 0:
+                selected_values = [x.task_field_value for x in specified_values[len(existing_instances):len(existing_instances)+field_num_instances]]
+            # Otherwise, randomly select values that haven't been viewed yet.
+            else:
+                # Add to selected values. Make sure not to add field values that are associated with each other, or are already selected, or have been seen by the subject before in previous sessions. NB: here we are assuming that the total number of values for each field in the db is at least as big as the default number of instances for the field.
+                limits = []
+                while len(selected_values) < field_num_instances:
+                    
+                    field_values = Task_Field_Value.objects.filter(task_field=field,*limits).exclude(value__in=existing_values)
                     if field_values:
                         selected_values += [random.choice(field_values)]
                     else:
-                        # If there aren't any results (i.e., the subject has seen all possible values for this field), then relax the query by just selecting values that are different from the currently selected values (i.e., don't want any repeating values in the current session if possible, which should be the case as long as the number of values for the field is greater than the default number of instances for the field).
-                        field_values = Task_Field_Value.objects.filter(task_field=field,*limits)
+                        # If there aren't any results, relax the query by restricting only to values that haven't been seen before
+                        field_values = Task_Field_Value.objects.filter(task_field=field).exclude(value__in=existing_values)
                         if field_values:
                             selected_values += [random.choice(field_values)]
                         else:
-                            # If there still aren't any results (i.e., the subject has seen all possible values for this field), relax the query completely by selecting any random field value, regardless of whether the subject has seen it before or whether it has been selected for the current session (i.e., allow repeats).
-                            field_values = Task_Field_Value.objects.filter(task_field=field)
+                            # If there aren't any results (i.e., the subject has seen all possible values for this field), then relax the query by just selecting values that are different from the currently selected values (i.e., don't want any repeating values in the current session if possible, which should be the case as long as the number of values for the field is greater than the default number of instances for the field).
+                            field_values = Task_Field_Value.objects.filter(task_field=field,*limits)
                             if field_values:
                                 selected_values += [random.choice(field_values)]
                             else:
-                                # The database doesn't contain any entries for this task field.
-                                # Fail, display an error page.
-                                return HttpResponseRedirect(website_root + 'error/501')
+                                # If there still aren't any results (i.e., the subject has seen all possible values for this field), relax the query completely by selecting any random field value, regardless of whether the subject has seen it before or whether it has been selected for the current session (i.e., allow repeats).
+                                field_values = Task_Field_Value.objects.filter(task_field=field)
+                                if field_values:
+                                    selected_values += [random.choice(field_values)]
+                                else:
+                                    # The database doesn't contain any entries for this task field.
+                                    # Fail, display an error page.
+                                    return HttpResponseRedirect(website_root + 'error/501')
+                    
+                    # Build limit query with Q objects: enforce no repetition of the same item in the same task instance,
+                    # and no selection of mutually associated items in the same task instance.
+                    selected_assoc_ids = [item.assoc_id for item in selected_values]
+                    selected_ids = [item.task_field_value_id for item in selected_values]
+                    limit_assoc = [~Q(task_field_value_id=i) for i in selected_assoc_ids if i]
+                    limit_id = [~Q(task_field_value_id=i) for i in selected_ids if i]
+                    limits = limit_assoc + limit_id
+                    
+                    # Special case: Stroop task. Enforce the special restriction that consecutive items are not of 
+                    # the same ink colour, and do not spell out the same colour word.
+                    if task.name_id == "stroop" and selected_values:
+                        limits += [ ~Q(response_expected = selected_values[-1].response_expected), \
+                                    ~Q(value_display = selected_values[-1].value_display) ]
+                    
                 
-                # Build limit query with Q objects: enforce no repetition of the same item in the same task instance,
-                # and no selection of mutually associated items in the same task instance.
-                selected_assoc_ids = [item.assoc_id for item in selected_values]
-                selected_ids = [item.task_field_value_id for item in selected_values]
-                limit_assoc = [~Q(task_field_value_id=i) for i in selected_assoc_ids if i]
-                limit_id = [~Q(task_field_value_id=i) for i in selected_ids if i]
-                limits = limit_assoc + limit_id
-                
-                # Special case: Stroop task. Enforce the special restriction that consecutive items are not of 
-                # the same ink colour, and do not spell out the same colour word.
-                if task.name_id == "stroop" and selected_values:
-                    limits += [ ~Q(response_expected = selected_values[-1].response_expected), \
-                                ~Q(value_display = selected_values[-1].value_display) ]
-                
-            
             for index_instance in range(field_num_instances):
                 instance_value = selected_values[index_instance]
                 new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
