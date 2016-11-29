@@ -1,0 +1,36 @@
+version: '2'
+services:
+    winterlight:
+      image: yancheva/talk2me:latest
+      container_name: talk2me
+      stdin_open: true
+      tty: true
+      ports: 
+      - "80:80"
+      - "443:443"
+      volumes:
+      - $TALK2ME_REPO:/u/spoclabweb/site/csc2518
+      - $TALK2ME_REPO/docker/ntp.conf:/etc/ntp.conf
+      - $TALK2ME_REPO/docker/logs:/var/log/apache2/
+      depends_on:
+      - mysql
+      links:
+      - mysql
+
+    # All the config files are kept outside of the docker image 
+    # (i.e. updating git repo is sufficient to update the system - 
+    # no need to rebuild the image)
+    # NB: CANNOT use a mounted mysql conf file due to this issue:
+    # https://github.com/docker/docker/issues/13789
+    # NB: spaces in the filepaths don't work!
+    mysql:
+      image: mysql:5.7.15
+      container_name: mysql
+      volumes:
+      - $TALK2ME_REPO/docker/initdb.d:/docker-entrypoint-initdb.d
+      - $TALK2ME_REPO/docker/mysql_data:/var/lib/mysql
+      - $TALK2ME_REPO/docker/my.cnf:/etc/mysql/conf.d/talk2me.cnf
+      ports:
+      - "3306:3306"
+      environment:
+      - MYSQL_ROOT_PASSWORD
