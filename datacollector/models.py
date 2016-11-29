@@ -390,7 +390,16 @@ class Bundle_Task(models.Model):
     bundle_task_id = models.AutoField(primary_key=True)
     bundle = models.ForeignKey(Bundle)
     task = models.ForeignKey(Task)
+    default_num_instances = models.IntegerField(default=1,null=True,blank=True)
+
+class Bundle_Task_Field_Value(models.Model):
+    def __unicode__(self):
+        return "BundleTask " + str(self.bundle_task) + ", Value " + self.task_field_value.value
     
+    bundle_task_field_value_id = models.AutoField(primary_key=True)
+    bundle_task = models.ForeignKey(Bundle_Task)
+    task_field_value = models.ForeignKey(Task_Field_Value)
+
 class Session_Type(models.Model):
     
     def __unicode__(self):
