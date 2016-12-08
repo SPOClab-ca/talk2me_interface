@@ -40,8 +40,12 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'survey/usability$', 'datacollector.views.survey_usability'),
     
     # API for phone system
+	url(r'^' + settings.SUBSITE_ID + 'phone/status$', 'datacollector.phone.status'),
+    url(r'^' + settings.SUBSITE_ID + 'phone/login$', 'datacollector.phone.login'),
     url(r'^' + settings.SUBSITE_ID + 'phone/session$', 'datacollector.phone.session'),
-    url(r'^' + settings.SUBSITE_ID + 'phone/test$', 'datacollector.phone.test'),
+    url(r'^' + settings.SUBSITE_ID + 'phone/session/(?P<session_id>[0-9]+)$', 'datacollector.phone.session_tasklist'),
+    url(r'^' + settings.SUBSITE_ID + 'phone/session_task/(?P<session_task_id>[0-9]+)$', 'datacollector.phone.session_task'),
+    url(r'^' + settings.SUBSITE_ID + 'phone/response$', 'datacollector.phone.response'),
     
     # Notifications
     url(r'^' + settings.SUBSITE_ID + 'notify/dismiss/$', 'datacollector.notify.dismiss'),
