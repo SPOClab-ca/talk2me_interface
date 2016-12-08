@@ -16,6 +16,24 @@ class Bundle(models.Model):
     completion_req_sessions = models.IntegerField(null=True, blank=True)
     active_enddate = models.DateField(null=True, blank=True)
     
+class ClientType(models.Model):
+	def __unicode__(self):
+		return str(self.name)
+	
+	clienttype_id = models.AutoField(primary_key=True)
+	name = models.CharField(max_length=50)
+
+class Client(models.Model):
+	def __unicode__(self):
+		return str(self.name)
+
+	client_id = models.AutoField(primary_key=True)
+	name = models.CharField(max_length=50)
+	secret = models.CharField(max_length=1000)
+	secret_expirydate = models.DateTimeField(null=True, blank=True)
+	clienttype = models.ForeignKey(ClientType)
+	datetime_created = models.DateTimeField(null=True, blank=True)
+
 class Education_Level(models.Model):
     # the possible education levels
 
@@ -178,6 +196,8 @@ class Subject(models.Model):
     education_level = models.ForeignKey(Education_Level,null=True, blank=True)
     dementia_med = models.IntegerField(null=True,blank=True)
     smoker_recent = models.IntegerField(null=True,blank=True)
+    auth_token = models.CharField(max_length=1000, null=True, blank=True)
+    auth_token_expirydate = models.DateTimeField(null=True, blank=True)
 
     
 class Subject_Emails(models.Model):
