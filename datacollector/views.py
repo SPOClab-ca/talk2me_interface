@@ -591,8 +591,9 @@ def index(request):
         # For the currently logged on user who has completed both consent and demographic forms, populate the index/dashboard
         # page with their previously completed and active sessions, and any notifications
         if consent_submitted and demographic_submitted:
-            completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False).order_by('-start_date')
-            active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True).order_by('-start_date')
+            # Only show website sessions in the website interface
+            completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False, session_type__name='website').order_by('-start_date')
+            active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('-start_date')
             
             # Fetch all notifications that are active and have not been dismissed by the user 
             # (NB: Q objects must appear before keyword parameters in the filter)
