@@ -18,6 +18,8 @@ import datetime
 import json
 import lib
 import os
+import random
+import re
 
 
 @csrf_exempt
@@ -28,10 +30,10 @@ def status(request):
 def login(request):
     if request.method == "POST" and request.body:
         request_json = json.loads(request.body)		
-        if 'subject_id' in request_json and 'password' in request_json and 'grant_type' in request_json and \
+        if 'subject_id' in request_json and 'pin' in request_json and 'grant_type' in request_json and \
             'client_id' in request_json and 'client_secret' in request_json:
             subject_id = request_json['subject_id']
-            password = request_json['password']
+            pin = request_json['pin']
             grant_type = request_json['grant_type']
             client_id = request_json['client_id']
             client_secret = request_json['client_secret']
@@ -43,7 +45,6 @@ def login(request):
             
             # Unicode objects need to be encoded before hashing them (otherwise 
             # bcrypt raises an error). Flask returns POST values in unicode.
-            password = password.encode('utf-8')
             client_secret = client_secret.encode('utf-8')
 
             # First, authenticate the client.
@@ -59,23 +60,25 @@ def login(request):
             else:
                 return HttpResponse(status=400, content=json.dumps({"status_code": "400", "error": "invalid_client"}))
             
-            # Compare the received password (with salt and pepper) and hashed 
-            # using bcrypt, to the hashed password in the database.
-            # NB: bcrypt encodes the salt in the hashed password.
+            # Compare the received pin with the one in the database.
+            username = None
             if subject_id and str(subject_id).isdigit():
                 try:
-                    username = User.objects.get(id=subject_id).username
+                    user = User.objects.get(id=subject_id)
+                    username = user.username
                 except:
                     # Subject ID doesn't exist
                     return HttpResponse(status=400, content=json.dumps({"status_code": "400", "error": "invalid_grant"}))
             
-            user = authenticate(username=username, password=password)
-            if user is not None and user.is_active:
-                # Log the user in
-                auth_login(request, user)
-
+            # Validate the PIN
+            subject = Subject.objects.filter(user_id=subject_id, phone_pin=pin)
+            if not subject:
+                # Subject PIN is incorrect or a subject account is not registered
+                return HttpResponse(status=400, content=json.dumps({"status_code": "400", "error": "invalid_grant"}))
+            subject = subject[0]
+                
+            if user.is_active:
                 # Generate an access token for the session
-                subject = Subject.objects.get(user_id=user.id)
                 new_auth_token = crypto.generate_confirmation_token(username)
                 new_auth_token_expirydate = datetime.datetime.now() + datetime.timedelta(days=1)
                 expires_in = (new_auth_token_expirydate - datetime.datetime.now()).total_seconds()
@@ -110,10 +113,8 @@ def session(request):
         return response
 
     if request.method == 'GET':
-        # Return all active sessions for the authenticated user
-
-                # Get a list of all active sessions
-        sessions = Session.objects.filter(subject=subject)
+        # Return all phone sessions for the authenticated user
+        sessions = Session.objects.filter(subject=subject, session_type__name='phone')
         list_sessions = []
         date_format = "%Y-%m-%d %H:%M:%S"
         for session in sessions:
@@ -133,7 +134,60 @@ def session(request):
     return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
 
 @csrf_exempt
-def session_tasklist(request, session_id):
+def session_id(request, session_id):
+    # Validate the headers
+    auth_token = lib.validate_authorization_header(request.META)
+    if not auth_token:
+        response = HttpResponse(status=400, \
+            content=json.dumps({"status_code": "400"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_request"' 
+        return response
+    
+    # Validate the access token
+    subject = lib.authenticate(auth_token)
+    if not subject:
+        response = HttpResponse(status=401, \
+            content=json.dumps({"status_code": "401"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_token"'
+        return response
+
+    # Verify the session exists and it's a phone session
+    session = Session.objects.filter(subject=subject, session_id=session_id)
+    if not session:
+        return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
+    session = session[0] 
+    if session.session_type.name != 'phone':
+        return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
+
+    if request.method == 'GET':
+        # Return all tasks for the requested session ID IFF the session belongs to the authenticated user
+        session_tasks = Session_Task.objects.filter(session=session)
+        list_session_tasks = []
+        date_format = "%Y-%m-%d %H:%M:%S"
+        for session_task in session_tasks:
+            str_datecompleted = session_task.date_completed
+            if str_datecompleted is not None:
+                str_datecompleted = str_datecompleted.strftime(date_format)
+            list_session_tasks += [{"session_task_id": session_task.session_task_id, "task_name": session_task.task.name_id, "task_instruction": session_task.task.instruction_phone, "order": session_task.order, "date_completed": str_datecompleted}]
+        return HttpResponse(status=200, content=json.dumps({"status_code": "200", "session_tasks": list_session_tasks}))
+        
+    elif request.method == 'PUT' and request.body:
+        # Update a particular session as completed if it is not already completed
+        if not session.end_date:
+            request_json = json.loads(request.body)		
+            if 'datetime_completed' in request_json:
+                regex_datetime = re.compile(r'^[0-9]{4}[-][0-9]{2}[-][0-9]{2} [0-9]{2}[:][0-9]{2}[:][0-9]{2}$')
+                datetime_completed = request_json['datetime_completed']
+                if datetime_completed and regex_datetime.findall(datetime_completed):
+                    session.end_date = datetime_completed
+                    session.save()
+                    return HttpResponse(status=200, content=json.dumps({"status_code": "200"}))
+                                
+        return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
+    return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
+
+@csrf_exempt
+def task(request):
     # Validate the headers
     auth_token = lib.validate_authorization_header(request.META)
     if not auth_token:
@@ -151,21 +205,72 @@ def session_tasklist(request, session_id):
         return response
 
     if request.method == 'GET':
-        # Return all tasks for the requested session ID IFF the session belongs to the authenticated user
-        session = Session.objects.filter(subject=subject, session_id=session_id)
-        if session:
-            session = session[0] 
-            session_tasks = Session_Task.objects.filter(session=session)
-            list_session_tasks = []
-            date_format = "%Y-%m-%d %H:%M:%S"
-            for session_task in session_tasks:
-                str_datecompleted = session_task.date_completed
-                if str_datecompleted is not None:
-                    str_datecompleted = str_datecompleted.strftime(date_format)
-                list_session_tasks += [{"session_task_id": session_task.session_task_id, "task_name": session_task.task.name_id, "order": session_task.order, "date_completed": str_datecompleted}]
-            return HttpResponse(status=200, content=json.dumps({"status_code": "200", "session_tasks": list_session_tasks}))
+        # Return all phone-based tasks 
+        tasks = Task.objects.filter(instruction_phone__isnull=False, is_active=1)
+        list_tasks = []
+        for task in tasks:
+            list_tasks += [{"task_id": task.task_id, "task_name": task.name_id, "task_instruction": task.instruction_phone, "default_num_instances": task.default_num_instances}]
+
+        return HttpResponse(status=200, content=json.dumps({"status_code": "200", "tasks": list_tasks}))
             
-        return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
+    return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
+
+@csrf_exempt
+def task_value(request):
+    # Validate the headers
+    auth_token = lib.validate_authorization_header(request.META)
+    if not auth_token:
+        response = HttpResponse(status=400, \
+            content=json.dumps({"status_code": "400"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_request"' 
+        return response
+    
+    # Validate the access token
+    subject = lib.authenticate(auth_token)
+    if not subject:
+        response = HttpResponse(status=401, \
+            content=json.dumps({"status_code": "401"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_token"'
+        return response
+
+    if request.method == 'GET':
+        # Return all phone-based tasks 
+        task_values = Task_Field_Value.objects.filter(task_field__task__instruction_phone__isnull=False, task_field__task__is_active=1, task_field__field_type__name='display')
+        list_task_values = []
+        for task_value in task_values:
+            list_task_values += [{"task_value_id": task_value.task_field_value_id, "task_id": task_value.task_field.task.task_id, "value": task_value.value, "value_display": task_value.value_display, "difficulty_id": task_value.difficulty_id, "expected_response": task_value.response_expected}]
+
+        return HttpResponse(status=200, content=json.dumps({"status_code": "200", "task_values": list_task_values}))
+            
+    return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
+
+@csrf_exempt
+def difficulty_level(request):
+    # Validate the headers
+    auth_token = lib.validate_authorization_header(request.META)
+    if not auth_token:
+        response = HttpResponse(status=400, \
+            content=json.dumps({"status_code": "400"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_request"' 
+        return response
+    
+    # Validate the access token
+    subject = lib.authenticate(auth_token)
+    if not subject:
+        response = HttpResponse(status=401, \
+            content=json.dumps({"status_code": "401"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_token"'
+        return response
+
+    if request.method == 'GET':
+        # Return all phone-based tasks 
+        difficulty_levels = Value_Difficulty.objects.all()
+        list_difficulty_levels = []
+        for difficulty_level in difficulty_levels:
+            list_difficulty_levels += [{"difficulty_id": difficulty_level.value_difficulty_id, "name": difficulty_level.name }]
+
+        return HttpResponse(status=200, content=json.dumps({"status_code": "200", "difficulty_levels": list_difficulty_levels }))
+            
     return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
 
 @csrf_exempt
@@ -188,7 +293,7 @@ def session_task(request, session_task_id):
 
     if request.method == 'GET':
         # Return all tasks for the requested session ID IFF the session belongs to the authenticated user
-        session_task = Session_Task.objects.filter(session_task_id=session_task_id, session__subject=subject)
+        session_task = Session_Task.objects.filter(session_task_id=session_task_id, session__subject=subject, session__session_type__name='phone')
         if session_task:
             session_task = session_task[0] 
             list_session_task_instances = []
@@ -233,7 +338,7 @@ def response(request):
             audio_data = ContentFile(request.FILES['audio'].read())
             
             # Check that the task instance ID is valid and that the response hasn't been submitted before
-            session_response = Session_Response.objects.filter(session_task_instance_id=session_task_instance_id, date_completed__isnull=True)
+            session_response = Session_Response.objects.filter(session_task_instance_id=session_task_instance_id, session_task_instance__session_task__session__session_type__name='phone', session_task_instance__session_task__session__subject=subject, date_completed__isnull=True)
             if session_response:
                 session_response = session_response[0]
 
@@ -248,6 +353,37 @@ def response(request):
 
                 return HttpResponse(status=200, content=json.dumps({"status_code": "200", "file_checksum": file_checksum}))
         return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
+    return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
+
+@csrf_exempt
+def generate_pin(request):
+    # Validate the headers
+    auth_token = lib.validate_authorization_header(request.META)
+    if not auth_token:
+        response = HttpResponse(status=400, \
+            content=json.dumps({"status_code": "400"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_request"' 
+        return response
+    
+    # Validate the access token
+    subject = lib.authenticate(auth_token)
+    if not subject:
+        response = HttpResponse(status=401, \
+            content=json.dumps({"status_code": "401"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_token"'
+        return response
+
+    if request.method == 'POST':
+        # Generate a random 4-digit PIN for each user_id which has a blank/null PIN
+        pin_length = 4
+        subjects = Subject.objects.filter(phone_pin__isnull=True)
+        num_updated = 0
+        for next_subject in subjects:
+            random_pin = random.randint(0, 10**pin_length-1)
+            next_subject.phone_pin = str(random_pin).zfill(pin_length) # zero pad where necessary
+            next_subject.save()
+            num_updated += 1
+        return HttpResponse(status=200, content=json.dumps({"status_code": "200", "num_updated": num_updated }))
     return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
 
 @csrf_exempt

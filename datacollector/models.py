@@ -198,6 +198,7 @@ class Subject(models.Model):
     smoker_recent = models.IntegerField(null=True,blank=True)
     auth_token = models.CharField(max_length=1000, null=True, blank=True)
     auth_token_expirydate = models.DateTimeField(null=True, blank=True)
+    phone_pin = models.CharField(max_length=4, null=True, blank=True)
 
     
 class Subject_Emails(models.Model):
