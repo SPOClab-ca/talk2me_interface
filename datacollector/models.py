@@ -322,7 +322,7 @@ class Subject_UsabilitySurvey(models.Model):
     question = models.TextField()
     question_type = models.CharField(max_length=50)
     question_order = models.IntegerField()
-    response_id = models.CharField(max_length=50, null=True, blank=True)
+    response_id = models.TextField(null=True, blank=True)
     response = models.TextField(null=True, blank=True)
     date_completed = models.DateField()
 
@@ -499,6 +499,25 @@ class Session_Task_Instance_Value(models.Model):
     value_display = models.TextField(null=True, blank=True)
     difficulty = models.ForeignKey(Value_Difficulty)
 
+def generate_upload_filename(instance, filename):
+    """This is a callable called by a FileField to determine the value of its upload_to attribute at 
+       runtime. See: https://docs.djangoproject.com/en/1.11/ref/models/fields/#django.db.models.FileField
+
+    Params:
+    instance : an instance of the model where the FileField is defined. More specifically, the particular 
+                instance where the current file is being attached.
+    filename : string. The filename that was originally given to the file. This may or may not be taken 
+                into account when determining the final destination path.
+
+    Return:
+    A Unix-style path (with forward slashes) to be passed along to the storage system.
+    """
+    return "datacollector/audio/" + \
+                 datetime.now().strftime('%Y%m%d_%H%M%S') + "_" + \
+                 str(instance.session_task_instance.session_task.session.subject.user_id) + "_" + \
+                 str(instance.session_task_instance.session_task.session.session_id) + "_" + \
+                 str(instance.session_task_instance.session_task_instance_id) + ".wav" 
+    
 class Session_Response(models.Model):
     # represents every instance of a response for a task by a subject during a session
 
@@ -534,12 +553,8 @@ class Session_Response(models.Model):
     session_task_instance = models.ForeignKey(Session_Task_Instance)
     date_completed = models.DateField(null=True,blank=True)
     value_text = models.TextField(null=True, blank=True)
-    value_audio = models.FileField(null=True, \
-                   blank=True, \
-                   upload_to=lambda instance, filename: "datacollector/audio/" + \
-                            datetime.now().strftime('%Y%m%d_%H%M%S') + "_" + \
-                            str(instance.session_task_instance.session_task.session.subject.user_id) + "_" + \
-                            str(instance.session_task_instance.session_task.session.session_id) + "_" + \
-                            str(instance.session_task_instance.session_task_instance_id) + ".wav")
+    value_audio = models.FileField(null=True, 
+                   blank=True, 
+                   upload_to=generate_upload_filename)
     value_multiselect = models.CommaSeparatedIntegerField(max_length=100, null=True, blank=True)
     value_expected = models.TextField(null=True, blank=True)
