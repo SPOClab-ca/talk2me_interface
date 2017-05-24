@@ -26,3 +26,7 @@ datacollector/prizes/*.pdf
 # Ignore temp docker files
 docker/mysql_data/
 docker/logs/
+
+settings.prod.py
+*.sql
+/venv/*
