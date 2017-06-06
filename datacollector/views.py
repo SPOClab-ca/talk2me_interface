@@ -57,13 +57,35 @@ def generate_session(subject, session_type):
     active_tasks_num_instances = {} # key=task_id, value=num_instances in bundle
     active_bundle_tasks = {} # key=task_id, value=bundle_task
     if active_bundles:
+
         for subj_bundle in active_bundles:
+            bundle_id = subj_bundle.bundle.name_id
+            bundle_tasks = subj_bundle.bundle.bundle_task_set.all()
+
+            if bundle_id == 'uhn_web':
+                while len(bundle_tasks) > 6:
+                    idx_to_remove = random.randint(0, len(bundle_tasks) - 1) 
+                    id_task_to_remove = bundle_tasks[idx_to_remove].task.task_id
+                    if not id_task_to_remove == '13':
+                        bundle_tasks = bundle_tasks[:idx_to_remove] + bundle_tasks[idx_to_remove+1:]
+
+            elif bundle_id == 'uhn_phone':
+                while len(bundle_tasks) < 6:
+                    idx_to_add = random.randint(0, len(bundle_tasks) - 1)
+                    id_task_to_add = bundle_tasks[idx_to_add].task.task_id
+                    if not id_task_to_add == '13':
+                        bundle_tasks = bundle_tasks[:] + [bundle_tasks[idx_to_add]]
+
             # For each Bundle_Task record the task and the num instances
-            for x in subj_bundle.bundle.bundle_task_set.all():
+            for x in bundle_tasks:
                 active_tasks += [x.task]
                 active_tasks_num_instances[x.task.task_id] = x.default_num_instances
                 active_bundle_tasks[x.task.task_id] = x
                 
+
+
+        
+
     # Otherwise, generate all active tasks.
     else:
         active_tasks = Task.objects.filter(is_active=1)
