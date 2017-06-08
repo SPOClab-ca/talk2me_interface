@@ -250,6 +250,7 @@ def index(request):
     # Authenticate current user. If no user logged in, redirect to login page.
     is_authenticated = False
     completed_sessions = []
+    pending_sessions = []
     active_sessions = []
     active_notifications = []
     consent_submitted = False
@@ -633,6 +634,30 @@ def index(request):
             subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
             if subject_bundle:
                 subject_bundle = subject_bundle[0]
+                
+                if subject_bundle.bundle.name_id == 'uhn_web':
+                    cutoff_date = today + datetime.timedelta(days=1)
+
+                    completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False, session_type__name='website').order_by('start_date')
+                    active_sessions = Session.objects.filter(start_date__lte=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('start_date')
+                    pending_sessions = Session.objects.filter(start_date__gt=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('start_date')
+
+                    # Get percentage of completed tasks for active_sessions
+                    percentage_completed = []
+                    for i, session in enumerate(active_sessions):
+                        session_id = session.session_id
+                        num_current_task = Session_Task.objects.filter(session=session,date_completed__isnull=False).count()
+                        num_tasks = Session_Task.objects.filter(session=session).count()
+                        percentage_completed.append(min(100,round(num_current_task*100.0/num_tasks)))
+                    
+                    num_completed_sessions = len(completed_sessions)
+                    num_active_sessions = len(active_sessions)
+                    num_pending_sessions = len(pending_sessions)
+
+                    completed_sessions = zip(completed_sessions, range(1, num_completed_sessions + 1))
+                    active_sessions = zip(active_sessions, percentage_completed, range(num_completed_sessions + 1, num_completed_sessions + num_active_sessions + 1))
+                    pending_sessions = zip(pending_sessions, range(num_completed_sessions + num_active_sessions + 1, num_pending_sessions + num_active_sessions + num_completed_sessions + 1))
+
             else:    
                 # If the URL contains a bundle association, then create it if it doesn't already exist.
                 # A user is assumed to be a part of one bundle at a time only.
@@ -671,7 +696,7 @@ def index(request):
             dict_language_other[form_languages_other[i]] = ""
     
     # , 'form_languages': form_languages, 'form_languages_other': form_languages_other, 'form_languages_fluency': form_languages_fluency
-    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'usabilitysurvey_notsubmitted': usabilitysurvey_notsubmitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options, 'subject_bundle': subject_bundle }
+    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'usabilitysurvey_notsubmitted': usabilitysurvey_notsubmitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options, 'subject_bundle': subject_bundle, 'pending_sessions': pending_sessions }
     passed_vars.update(global_passed_vars)
     return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
 
