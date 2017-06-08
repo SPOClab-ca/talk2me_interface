@@ -14,6 +14,7 @@ from datacollector.forms import *
 from datacollector.models import *
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
+from csc2518.settings import UHN_STUDY
 
 import copy
 import datetime
@@ -34,9 +35,10 @@ website_name = Settings.objects.get(setting_name="website_name").setting_value
 
 # Globals
 global global_passed_vars, date_format, age_limit, regex_email, regex_date, colour_lookup
-global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username }
+global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username, "uhn_study": 'uhn' }
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
+uhn_website_root = website_root + UHN_STUDY
 
 colour_lookup = {'red': 'ff0000', 'green': '00ff00', 'blue': '0000ff', 'brown': '6f370f', 'purple': '7c26cb'}
 
@@ -677,6 +679,15 @@ def login(request):
 
     # If there is a currently logged in user, just redirect to home page
     if request.user.is_authenticated():
+
+        # Check if the user is associated with any active bundles
+        subject = Subject.objects.get(user_id=request.user.id)
+        today = datetime.datetime.now().date()
+        subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+        if subject_bundle:
+            if subject_bundle[0].bundle.name_id == 'uhn_web':
+                return HttpResponseRedirect(uhn_website_root)
+
         return HttpResponseRedirect(website_root)
     
     # If the form has been submitted, validate the data and 
@@ -689,6 +700,15 @@ def login(request):
             if user is not None:
                 if user.is_active:
                     auth_login(request,user)
+
+                    # Check if the user is associated with any active bundles
+                    subject = Subject.objects.get(user_id=user.id)
+                    today = datetime.datetime.now().date()
+                    subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+                    if subject_bundle:
+                        if subject_bundle[0].bundle.name_id == 'uhn_web':
+                            return HttpResponseRedirect(uhn_website_root)
+
                     # Success: redirect to the home page
                     return HttpResponseRedirect(website_root)
                 else:
@@ -707,7 +727,15 @@ def login(request):
 
 
 def logout(request):
+    subject = Subject.objects.get(user_id=request.user.id)
     auth_logout(request)
+
+    today = datetime.datetime.now().date()
+    subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+    if subject_bundle:
+        if subject_bundle[0].bundle.name_id == 'uhn_web':
+            return HttpResponseRedirect(uhn_website_root)
+
     return HttpResponseRedirect(website_root)
 
 
@@ -723,6 +751,15 @@ def register(request):
         
     # If there is a currently logged in user, just redirect to home page
     if request.user.is_authenticated():
+
+        # Check if the user is associated with any active bundles
+        subject = Subject.objects.get(user_id=request.user.id)
+        today = datetime.datetime.now().date()
+        subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+        if subject_bundle:
+            if subject_bundle[0].bundle.name_id == 'uhn_web':
+                return HttpResponseRedirect(uhn_website_root)
+
         return HttpResponseRedirect(website_root + get_querystring)
     
     # If the form has been submitted, validate the data and login the user automatically
@@ -784,7 +821,15 @@ def startsession(request):
         
         subject = Subject.objects.get(user_id=request.user.id)
         session_type = Session_Type.objects.get(name='website')
-        new_session = generate_session(subject, session_type)         
+        new_session = generate_session(subject, session_type)
+
+        # Check if the user is associated with any active bundles
+        today = datetime.datetime.now().date()
+        subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+        if subject_bundle:
+            if subject_bundle[0].bundle.name_id == 'uhn_web':
+                return HttpResponseRedirect(uhn_website_root + 'session/' + str(new_session.session_id))
+
         return HttpResponseRedirect(website_root + 'session/' + str(new_session.session_id))
     else:
         return HttpResponseRedirect(website_root)
