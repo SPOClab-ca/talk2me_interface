@@ -417,6 +417,9 @@
     
     <div>
         <a href="http://www.utoronto.ca/"><img class="logo logo-first" src="{{ STATIC_URL }}img/uoft_logo_web.jpg" /></a> <a href="http://www.nserc-crsng.gc.ca/"><img class="logo" src="{{ STATIC_URL }}img/nserc_logo_web.jpg" /></a>
+        {% if 'uhn' in request.path %}
+            <a href="http://www.uhn.ca/"><img class="logo logo-uhn" src="{{ STATIC_URL }}img/uhn_logo_web.png" /></a>
+        {% endif %}
     </div>
 {% endif %}
 
