@@ -602,6 +602,11 @@ def index(request):
         consent_submitted = subject.date_consent_submitted
         demographic_submitted = subject.date_demographics_submitted
         
+        today = datetime.datetime.now().date()
+        subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+        if subject_bundle:
+            subject_bundle = subject_bundle[0]
+        
         # Demographic survey options/dropdowns
         if not demographic_submitted:
             gender_options = Gender.objects.all().order_by('ranking')
