@@ -1666,6 +1666,13 @@ def account(request):
             
             passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm, 'save_msg': save_msg, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'is_email_validated': is_email_validated}
             passed_vars.update(global_passed_vars)
+
+            today = datetime.datetime.now().date()
+            subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+            if subject_bundle:
+                subject_bundle = subject_bundle[0]
+                if subject_bundle.bundle.name_id == 'uhn_web':
+                    return render_to_response('datacollector/uhn/account.html', passed_vars, context_instance=RequestContext(request))
             return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
         else:
             # If user is authenticated with as a User that doesn't exist as a Subject (i.e. for this study), then go to main page
