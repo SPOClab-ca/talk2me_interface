@@ -721,7 +721,7 @@ def login(request):
         today = datetime.datetime.now().date()
         subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
         if subject_bundle:
-            if subject_bundle[0].bundle.name_id == 'uhn_web':
+            if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
                 return HttpResponseRedirect(uhn_website_root)
 
         return HttpResponseRedirect(website_root)
@@ -742,7 +742,7 @@ def login(request):
                     today = datetime.datetime.now().date()
                     subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
                     if subject_bundle:
-                        if subject_bundle[0].bundle.name_id == 'uhn_web':
+                        if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
                             return HttpResponseRedirect(uhn_website_root)
 
                     # Success: redirect to the home page
@@ -769,7 +769,7 @@ def logout(request):
     today = datetime.datetime.now().date()
     subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
     if subject_bundle:
-        if subject_bundle[0].bundle.name_id == 'uhn_web':
+        if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
             return HttpResponseRedirect(uhn_website_root)
 
     return HttpResponseRedirect(website_root)
@@ -793,7 +793,7 @@ def register(request):
         today = datetime.datetime.now().date()
         subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
         if subject_bundle:
-            if subject_bundle[0].bundle.name_id == 'uhn_web':
+            if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
                 return HttpResponseRedirect(uhn_website_root)
 
         return HttpResponseRedirect(website_root + get_querystring)
@@ -1677,7 +1677,7 @@ def account(request):
             subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
             if subject_bundle:
                 subject_bundle = subject_bundle[0]
-                if subject_bundle.bundle.name_id == 'uhn_web':
+                if subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone':
                     return render_to_response('datacollector/uhn/account.html', passed_vars, context_instance=RequestContext(request))
             return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
         else:
