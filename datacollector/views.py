@@ -640,12 +640,18 @@ def index(request):
             if subject_bundle:
                 subject_bundle = subject_bundle[0]
                 
-                if subject_bundle.bundle.name_id == 'uhn_web':
+                if subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone':
                     cutoff_date = today + datetime.timedelta(days=1)
 
-                    completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False, session_type__name='website').order_by('start_date')
-                    active_sessions = Session.objects.filter(start_date__lte=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('start_date')
-                    pending_sessions = Session.objects.filter(start_date__gt=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('start_date')
+                    if subject_bundle.bundle.name_id == 'uhn_web':
+
+                        completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False, session_type__name='website').order_by('start_date')
+                        active_sessions = Session.objects.filter(start_date__lte=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('start_date')
+                        pending_sessions = Session.objects.filter(start_date__gt=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('start_date')
+                    else:
+                        completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False, session_type__name='phone').order_by('start_date')
+                        active_sessions = Session.objects.filter(start_date__lte=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='phone').order_by('start_date')
+                        pending_sessions = Session.objects.filter(start_date__gt=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='phone').order_by('start_date')
 
                     # Get percentage of completed tasks for active_sessions
                     percentage_completed = []
