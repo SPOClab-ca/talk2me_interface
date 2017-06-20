@@ -50,6 +50,15 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'phone/task_value$', 'datacollector.phone.task_value'),
     url(r'^' + settings.SUBSITE_ID + 'phone/difficulty_level$', 'datacollector.phone.difficulty_level'),
     
+    # UHN-specific 
+    url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + '$', 'datacollector.views.index'),
+    url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'login$', 'datacollector.views.login'),
+    url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'logout$', 'datacollector.views.logout'),
+    url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'register$', 'datacollector.views.register'),
+    url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'about/$', 'datacollector.views.about'),
+    url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'account/$', 'datacollector.views.account'),
+    url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'session/(?P<session_id>\d+)$', 'datacollector.views.session'),
+
     # Notifications
     url(r'^' + settings.SUBSITE_ID + 'notify/dismiss/$', 'datacollector.notify.dismiss'),
     url(r'^' + settings.SUBSITE_ID + 'notify/view/$', 'datacollector.notify.view'),

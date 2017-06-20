@@ -48,7 +48,7 @@ USE_L10N = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = '/Users/Chloe/django_datacollector/media'
+MEDIA_ROOT = '/media' # Absolute path to media directory
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -63,7 +63,7 @@ STATIC_ROOT = ''
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = 'http://localhost:8000/talk2me/static/'
+STATIC_URL = 'django_datacollector/datacollector/static/' # Absolute path to static directory
 
 # URL prefix for admin static files -- CSS, JavaScript and images.
 # Make sure to use a trailing slash.
@@ -169,3 +169,5 @@ SUBSITE_ID = "talk2me/"
 
 # System account password (stored in settings file so that it will not be shared/visible on github). Used by maintenance scripts (e.g., email reminders).
 SYSTEM_CRED = '' 
+
+UHN_STUDY = 'uhn/'

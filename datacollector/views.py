@@ -14,6 +14,7 @@ from datacollector.forms import *
 from datacollector.models import *
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
+from csc2518.settings import UHN_STUDY
 
 import copy
 import datetime
@@ -34,9 +35,10 @@ website_name = Settings.objects.get(setting_name="website_name").setting_value
 
 # Globals
 global global_passed_vars, date_format, age_limit, regex_email, regex_date, colour_lookup
-global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username }
+global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username, "uhn_study": 'uhn' }
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
+uhn_website_root = website_root + UHN_STUDY
 
 colour_lookup = {'red': 'ff0000', 'green': '00ff00', 'blue': '0000ff', 'brown': '6f370f', 'purple': '7c26cb'}
 
@@ -57,13 +59,35 @@ def generate_session(subject, session_type):
     active_tasks_num_instances = {} # key=task_id, value=num_instances in bundle
     active_bundle_tasks = {} # key=task_id, value=bundle_task
     if active_bundles:
+
         for subj_bundle in active_bundles:
+            bundle_id = subj_bundle.bundle.name_id
+            bundle_tasks = subj_bundle.bundle.bundle_task_set.all()
+
+            if bundle_id == 'uhn_web':
+                while len(bundle_tasks) > 6:
+                    idx_to_remove = random.randint(0, len(bundle_tasks) - 1) 
+                    id_task_to_remove = bundle_tasks[idx_to_remove].task.task_id
+                    if not id_task_to_remove == '13':
+                        bundle_tasks = bundle_tasks[:idx_to_remove] + bundle_tasks[idx_to_remove+1:]
+
+            elif bundle_id == 'uhn_phone':
+                while len(bundle_tasks) < 6:
+                    idx_to_add = random.randint(0, len(bundle_tasks) - 1)
+                    id_task_to_add = bundle_tasks[idx_to_add].task.task_id
+                    if not id_task_to_add == '13':
+                        bundle_tasks = bundle_tasks[:] + [bundle_tasks[idx_to_add]]
+
             # For each Bundle_Task record the task and the num instances
-            for x in subj_bundle.bundle.bundle_task_set.all():
+            for x in bundle_tasks:
                 active_tasks += [x.task]
                 active_tasks_num_instances[x.task.task_id] = x.default_num_instances
                 active_bundle_tasks[x.task.task_id] = x
                 
+
+
+        
+
     # Otherwise, generate all active tasks.
     else:
         active_tasks = Task.objects.filter(is_active=1)
@@ -226,6 +250,7 @@ def index(request):
     # Authenticate current user. If no user logged in, redirect to login page.
     is_authenticated = False
     completed_sessions = []
+    pending_sessions = []
     active_sessions = []
     active_notifications = []
     consent_submitted = False
@@ -577,6 +602,11 @@ def index(request):
         consent_submitted = subject.date_consent_submitted
         demographic_submitted = subject.date_demographics_submitted
         
+        today = datetime.datetime.now().date()
+        subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+        if subject_bundle:
+            subject_bundle = subject_bundle[0]
+        
         # Demographic survey options/dropdowns
         if not demographic_submitted:
             gender_options = Gender.objects.all().order_by('ranking')
@@ -609,6 +639,36 @@ def index(request):
             subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
             if subject_bundle:
                 subject_bundle = subject_bundle[0]
+                
+                if subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone':
+                    cutoff_date = today + datetime.timedelta(days=1)
+
+                    if subject_bundle.bundle.name_id == 'uhn_web':
+
+                        completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False, session_type__name='website').order_by('start_date')
+                        active_sessions = Session.objects.filter(start_date__lte=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('start_date')
+                        pending_sessions = Session.objects.filter(start_date__gt=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('start_date')
+                    else:
+                        completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False, session_type__name='phone').order_by('start_date')
+                        active_sessions = Session.objects.filter(start_date__lte=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='phone').order_by('start_date')
+                        pending_sessions = Session.objects.filter(start_date__gt=cutoff_date, subject__user_id=request.user.id, end_date__isnull=True, session_type__name='phone').order_by('start_date')
+
+                    # Get percentage of completed tasks for active_sessions
+                    percentage_completed = []
+                    for i, session in enumerate(active_sessions):
+                        session_id = session.session_id
+                        num_current_task = Session_Task.objects.filter(session=session,date_completed__isnull=False).count()
+                        num_tasks = Session_Task.objects.filter(session=session).count()
+                        percentage_completed.append(min(100,round(num_current_task*100.0/num_tasks)))
+                    
+                    num_completed_sessions = len(completed_sessions)
+                    num_active_sessions = len(active_sessions)
+                    num_pending_sessions = len(pending_sessions)
+
+                    completed_sessions = zip(completed_sessions, range(1, num_completed_sessions + 1))
+                    active_sessions = zip(active_sessions, percentage_completed, range(num_completed_sessions + 1, num_completed_sessions + num_active_sessions + 1))
+                    pending_sessions = zip(pending_sessions, range(num_completed_sessions + num_active_sessions + 1, num_pending_sessions + num_active_sessions + num_completed_sessions + 1))
+
             else:    
                 # If the URL contains a bundle association, then create it if it doesn't already exist.
                 # A user is assumed to be a part of one bundle at a time only.
@@ -647,7 +707,7 @@ def index(request):
             dict_language_other[form_languages_other[i]] = ""
     
     # , 'form_languages': form_languages, 'form_languages_other': form_languages_other, 'form_languages_fluency': form_languages_fluency
-    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'usabilitysurvey_notsubmitted': usabilitysurvey_notsubmitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options, 'subject_bundle': subject_bundle }
+    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'usabilitysurvey_notsubmitted': usabilitysurvey_notsubmitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options, 'subject_bundle': subject_bundle, 'pending_sessions': pending_sessions }
     passed_vars.update(global_passed_vars)
     return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
 
@@ -655,6 +715,15 @@ def login(request):
 
     # If there is a currently logged in user, just redirect to home page
     if request.user.is_authenticated():
+
+        # Check if the user is associated with any active bundles
+        subject = Subject.objects.get(user_id=request.user.id)
+        today = datetime.datetime.now().date()
+        subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+        if subject_bundle:
+            if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
+                return HttpResponseRedirect(uhn_website_root)
+
         return HttpResponseRedirect(website_root)
     
     # If the form has been submitted, validate the data and 
@@ -667,6 +736,15 @@ def login(request):
             if user is not None:
                 if user.is_active:
                     auth_login(request,user)
+
+                    # Check if the user is associated with any active bundles
+                    subject = Subject.objects.get(user_id=user.id)
+                    today = datetime.datetime.now().date()
+                    subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+                    if subject_bundle:
+                        if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
+                            return HttpResponseRedirect(uhn_website_root)
+
                     # Success: redirect to the home page
                     return HttpResponseRedirect(website_root)
                 else:
@@ -685,7 +763,15 @@ def login(request):
 
 
 def logout(request):
+    subject = Subject.objects.get(user_id=request.user.id)
     auth_logout(request)
+
+    today = datetime.datetime.now().date()
+    subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+    if subject_bundle:
+        if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
+            return HttpResponseRedirect(uhn_website_root)
+
     return HttpResponseRedirect(website_root)
 
 
@@ -701,6 +787,15 @@ def register(request):
         
     # If there is a currently logged in user, just redirect to home page
     if request.user.is_authenticated():
+
+        # Check if the user is associated with any active bundles
+        subject = Subject.objects.get(user_id=request.user.id)
+        today = datetime.datetime.now().date()
+        subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+        if subject_bundle:
+            if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
+                return HttpResponseRedirect(uhn_website_root)
+
         return HttpResponseRedirect(website_root + get_querystring)
     
     # If the form has been submitted, validate the data and login the user automatically
@@ -762,7 +857,15 @@ def startsession(request):
         
         subject = Subject.objects.get(user_id=request.user.id)
         session_type = Session_Type.objects.get(name='website')
-        new_session = generate_session(subject, session_type)         
+        new_session = generate_session(subject, session_type)
+
+        # Check if the user is associated with any active bundles
+        today = datetime.datetime.now().date()
+        subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+        if subject_bundle:
+            if subject_bundle[0].bundle.name_id == 'uhn_web':
+                return HttpResponseRedirect(uhn_website_root + 'session/' + str(new_session.session_id))
+
         return HttpResponseRedirect(website_root + 'session/' + str(new_session.session_id))
     else:
         return HttpResponseRedirect(website_root)
@@ -1569,6 +1672,13 @@ def account(request):
             
             passed_vars = {'is_authenticated': is_authenticated, 'user': request.user, 'form_values': form_values, 'form_errors': form_errors, 'save_confirm': save_confirm, 'save_msg': save_msg, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'is_email_validated': is_email_validated}
             passed_vars.update(global_passed_vars)
+
+            today = datetime.datetime.now().date()
+            subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+            if subject_bundle:
+                subject_bundle = subject_bundle[0]
+                if subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone':
+                    return render_to_response('datacollector/uhn/account.html', passed_vars, context_instance=RequestContext(request))
             return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
         else:
             # If user is authenticated with as a User that doesn't exist as a Subject (i.e. for this study), then go to main page
