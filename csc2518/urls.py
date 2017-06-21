@@ -58,6 +58,8 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'about/$', 'datacollector.views.about'),
     url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'account/$', 'datacollector.views.account'),
     url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'session/(?P<session_id>\d+)$', 'datacollector.views.session'),
+    url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'admin/uhn_(?P<bundle_uhn>[a-z]+)$', 'datacollector.adminui.uhn_dashboard'),
+    url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'admin$', 'datacollector.adminui.dashboard'),
 
     # Notifications
     url(r'^' + settings.SUBSITE_ID + 'notify/dismiss/$', 'datacollector.notify.dismiss'),

@@ -1,3 +1,5 @@
+""" adminui.py """
+
 from django.db import connection
 from django.db.models import Q, Count, Min
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -34,7 +36,88 @@ date_format = "%Y-%m-%d"
 month_format = "%Y-%m"
 DAYS_PER_YEAR = 365.2425 # average length of year taking into account leap years
 
+#def uhn_create_sessions():
+
+    # Call generate_session in views.py 7 times
+
+    # Update the start dates of the last 6 sessions to be one month apart
+
+
+def uhn_consent_submitted(subject_id, alternate_decision_maker):
+    '''
+        Update user from admin dashboard when consent is given.
+    '''
+
+    today = datetime.datetime.now().date()
+
+    # Assign a date to consent submitted
+    Subject.objects.filter(user_id=subject_id).update(date_consent_submitted=today)
+
+    # Update alternate decision maker flag if necessary
+    if alternate_decision_maker:
+        Subject.objects.filter(user_id=subject_id).update(consent_alternate=1)
+
+def uhn_dashboard(request, bundle_uhn):
+    '''
+        Function for admin dashboard specific to UHN studies.
+    '''
     
+    is_authenticated = False
+    bundle = None
+    subject_bundle_users = []
+    subjects = []
+
+    if request.user.is_authenticated() and request.user.is_superuser:
+
+        if request.method == 'POST':
+            form_type = request.POST['form_type']
+
+            if form_type == 'consent':
+                consent_submitted = True if 'consent_submitted' in request.POST else False
+                alternate_decision_maker = True if 'is_alternate_decision_maker' in request.POST else False
+                if consent_submitted:
+                    subject_id = request.POST['subject_id'] 
+                    uhn_consent_submitted(subject_id, alternate_decision_maker)
+
+            elif form_type == 'sessions':
+                print form_type
+
+        is_authenticated = True
+
+        bundle = Bundle.objects.get(name_id=('uhn_%s' % bundle_uhn))
+
+        subject_bundle_users = Subject_Bundle.objects.filter(bundle=bundle)
+        bundle_subjects = [subject_bundle_user.subject for subject_bundle_user in subject_bundle_users]
+
+        is_sessions_created = []
+        for bundle_subject in bundle_subjects:
+            sessions_per_subject = Session.objects.filter(subject_id=bundle_subject.user_id)
+            if len(sessions_per_subject) == 7:
+                is_sessions_created += [True]
+            else:
+                is_sessions_created += [False]
+
+
+        for bundle_subject, sessions_created in zip(bundle_subjects, is_sessions_created):
+            subjects.append({
+                'sessions_created': sessions_created,
+                'user_id': bundle_subject.user_id,
+                'date_consent_submitted': bundle_subject.date_consent_submitted,
+                'consent_alternate': bundle_subject.consent_alternate
+                })
+
+        passed_vars = {
+            'is_authenticated': is_authenticated, 
+            'bundle': bundle,
+            'subject_bundle_users': subject_bundle_users,
+            'subjects': subjects
+        }
+
+        passed_vars.update(global_passed_vars)
+        return render_to_response('datacollector/uhn/adminui.html', passed_vars, context_instance=RequestContext(request))
+    else:
+        return HttpResponseRedirect(website_root)
+
 def dashboard(request):
     is_authenticated = False
     consent_submitted = None
@@ -42,6 +125,7 @@ def dashboard(request):
     active_notifications = None
     adminui_data = ""
     longitudinal_data = ""
+    bundles = []
     
     if request.user.is_authenticated() and request.user.is_superuser:
         is_authenticated = True
@@ -122,10 +206,12 @@ def dashboard(request):
                 if s not in users_with_longitudinal:
                     users_with_longitudinal += [s]
             users_with_longitudinal = len(users_with_longitudinal)
+
+            bundles = Bundle.objects.all()
+
             
-        passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user, 'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP, 'data_col_sep': DATA_COL_SEP, 'longitudinal_data': longitudinal_data, 'users_with_session': users_with_session, 'users_with_session_task': users_with_session_task, 'users_with_active_session': users_with_active_session, 'users_with_longitudinal': users_with_longitudinal }
+        passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user, 'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP, 'data_col_sep': DATA_COL_SEP, 'longitudinal_data': longitudinal_data, 'users_with_session': users_with_session, 'users_with_session_task': users_with_session_task, 'users_with_active_session': users_with_active_session, 'users_with_longitudinal': users_with_longitudinal, 'bundles': bundles }
         passed_vars.update(global_passed_vars)
         return render_to_response('datacollector/adminui.html', passed_vars, context_instance=RequestContext(request))
     else:
         return HttpResponseRedirect(website_root)
-    
