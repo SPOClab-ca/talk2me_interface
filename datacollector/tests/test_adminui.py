@@ -31,9 +31,18 @@ def create_uhn_web_subject(uhn_bundle):
 
 def create_session_types():
     ''' Create the session types (website, phone).'''
-    Session_Type.objects.create(session_type_id=1, name='website', text_only=0)
-    Session_Type.objects.create(session_type_id=2, name='phone', text_only=1)
+    session_type_website = Session_Type.objects.create(session_type_id=1, name='website', text_only=0)
+    session_type_phone = Session_Type.objects.create(session_type_id=2, name='phone', text_only=1)
+    return session_type_website, session_type_phone
 
+def create_admin_user():
+    ''' Create a admin user that can access the admin dashboard.'''
+    admin_user = User.objects.create_user(username='admin', email='@',
+                                          gsspassword='admin')
+    admin_user.is_superuser = True
+    admin_user.save()
+    Subject.objects.create(user_id=admin_user.id, date_created=TODAY)
+    return admin_user
 
 class AdminUiCreateSessionsTestCase(TestCase):
     '''
@@ -88,6 +97,45 @@ class AdminUiUhnConsentSubmittedTestCase(TestCase):
             self.assertIsNotNone(Subject.objects.get(user_id=self.subject.user_id).date_consent_submitted)
             self.assertEquals(Subject.objects.get(user_id=self.subject.user_id).consent_alternate, is_alternate_decision_maker)
 
+class AdminUiUhnSessionTestCase(TestCase):
+    '''
+        Class for uhn_session() tests of adminui.py
+    '''
+
+    def setUp(self):
+        '''
+            setUp for AdminUiUhnSessionTestCase
+        '''
+
+        # Create staff user with admin privileges
+        self.admin_user = create_admin_user()
+
+        # Create UHN web bundle
+        self.uhn_web_bundle = create_uhn_web_bundle()
+
+        # Create UHN web user
+        self.uhn_web_subject = create_uhn_web_subject(self.uhn_web_bundle)
+
+        # Create sessions for UHN web user
+        session_type_website, _ = create_session_types()
+        Session.objects.create(subject=self.uhn_web_subject, start_date=TODAY, end_date=None, session_type=session_type_website)
+        Session.objects.create(subject=self.uhn_web_subject, start_date=TODAY, end_date=None, session_type=session_type_website)
+
+        self.client = Client()
+
+    def test_get_uhn_dashboard_sessions(self):
+        '''
+            test_get_uhn_dashboard_sessions should return sessions for given user.
+        '''
+
+        self.client.login(username='admin', password='admin')
+        response = self.client.get('/talk2me/uhn/admin/uhn_web/%d' % self.uhn_web_subject.user_id)
+        context = response.context
+
+        self.assertTrue(context['is_authenticated'])
+        self.assertEquals(context['bundle'].name_id, self.uhn_web_bundle.name_id)
+        self.assertEquals(len(context['sessions']), 2)
+
 class AdminUiUhnDashboardTestCase(TestCase):
     '''
         Class for uhn_dashboard() tests of adminui.py
@@ -98,13 +146,8 @@ class AdminUiUhnDashboardTestCase(TestCase):
             setUp for AdminUiUhnDashboardTestCase
         '''
 
-        # Create staff used with admin privileges
-        admin_user = User.objects.create_user(username='admin', email='@',
-                                              password='admin')
-        admin_user.is_superuser = True
-        admin_user.save()
-        Subject.objects.create(user_id=admin_user.id, date_created=TODAY)
-        self.admin_user = admin_user
+        # Create staff user with admin privileges
+        self.admin_user = create_admin_user()
 
         # Create UHN web bundle
         self.uhn_web_bundle = create_uhn_web_bundle()
