@@ -1,4 +1,4 @@
-# Create your views here.
+""" Functions for views """
 
 from django import forms
 from django.db.models import Q, Count, Sum
@@ -46,6 +46,10 @@ date_format = "%Y-%m-%d"
 age_limit = 18
 regex_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 regex_date = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+
+# UHN-specific variable
+UHN_WEB_BUNDLE_ID = 3
+UHN_PHONE_BUNDLE_ID = 4
 
     
 # Common lib functions ------------------------------------------------------
@@ -856,15 +860,16 @@ def startsession(request):
     if request.user.is_authenticated():
         
         subject = Subject.objects.get(user_id=request.user.id)
-        session_type = Session_Type.objects.get(name='website')
-        new_session = generate_session(subject, session_type)
 
-        # Check if the user is associated with any active bundles
+        # Participants in the UHN study should not be able to create their own sessions
         today = datetime.datetime.now().date()
         subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
         if subject_bundle:
-            if subject_bundle[0].bundle.name_id == 'uhn_web':
-                return HttpResponseRedirect(uhn_website_root + 'session/' + str(new_session.session_id))
+            if subject_bundle[0].bundle.bundle_id == UHN_WEB_BUNDLE_ID or subject_bundle[0].bundle.bundle_id == UHN_PHONE_BUNDLE_ID:
+                return HttpResponseRedirect(uhn_website_root)
+
+        session_type = Session_Type.objects.get(name='website')
+        new_session = generate_session(subject, session_type)
 
         return HttpResponseRedirect(website_root + 'session/' + str(new_session.session_id))
     else:
