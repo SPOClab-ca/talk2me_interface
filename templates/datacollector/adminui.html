@@ -19,6 +19,16 @@
   <li class="active">Admin Dashboard</li>
 </ol>
 
+<h2>Studies</h2>
+<ul>
+{% for bundle in bundles %}
+    <li><a href="/{{ website_id }}/uhn/admin/{{ bundle.name_id }}">{{ bundle.name_id }}</a></li>
+{% endfor %}
+</ul>
+
+<hr/>
+
+<h2>Users</h2>
 {{ adminui_data|safe }}
 <input type="hidden" id="data_row_sep" value="{{ data_row_sep }}" />
 <input type="hidden" id="data_col_sep" value="{{ data_col_sep }}" />
