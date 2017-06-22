@@ -8,6 +8,7 @@ numpy==1.12.1
 pyOpenSSL==0.15.1
 pycparser==2.17
 pycrypto==2.6.1
+pylint==1.7.1
 pytz==2017.2
 requests==2.14.2
 shellescape==3.4.1

@@ -19,3 +19,25 @@ pip install -r requirements.txt
 ```
 5. Start the Django server: 
 `python manage.py runserver`
+
+## Running tests
+
+`python manage.py test datacollector/tests`
+
+## PyLint
+
+`pylint path/to/file`
+
+## Development Cycle
+
+1. Develop feature in separate branch
+
+2. Add unit tests for feature
+
+3. PyLint
+
+4. Push changes to Github
+
+5. Pull request from feature branch to master branch
+
+6. Push changes from Github master branch to colony.cs.toronto.edu master branch
