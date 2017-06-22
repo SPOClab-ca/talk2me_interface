@@ -79,7 +79,7 @@
         {% csrf_token %}
         <input type='hidden' id='form_type' name='form_type' value='consent' />
 
-        {% if subject_bundle and subject_bundle.bundle and subject_bundle.bundle.name_id == 'uhn_web' %}
+        {% if subject_bundle and subject_bundle.bundle and subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone' %}
             {% include 'datacollector/uhn/consent.html' %}
         {% else %}
         
