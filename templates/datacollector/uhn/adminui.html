@@ -72,14 +72,23 @@
         {% endif %}
         </td>
         <td>
-        {% if subject.sessions_create %}
-            <a>View sessions</a>
+        {% if subject.sessions_created %}
+            <button type="btn" class="btn btn-sm btn-primary" disabled>Generate sessions</button>
+            <a><button type="btn" class="btn btn-sm btn-default">View sessions</button></a>
         {% else %}
-            <a>Generate sessions</a>
+            <form method="post" action="{{ bundle.name_id }}">
+            {% csrf_token %}
+                <input type="hidden" id="form_type" name="form_type" value="sessions" />
+                <input type="hidden" id="subject_id" name=subject_id value="{{ subject.user_id }}" />
+                <button type="submit" class="btn btn-sm btn-primary">Generate sessions</button>
+                <button type="btn" class="btn btn-sm btn-default" disabled>View sessions</button>
+            </form>
+            
         {% endif %}
         </td>
     </tr>
 {% endfor %}
 </table>
+
 
 {% endblock %}

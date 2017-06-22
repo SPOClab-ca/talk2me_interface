@@ -8,6 +8,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 import simplejson
 from datacollector.models import *
+from datacollector.views import generate_session
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
 
@@ -36,12 +37,39 @@ date_format = "%Y-%m-%d"
 month_format = "%Y-%m"
 DAYS_PER_YEAR = 365.2425 # average length of year taking into account leap years
 
-#def uhn_create_sessions():
+UHN_NUM_SESSIONS = 7
+DURATION_BETWEEN_SESSIONS = datetime.timedelta(days=31)
+
+def uhn_create_sessions(subject_id, bundle):
+    '''
+        Generate 7 sessions and specify start dates (spaced one month apart).
+    '''
+
+    today = datetime.datetime.now().date()
+
+    subject = Subject.objects.get(user_id=subject_id)
+
+    if bundle.name_id == 'uhn_web':
+        session_type = Session_Type.objects.get(name='website')
+    elif bundle.name_id == 'uhn_phone':
+        session_type = Session_Type.objects.get(name='phone')
 
     # Call generate_session in views.py 7 times
+    for i in range(UHN_NUM_SESSIONS):
+        generate_session(subject, session_type)
 
-    # Update the start dates of the last 6 sessions to be one month apart
+    start_dates = [today] * UHN_NUM_SESSIONS
 
+    for idx in range(UHN_NUM_SESSIONS):
+        if idx == 0:
+            continue
+        start_dates[idx] = start_dates[idx-1] + DURATION_BETWEEN_SESSIONS
+
+    sessions = Session.objects.filter(subject_id=subject_id)
+
+    for idx, session in enumerate(sessions):
+        session_id = session.session_id
+        Session.objects.filter(session_id=session_id).update(start_date=start_dates[idx])
 
 def uhn_consent_submitted(subject_id, alternate_decision_maker):
     '''
@@ -57,17 +85,34 @@ def uhn_consent_submitted(subject_id, alternate_decision_maker):
     if alternate_decision_maker:
         Subject.objects.filter(user_id=subject_id).update(consent_alternate=1)
 
-def uhn_dashboard(request, bundle_uhn):
+def uhn_display_session_info(request, bundle_uhn, user_id):
     '''
         Function for admin dashboard specific to UHN studies.
     '''
-    
+
     is_authenticated = False
     bundle = None
     subject_bundle_users = []
     subjects = []
 
     if request.user.is_authenticated() and request.user.is_superuser:
+
+        bundle = Bundle.objects.get(name_id=('uhn_%s' % bundle_uhn))
+
+
+def uhn_dashboard(request, bundle_uhn):
+    '''
+        Function for admin dashboard specific to UHN studies.
+    '''
+
+    is_authenticated = False
+    bundle = None
+    subject_bundle_users = []
+    subjects = []
+
+    if request.user.is_authenticated() and request.user.is_superuser:
+
+        bundle = Bundle.objects.get(name_id=('uhn_%s' % bundle_uhn))
 
         if request.method == 'POST':
             form_type = request.POST['form_type']
@@ -80,19 +125,18 @@ def uhn_dashboard(request, bundle_uhn):
                     uhn_consent_submitted(subject_id, alternate_decision_maker)
 
             elif form_type == 'sessions':
-                print form_type
+                subject_id = request.POST['subject_id']
+                uhn_create_sessions(subject_id, bundle)
 
         is_authenticated = True
-
-        bundle = Bundle.objects.get(name_id=('uhn_%s' % bundle_uhn))
-
+        
         subject_bundle_users = Subject_Bundle.objects.filter(bundle=bundle)
         bundle_subjects = [subject_bundle_user.subject for subject_bundle_user in subject_bundle_users]
 
         is_sessions_created = []
         for bundle_subject in bundle_subjects:
             sessions_per_subject = Session.objects.filter(subject_id=bundle_subject.user_id)
-            if len(sessions_per_subject) == 7:
+            if len(sessions_per_subject) > 0:
                 is_sessions_created += [True]
             else:
                 is_sessions_created += [False]
