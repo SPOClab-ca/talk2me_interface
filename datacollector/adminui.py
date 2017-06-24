@@ -10,8 +10,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from datacollector.models import (Bundle, Gender, Session, Session_Task, Session_Type,
-                                  Settings, Subject, Subject_Bundle, Task)
+from datacollector.models import (Bundle, Gender, Session, Session_Task, Session_Task_Instance,
+                                  Session_Task_Instance_Value, Session_Type, Settings, Subject, Subject_Bundle, Task)
 from datacollector.views import generate_session
 
 from csc2518.settings import STATIC_URL
@@ -59,7 +59,7 @@ def uhn_create_sessions(subject_id, bundle):
         session_type = Session_Type.objects.get(name='phone')
 
     # Call generate_session in views.py 7 times
-    for i in range(UHN_NUM_SESSIONS):
+    for _ in range(UHN_NUM_SESSIONS):
         generate_session(subject, session_type)
 
     start_dates = [today] * UHN_NUM_SESSIONS
@@ -104,7 +104,36 @@ def uhn_session(request, bundle_uhn, user_id):
         is_authenticated = True
         bundle = Bundle.objects.get(name_id=('uhn_%s' % bundle_uhn))
         subject = Subject.objects.get(user_id=user_id)
-        sessions = Session.objects.filter(subject_id=user_id)
+        sessions_from_db = Session.objects.filter(subject_id=user_id)
+
+        for session in sessions_from_db:
+            session_tasks = []
+            session_tasks_from_db = Session_Task.objects.filter(session_id=session.session_id)
+
+            for session_task in session_tasks_from_db:
+                session_task_values = []
+                session_task_instances = Session_Task_Instance.objects.filter(session_task=session_task)
+
+                for session_task_instance in session_task_instances:
+                    session_task_instance_values = Session_Task_Instance_Value.objects.filter(session_task_instance=session_task_instance)
+
+                    for session_task_instance_value in session_task_instance_values:
+                        session_task_values.append(session_task_instance_value.value)
+
+                session_tasks.append({
+                    'task': session_task.task.name,
+                    'date_completed': session_task.date_completed,
+                    'total_time': session_task.total_time,
+                    'task_instances': session_task_values
+                    })
+
+            sessions.append({
+                'session_id': session.session_id,
+                'start_date': session.start_date,
+                'end_date': session.end_date,
+                'session_tasks': session_tasks
+                })
+
 
         passed_vars = {
             'is_authenticated': is_authenticated,
@@ -115,8 +144,7 @@ def uhn_session(request, bundle_uhn, user_id):
         passed_vars.update(global_passed_vars)
 
         return render_to_response('datacollector/uhn/adminui_sessions.html', passed_vars, context_instance=RequestContext(request))
-    else:
-        return HttpResponseRedirect(website_root)
+    return HttpResponseRedirect(website_root)
 
 
 def uhn_dashboard(request, bundle_uhn):
@@ -182,6 +210,10 @@ def uhn_dashboard(request, bundle_uhn):
         return HttpResponseRedirect(website_root)
 
 def dashboard(request):
+    '''
+        Function for general admin dashboard.
+    '''
+
     is_authenticated = False
     consent_submitted = None
     demographic_submitted = None
