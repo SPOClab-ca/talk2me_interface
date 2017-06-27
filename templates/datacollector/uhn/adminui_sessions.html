@@ -50,10 +50,12 @@
             <th>Date of completion</th>
         </tr>
     </thead>
+
 {% for session in sessions %}
     
-    <tr {% if session.end_date %} class="success" {% endif %} data-toggle="modal" data-target="#sessionModal">
-    <div id="sessionModal" class="modal fade" role="dialog">
+    {{ session.session_tasks }}
+    <tr {% if session.end_date %} class="success" {% endif %} data-toggle="modal" data-target="#sessionModal{{ session.session_id }}">
+    <div id="sessionModal{{ session.session_id }}" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
