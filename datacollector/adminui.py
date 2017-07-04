@@ -117,7 +117,10 @@ def uhn_session(request, bundle_uhn, user_id):
                 for session_task_instance in session_task_instances:
                     session_task_instance_values = Session_Task_Instance_Value.objects.filter(session_task_instance_id=session_task_instance.session_task_instance_id)
                     for session_task_instance_value in session_task_instance_values:
-                        session_task_values.append(session_task_instance_value.value)
+                        session_task_values.append({
+                            'value': session_task_instance_value.value,
+                            'difficulty': session_task_instance_value.difficulty_id
+                        })
 
                 session_tasks.append({
                     'task': session_task.task.name,

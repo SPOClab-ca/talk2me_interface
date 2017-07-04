@@ -52,8 +52,6 @@
     </thead>
 
 {% for session in sessions %}
-    
-    {{ session.session_tasks }}
     <tr {% if session.end_date %} class="success" {% endif %} data-toggle="modal" data-target="#sessionModal{{ session.session_id }}">
     <div id="sessionModal{{ session.session_id }}" class="modal fade" role="dialog">
         <div class="modal-dialog">
@@ -66,7 +64,7 @@
                         <ul class="list-group">
                             {% for task_instance in session_task.task_instances %}
                             <li class="list-group-item">
-                                {{ task_instance }}
+                                {{ task_instance.value }} ({{ task_instance.difficulty }})
                             </li>
                             {% endfor %}
                         </ul>

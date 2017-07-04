@@ -61,6 +61,10 @@ PICTURE_DESCRIPTION_UHN_WEB_BUNDLE_TASK_ID = 6
 RIG_UHN_WEB_BUNDLE_TASK_ID = 9
 RIG_UHN_PHONE_BUNDLE_TASK_ID = 15
 
+# Difficulty ID variables
+DIFFICULTY_LOW_ID = 1
+DIFFICULTY_MEDIUM_ID = 2
+DIFFICULTY_HIGH_ID = 3
 
 # Common lib functions ------------------------------------------------------
 def generate_session(subject, session_type):
@@ -161,7 +165,7 @@ def generate_session(subject, session_type):
 
         # Select random field values for each of the new task instances
         # (only for the fields that need to have generated values, i.e. for display fields)
-        task_fields_display = Task_Field.objects.filter(task=task,field_type__name='display',generate_value=1)
+        task_fields_display = Task_Field.objects.filter(task=task, field_type__name='display', generate_value=1)
 
         # For each display field, select random <num_instances> which the user hasn't seen before OR use the
         # specified task instances values for the bundle task.
@@ -197,11 +201,35 @@ def generate_session(subject, session_type):
                                                  RIG_UHN_WEB_BUNDLE_TASK_ID, RIG_UHN_PHONE_BUNDLE_TASK_ID]
                     bundle_task_id = bundle_task.bundle_task_id
                     if bundle_task_id in bundle_task_ids_no_repeat:
-                        specified_values = [specified_value for specified_value in specified_values if specified_value.task_field_value.value not in existing_values]
-                        # TODO: For vocabulary task, select 3 easy words, 2 medium words, and 1 difficult word.
 
-                    selected_values = [x.task_field_value for x in specified_values[:field_num_instances]]
+                        # For vocabulary task, we want a specific number of easy/medium/hard task instances
+                        if bundle_task_id == VOCABULARY_UHN_PHONE_BUNDLE_TASK_ID or bundle_task_id == VOCABULARY_UHN_WEB_BUNDLE_TASK_ID:
+                            # Retrieve from DB
+                            vocabulary_values_low_from_db = Bundle_Task_Field_Value.objects.filter(bundle_task_id=bundle_task_id,
+                                                                                                   task_field_value__difficulty_id=DIFFICULTY_LOW_ID)
+                            vocabulary_values_medium_from_db = Bundle_Task_Field_Value.objects.filter(bundle_task_id=bundle_task_id,
+                                                                                                      task_field_value__difficulty_id=DIFFICULTY_MEDIUM_ID)
+                            vocabulary_values_high_from_db = Bundle_Task_Field_Value.objects.filter(bundle_task_id=bundle_task_id,
+                                                                                                    task_field_value__difficulty_id=DIFFICULTY_HIGH_ID)
 
+                            # Remove instances that were already seen
+                            filtered_vocabulary_values_low = [vocabulary_value for vocabulary_value in vocabulary_values_low_from_db if vocabulary_value.task_field_value.value not in existing_values]
+                            filtered_vocabulary_values_medium = [vocabulary_value for vocabulary_value in vocabulary_values_medium_from_db if vocabulary_value.task_field_value.value not in existing_values]
+                            filtered_vocabulary_values_high = [vocabulary_value for vocabulary_value in vocabulary_values_high_from_db if vocabulary_value.task_field_value.value not in existing_values]
+
+                            # Shuffle
+                            random.shuffle(filtered_vocabulary_values_low)
+                            random.shuffle(filtered_vocabulary_values_medium)
+                            random.shuffle(filtered_vocabulary_values_high)
+
+                            # Draw 3 easy words, 2 medium words, and 1 hard word
+                            selected_values = [value.task_field_value for value in filtered_vocabulary_values_low[:3] + filtered_vocabulary_values_medium[:2] + filtered_vocabulary_values_high[:1]]
+
+                        else:
+                            specified_values = [specified_value for specified_value in specified_values if specified_value.task_field_value.value not in existing_values]
+                            selected_values = [x.task_field_value for x in specified_values[:field_num_instances]]
+                    else:
+                        selected_values = [x.task_field_value for x in specified_values[:field_num_instances]]
                 else:
                     specified_values = specified_values_from_db
                     selected_values = [x.task_field_value for x in specified_values[len(existing_instances):len(existing_instances)+field_num_instances]]

@@ -98,19 +98,19 @@ class ViewsGenerateSessionTestCase(TestCase):
         session_type_phone = Session_Type.objects.create(session_type_id=2, name='phone', text_only=1)
 
         # Populate the DB with a few tasks
-        task_no_repeat = Task.objects.create(task_id=1, name_id='task1', name='task1',
+        task_no_repeat = Task.objects.create(task_id=10, name_id='task1', name='task1',
                                              instruction='instruction', default_order=1,
                                              is_order_fixed=1, default_delay=0,
                                              default_embedded_delay=0, is_active=1)
-        active_task = Task.objects.create(task_id=2, name_id='task2', name='task2',
+        active_task = Task.objects.create(task_id=20, name_id='task2', name='task2',
                                           instruction='inst', default_order=100,
                                           is_order_fixed=0, default_delay=0,
                                           default_embedded_delay=0, is_active=1)
-        inactive_task = Task.objects.create(task_id=3, name_id='task3', name='task3',
+        inactive_task = Task.objects.create(task_id=30, name_id='task3', name='task3',
                                             instruction='instructionnn', default_order=20,
                                             is_order_fixed=1, default_delay=0,
                                             default_embedded_delay=0, is_active=0)
-        task_repeat = Task.objects.create(task_id=4, name_id='bundle_task_allow_repeat',
+        task_repeat = Task.objects.create(task_id=40, name_id='bundle_task_allow_repeat',
                                           name='bundle_task_allow_repeat', instruction='',
                                           default_order=100, is_order_fixed=0, default_delay=0,
                                           default_embedded_delay=0, is_active=1)
@@ -119,6 +119,8 @@ class ViewsGenerateSessionTestCase(TestCase):
         field_type = Field_Type.objects.create(field_type_id=1, name='display')
         field_data_type = Field_Data_Type.objects.create(field_data_type_id=1, name='text')
         value_difficulty = Value_Difficulty.objects.create(value_difficulty_id=1, name='low')
+        Value_Difficulty.objects.create(value_difficulty_id=2, name='medium')
+        Value_Difficulty.objects.create(value_difficulty_id=3, name='high')
 
         # Create task fields for tasks
         task_field_bundle_no_repeat = Task_Field.objects.create(task_field_id=1, name='',
@@ -195,6 +197,9 @@ class ViewsGenerateSessionTestCase(TestCase):
         self.inactive_task = inactive_task
         self.task_no_repeat = task_no_repeat
         self.task_repeat = task_repeat
+        self.uhn_web_bundle = uhn_web_bundle
+        self.field_type = field_type
+        self.field_data_type = field_data_type
 
     def test_generate_session_uhn(self):
         '''
@@ -240,6 +245,65 @@ class ViewsGenerateSessionTestCase(TestCase):
 
         self.assertEqual(first_session_task_repeat_value.value, second_session_task_repeat_value.value)
         self.assertNotEqual(first_session_task_no_repeat_value.value, second_session_task_no_repeat_value.value)
+
+    def test_generate_session_vocabulary_task(self):
+        '''
+            test_generate_session_vocabulary_task should generate task instances with
+            3 words of low difficulty, 2 words of medium difficulty, and 1 word of high difficulty
+        '''
+
+        num_instances_vocabulary = 6
+        num_instances_vocabulary_low = 3
+        num_instances_vocabulary_medium = 2
+        num_instances_vocabulary_high = 1
+
+        # Get difficulties
+        low_difficulty = Value_Difficulty.objects.get(value_difficulty_id=1)
+        medium_difficulty = Value_Difficulty.objects.get(value_difficulty_id=2)
+        high_difficulty = Value_Difficulty.objects.get(value_difficulty_id=3)
+
+        # Create vocabulary task
+        vocabulary_task = Task.objects.create(task_id=views.VOCABULARY_TASK_ID, name_id='vocabulary', name='vocabulary',
+                                              instruction='instruction', default_order=1,
+                                              is_order_fixed=1, default_delay=0,
+                                              default_embedded_delay=0, is_active=1)
+        bundle_task_vocabulary = Bundle_Task.objects.create(bundle_task_id=views.VOCABULARY_UHN_WEB_BUNDLE_TASK_ID,
+                                                            bundle_id=self.uhn_web_bundle.bundle_id,
+                                                            task_id=vocabulary_task.task_id,
+                                                            default_num_instances=num_instances_vocabulary)
+
+        # Create task field for vocabulary task
+        task_field_vocabulary = Task_Field.objects.create(task_field_id=10, name='',
+                                                          task_id=vocabulary_task.task_id,
+                                                          field_type_id=self.field_type.field_type_id,
+                                                          field_data_type_id=self.field_data_type.field_data_type_id,
+                                                          embedded_response=0, generate_value=1)
+
+        # Insert some values for vocabulary task instance
+        for difficulty in [low_difficulty, medium_difficulty, high_difficulty]:
+            for i in range(3):
+                Task_Field_Value.objects.create(task_field_value_id=difficulty.value_difficulty_id * 100 + i,
+                                                task_field_id=task_field_vocabulary.task_field_id,
+                                                value='word',
+                                                difficulty_id=difficulty.value_difficulty_id)
+                Bundle_Task_Field_Value.objects.create(bundle_task_field_value_id=difficulty.value_difficulty_id * 100 + i,
+                                                       bundle_task_id=bundle_task_vocabulary.bundle_task_id,
+                                                       task_field_value_id=difficulty.value_difficulty_id * 100 + i)
+
+        # Create session
+        vocabulary_session = views.generate_session(self.subject_uhn_bundle, self.session_type_web)
+        vocabulary_session_tasks = Session_Task.objects.get(session_id=vocabulary_session.session_id, task_id=vocabulary_task.task_id)
+        vocabulary_session_task_instance_ids = Session_Task_Instance.objects.filter(session_task_id=vocabulary_session_tasks.session_task_id)
+        vocabulary_session_task_instances_low = Session_Task_Instance_Value.objects.filter(session_task_instance_id__in=vocabulary_session_task_instance_ids,
+                                                                                           difficulty_id=low_difficulty.value_difficulty_id)
+        vocabulary_session_task_instances_medium = Session_Task_Instance_Value.objects.filter(session_task_instance_id__in=vocabulary_session_task_instance_ids,
+                                                                                              difficulty_id=medium_difficulty.value_difficulty_id)
+        vocabulary_session_task_instances_high = Session_Task_Instance_Value.objects.filter(session_task_instance_id__in=vocabulary_session_task_instance_ids,
+                                                                                            difficulty_id=high_difficulty.value_difficulty_id)
+
+        self.assertEquals(len(vocabulary_session_task_instances_low), num_instances_vocabulary_low)
+        self.assertEquals(len(vocabulary_session_task_instances_medium), num_instances_vocabulary_medium)
+        self.assertEquals(len(vocabulary_session_task_instances_high), num_instances_vocabulary_high)
 
 class ViewsStartSessionTestCase(TestCase):
     '''
