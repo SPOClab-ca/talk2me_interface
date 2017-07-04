@@ -50,12 +50,34 @@
             <th>Date of completion</th>
         </tr>
     </thead>
+
 {% for session in sessions %}
-    {% if session.end_date %}
-    <tr class="success">
-    {% else %}
-    <tr>
-    {% endif %}
+    <tr {% if session.end_date %} class="success" {% endif %} data-toggle="modal" data-target="#sessionModal{{ session.session_id }}">
+    <div id="sessionModal{{ session.session_id }}" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                   {% for session_task in session.session_tasks %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">{{ session_task.task }}</div>
+                        <ul class="list-group">
+                            {% for task_instance in session_task.task_instances %}
+                            <li class="list-group-item">
+                                {{ task_instance.value }} ({{ task_instance.difficulty }})
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                       {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
         <td>{{ session.session_id }}</td>
         <td>{{ session.start_date }}</td>
         <td>{{ session.end_date }}</td>

@@ -10,7 +10,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from datacollector.models import (Bundle, Gender, Session, Session_Task, Session_Type, Settings, Subject, Subject_Bundle, Task)
+from datacollector.models import (Bundle, Gender, Session, Session_Task, Session_Task_Instance,
+                                  Session_Task_Instance_Value, Session_Type, Settings, Subject, Subject_Bundle, Task)
 from datacollector.views import generate_session
 
 from csc2518.settings import STATIC_URL
@@ -25,7 +26,11 @@ website_name = Settings.objects.get(setting_name="website_name").setting_value
 
 # Globals
 global global_passed_vars, date_format, age_limit, regex_email, regex_date, colour_lookup
-global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username }
+global_passed_vars = {
+    "website_id": "talk2me",
+    "website_name": website_name,
+    "website_email": email_username
+}
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 
@@ -54,7 +59,7 @@ def uhn_create_sessions(subject_id, bundle):
         session_type = Session_Type.objects.get(name='phone')
 
     # Call generate_session in views.py 7 times
-    for i in range(UHN_NUM_SESSIONS):
+    for _ in range(UHN_NUM_SESSIONS):
         generate_session(subject, session_type)
 
     start_dates = [today] * UHN_NUM_SESSIONS
@@ -99,7 +104,38 @@ def uhn_session(request, bundle_uhn, user_id):
         is_authenticated = True
         bundle = Bundle.objects.get(name_id=('uhn_%s' % bundle_uhn))
         subject = Subject.objects.get(user_id=user_id)
-        sessions = Session.objects.filter(subject_id=user_id)
+        sessions_from_db = Session.objects.filter(subject_id=user_id)
+
+        for session in sessions_from_db:
+            session_tasks = []
+            session_tasks_from_db = Session_Task.objects.filter(session_id=session.session_id)
+
+            for session_task in session_tasks_from_db:
+                session_task_values = []
+                session_task_instances = Session_Task_Instance.objects.filter(session_task_id=session_task.session_task_id)
+
+                for session_task_instance in session_task_instances:
+                    session_task_instance_values = Session_Task_Instance_Value.objects.filter(session_task_instance_id=session_task_instance.session_task_instance_id)
+                    for session_task_instance_value in session_task_instance_values:
+                        session_task_values.append({
+                            'value': session_task_instance_value.value,
+                            'difficulty': session_task_instance_value.difficulty_id
+                        })
+
+                session_tasks.append({
+                    'task': session_task.task.name,
+                    'date_completed': session_task.date_completed,
+                    'total_time': session_task.total_time,
+                    'task_instances': session_task_values
+                    })
+
+            sessions.append({
+                'session_id': session.session_id,
+                'start_date': session.start_date,
+                'end_date': session.end_date,
+                'session_tasks': session_tasks
+                })
+
 
         passed_vars = {
             'is_authenticated': is_authenticated,
@@ -110,8 +146,7 @@ def uhn_session(request, bundle_uhn, user_id):
         passed_vars.update(global_passed_vars)
 
         return render_to_response('datacollector/uhn/adminui_sessions.html', passed_vars, context_instance=RequestContext(request))
-    else:
-        return HttpResponseRedirect(website_root)
+    return HttpResponseRedirect(website_root)
 
 
 def uhn_dashboard(request, bundle_uhn):
@@ -177,6 +212,10 @@ def uhn_dashboard(request, bundle_uhn):
         return HttpResponseRedirect(website_root)
 
 def dashboard(request):
+    '''
+        Function for general admin dashboard.
+    '''
+
     is_authenticated = False
     consent_submitted = None
     demographic_submitted = None
@@ -209,7 +248,7 @@ def dashboard(request):
             bin_interval = 10
             min_age = 1
             max_age = 100
-            age_bins = numpy.arange(min_age,max_age,bin_interval)
+            age_bins = numpy.arange(min_age, max_age, bin_interval)
             age_data = [int((today - x.dob).days / DAYS_PER_YEAR) for x in Subject.objects.filter(dob__isnull=False)]
             age_data_binned = list(numpy.digitize(age_data, age_bins))
             list_bins = list(age_bins)
@@ -237,7 +276,7 @@ def dashboard(request):
             # Show the avg number of completed samples per subject, for each task and overall
             num_samples_by_task_subject = Session_Task.objects.filter(date_completed__isnull=False).values('task', 'session__subject').annotate(Count('session_task_id'))
             longitudinal_data = "<thead><tr><th>Task ID</th><th>Task Name</th><th>No. samples</th><th>No. subjects</th><th>Avg no. samples per subject per task</th></tr></thead><tbody>"
-            overall_avg_samples_per_subject = [0,0]
+            overall_avg_samples_per_subject = [0, 0]
             for task in Task.objects.filter(is_active=1).order_by('task_id'):
                 total_task_samples = sum([elem['session_task_id__count'] for elem in num_samples_by_task_subject if elem['task'] == task.task_id])
                 total_task_subjects = len([elem for elem in num_samples_by_task_subject if elem['task'] == task.task_id])
@@ -268,7 +307,17 @@ def dashboard(request):
             bundles = Bundle.objects.all()
 
 
-        passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'user': request.user, 'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP, 'data_col_sep': DATA_COL_SEP, 'longitudinal_data': longitudinal_data, 'users_with_session': users_with_session, 'users_with_session_task': users_with_session_task, 'users_with_active_session': users_with_active_session, 'users_with_longitudinal': users_with_longitudinal, 'bundles': bundles }
+        passed_vars = {
+            'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted,
+            'demographic_submitted': demographic_submitted,
+            'active_notifications': active_notifications, 'user': request.user,
+            'adminui_data': adminui_data, 'data_row_sep': DATA_ROW_SEP,
+            'data_col_sep': DATA_COL_SEP, 'longitudinal_data': longitudinal_data,
+            'users_with_session': users_with_session,
+            'users_with_session_task': users_with_session_task,
+            'users_with_active_session': users_with_active_session,
+            'users_with_longitudinal': users_with_longitudinal, 'bundles': bundles
+        }
         passed_vars.update(global_passed_vars)
         return render_to_response('datacollector/adminui.html', passed_vars, context_instance=RequestContext(request))
     else:
