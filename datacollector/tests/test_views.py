@@ -7,9 +7,9 @@ from django.test import TestCase
 from django.test import Client
 
 from datacollector.models import (Bundle, Bundle_Task_Field_Value, Field_Data_Type, Field_Type, Subject,
-                                  Subject_Bundle, Language, Session, Session_Type, Session_Task, Session_Task_Instance,
-                                  Session_Task_Instance_Value, Task, Task_Field, Task_Field_Value, Value_Difficulty,
-                                  Bundle_Task)
+                                  Subject_Bundle, Language, Session, Session_Type, Session_Task,
+                                  Session_Task_Instance, Session_Task_Instance_Value, Task, Task_Field,
+                                  Task_Field_Value, Value_Difficulty, Bundle_Task)
 from datacollector import views
 
 from utils import (create_web_user, create_uhn_web_bundle, create_uhn_phone_bundle,
@@ -245,6 +245,19 @@ class ViewsGenerateSessionTestCase(TestCase):
 
         self.assertEqual(first_session_task_repeat_value.value, second_session_task_repeat_value.value)
         self.assertNotEqual(first_session_task_no_repeat_value.value, second_session_task_no_repeat_value.value)
+
+    def test_delete_session(self):
+        '''
+            test_delete_session should remove all session tasks
+        '''
+
+        session = views.generate_session(self.subject_uhn_bundle, self.session_type_web)
+
+        self.assertEqual(len(Session_Task.objects.filter(session_id=session.session_id)), 2)
+
+        views.delete_session(session.session_id)
+        self.assertEqual(len(Session_Task.objects.filter(session_id=session.session_id)), 0)
+        self.assertEqual(len(Session.objects.filter(session_id=session.session_id)), 0)
 
     def test_generate_session_vocabulary_task(self):
         '''
