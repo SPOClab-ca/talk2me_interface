@@ -12,7 +12,7 @@ from django.template import RequestContext
 
 from datacollector.models import (Bundle, Gender, Session, Session_Task, Session_Task_Instance,
                                   Session_Task_Instance_Value, Session_Type, Settings, Subject, Subject_Bundle, Task)
-from datacollector.views import generate_session
+from datacollector.views import generate_session, delete_session
 
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
@@ -75,6 +75,12 @@ def uhn_create_sessions(subject_id, bundle):
         session_id = session.session_id
         Session.objects.filter(session_id=session_id).update(start_date=start_dates[idx])
 
+def uhn_delete_session(session_id):
+    '''
+        Delete session.
+    '''
+    return delete_session(session_id)
+
 def uhn_consent_submitted(subject_id, alternate_decision_maker):
     '''
         Update user from admin dashboard when consent is given.
@@ -98,12 +104,25 @@ def uhn_session(request, bundle_uhn, user_id):
     bundle = None
     subject = None
     sessions = []
+    session_deleted = False
 
     if request.user.is_authenticated() and request.user.is_superuser:
 
         is_authenticated = True
         bundle = Bundle.objects.get(name_id=('uhn_%s' % bundle_uhn))
         subject = Subject.objects.get(user_id=user_id)
+
+        if request.method == 'POST':
+            form_type = request.POST['form_type']
+
+            if form_type == 'delete_session':
+                session_id = request.POST['session_id']
+                session_id_check = request.POST['session_id_check']
+                if session_id_check == session_id:
+                    session_deleted = uhn_delete_session(session_id)
+                else:
+                    session_deleted = False
+
         sessions_from_db = Session.objects.filter(subject_id=user_id)
 
         for session in sessions_from_db:
@@ -141,7 +160,8 @@ def uhn_session(request, bundle_uhn, user_id):
             'is_authenticated': is_authenticated,
             'bundle': bundle,
             'subject': subject,
-            'sessions': sessions
+            'sessions': sessions,
+            'session_deleted': session_deleted
         }
         passed_vars.update(global_passed_vars)
 
