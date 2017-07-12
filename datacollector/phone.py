@@ -277,7 +277,9 @@ def task_value(request):
         task_values = Task_Field_Value.objects.filter(task_field__task__instruction_phone__isnull=False, task_field__task__is_active=1, task_field__field_type__name='display')
         list_task_values = []
         for task_value in task_values:
-            list_task_values += [{"task_value_id": task_value.task_field_value_id, "task_id": task_value.task_field.task.task_id, "value": task_value.value, "value_display": task_value.value_display, "difficulty_id": task_value.difficulty_id, "expected_response": task_value.response_expected}]
+            list_task_values += [{"task_value_id": task_value.task_field_value_id, "task_id": task_value.task_field.task.task_id, 
+                                  "value": task_value.value, "value_display": task_value.value_display, "difficulty_id": task_value.difficulty_id, 
+                                  "expected_response": task_value.response_expected, "task_field_value_id": task_value.task_field_value_id}]
 
         return HttpResponse(status=200, content=json.dumps({"status_code": "200", "task_values": list_task_values}))
 
@@ -346,7 +348,14 @@ def session_task(request, session_task_id):
                     str_datecompleted = session_response.date_completed
                     if str_datecompleted is not None:
                         str_datecompleted = str_datecompleted.strftime(date_format)
-                list_session_task_instances += [{"session_task_instance_id": session_task_instance_value.session_task_instance_id, "value": session_task_instance_value.value, "value_display": session_task_instance_value.value_display, "difficulty_id": session_task_instance_value.difficulty_id, "date_completed": str_datecompleted}]
+
+                task_field_value = Task_Field_Value.objects.get(task_field_id=session_task_instance_value.task_field_id, 
+                                                                value=session_task_instance_value.value,
+                                                                value_display=session_task_instance_value.value_display,
+                                                                difficulty_id=session_task_instance_value.difficulty_id)
+                list_session_task_instances += [{"session_task_instance_id": session_task_instance_value.session_task_instance_id, "value": session_task_instance_value.value, 
+                                                 "value_display": session_task_instance_value.value_display, "difficulty_id": session_task_instance_value.difficulty_id, 
+                                                 "date_completed": str_datecompleted, "task_field_value_id": task_field_value.task_field_value_id}]
             return HttpResponse(status=200, content=json.dumps({"status_code": "200", "session_task_instances": list_session_task_instances}))
 
         return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
