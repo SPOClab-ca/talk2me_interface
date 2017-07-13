@@ -400,6 +400,22 @@ def response(request):
                 filepath = os.path.join(MEDIA_ROOT, session_response.value_audio.name)
                 file_checksum = lib.generate_md5_checksum(filepath)
 
+                # Check if all session task instances associated with session_task are completed
+                all_tasks_completed = True
+                session_task_id = Session_Task_Instance.objects.get(session_task_instance_id=session_task_instance_id).session_task_id
+                session_task = Session_Task.objects.get(session_task_id=session_task_id)
+                session_task_instances = Session_Task_Instance.objects.filter(session_task_id=session_task_id)
+                for session_task_instance in session_task_instances:
+                    session_response = Session_Response.objects.get(session_task_instance_id=session_task_instance.session_task_instance_id)
+                    if session_response.date_completed is not None:
+                        all_tasks_completed = False
+                        break
+
+                    # If all task instances have been completed, update the session task object 
+                    if all_tasks_completed:
+                        session_task.date_completed = date_responded
+                        session_task.save()
+
                 return HttpResponse(status=200, content=json.dumps({"status_code": "200", "file_checksum": file_checksum}))
         return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
     return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
