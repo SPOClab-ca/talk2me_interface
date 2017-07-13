@@ -62,7 +62,7 @@
                 <div class="modal-content">
                     <div class="modal-body">
                        {% for session_task in session.session_tasks %}
-                        <div class="panel panel-default">
+                        <div {% if session_task.date_completed %} class="panel  panel-success" {% else %} class="panel panel-default" {% endif %}>
                             <div class="panel-heading">{{ session_task.task }}</div>
                             <ul class="list-group">
                                 {% for task_instance in session_task.task_instances %}

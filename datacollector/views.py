@@ -66,6 +66,8 @@ DIFFICULTY_LOW_ID = 1
 DIFFICULTY_MEDIUM_ID = 2
 DIFFICULTY_HIGH_ID = 3
 
+NUM_TASK_INSTANCES_UHN = 5
+
 # Common lib functions ------------------------------------------------------
 
 def delete_session(session_id):
@@ -115,14 +117,16 @@ def generate_session(subject, session_type):
             bundle_tasks = subj_bundle.bundle.bundle_task_set.all()
 
             if bundle_id == 'uhn_web':
-                while len(bundle_tasks) > 6:
+                while len(bundle_tasks) > NUM_TASK_INSTANCES_UHN:
                     idx_to_remove = random.randint(0, len(bundle_tasks) - 1)
                     id_task_to_remove = bundle_tasks[idx_to_remove].task.task_id
                     if not id_task_to_remove == '13':
                         bundle_tasks = bundle_tasks[:idx_to_remove] + bundle_tasks[idx_to_remove+1:]
 
+            # If necessary, add another task instance. (Note: This might not be necessary, given current
+            # number of tasks in the bundle).
             elif bundle_id == 'uhn_phone':
-                while len(bundle_tasks) < 6:
+                while len(bundle_tasks) < NUM_TASK_INSTANCES_UHN:
                     idx_to_add = random.randint(0, len(bundle_tasks) - 1)
                     id_task_to_add = bundle_tasks[idx_to_add].task.task_id
                     if not id_task_to_add == '13':
