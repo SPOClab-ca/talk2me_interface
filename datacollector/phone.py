@@ -382,42 +382,58 @@ def response(request):
         return response
 
     if request.method == 'POST':
-        if request.POST and 'session_task_instance_id' in request.POST and 'date_responded' in request.POST and request.FILES and 'audio' in request.FILES:
+
+        audio_data = None
+        transcript = None
+
+        if request.POST and 'session_task_instance_id' in request.POST and 'date_responded' in request.POST:
             session_task_instance_id = request.POST['session_task_instance_id']
             date_responded = request.POST['date_responded']
-            audio_data = ContentFile(request.FILES['audio'].read())
+
+
+            if request.FILES and 'audio' in request.FILES:
+                audio_data = ContentFile(request.FILES['audio'].read())
+            if 'transcript' in request.POST:
+                transcript = request.POST['transcript']
 
             # Check that the task instance ID is valid and that the response hasn't been submitted before
             session_response = Session_Response.objects.filter(session_task_instance_id=session_task_instance_id, session_task_instance__session_task__session__session_type__name='phone', session_task_instance__session_task__session__subject=subject, date_completed__isnull=True)
             if session_response:
                 session_response = session_response[0]
 
-                # Save the audio response and update the db record
-                session_response.value_audio.save('', audio_data)
+                # Save the audio response and/or the text response, and update the db record
+                if audio_data:
+                    session_response.value_audio.save('', audio_data)
+                if transcript:
+                    session_response.value_text = transcript
                 session_response.date_completed = date_responded
                 session_response.save()
 
-                # Compute a checksum for the file stored on the server
-                filepath = os.path.join(MEDIA_ROOT, session_response.value_audio.name)
-                file_checksum = lib.generate_md5_checksum(filepath)
+            # Check if all session task instances associated with session_task are completed
+            all_tasks_completed = True
+            session_task_id = Session_Task_Instance.objects.get(session_task_instance_id=session_task_instance_id).session_task_id
+            session_task = Session_Task.objects.get(session_task_id=session_task_id)
+            session_task_instances = Session_Task_Instance.objects.filter(session_task_id=session_task_id)
+            for session_task_instance in session_task_instances:
+                is_date_completed = Session_Response.objects.get(session_task_instance_id=session_task_instance.session_task_instance_id).date_completed
+                if is_date_completed is None:
+                    all_tasks_completed = False
+                    break
 
-                # Check if all session task instances associated with session_task are completed
-                all_tasks_completed = True
-                session_task_id = Session_Task_Instance.objects.get(session_task_instance_id=session_task_instance_id).session_task_id
-                session_task = Session_Task.objects.get(session_task_id=session_task_id)
-                session_task_instances = Session_Task_Instance.objects.filter(session_task_id=session_task_id)
-                for session_task_instance in session_task_instances:
-                    session_response = Session_Response.objects.get(session_task_instance_id=session_task_instance.session_task_instance_id)
-                    if session_response.date_completed is not None:
-                        all_tasks_completed = False
-                        break
+            # If all task instances have been completed, update the session task object 
+            if all_tasks_completed:
+                session_task.date_completed = date_responded
+                session_task.save()
 
-                    # If all task instances have been completed, update the session task object 
-                    if all_tasks_completed:
-                        session_task.date_completed = date_responded
-                        session_task.save()
-
-                return HttpResponse(status=200, content=json.dumps({"status_code": "200", "file_checksum": file_checksum}))
+            if session_response:
+                if audio_data:
+                    # Compute a checksum for the file stored on the server
+                    filepath = os.path.join(MEDIA_ROOT, session_response.value_audio.name)
+                    file_checksum = lib.generate_md5_checksum(filepath)
+                    return HttpResponse(status=200, content=json.dumps({"status_code": "200", "file_checksum": file_checksum, "response_saved": True, "all_tasks_completed": all_tasks_completed}))
+                elif transcript:
+                    return HttpResponse(status=200, content=json.dumps({"status_code": "200", "response_saved": True, "all_tasks_completed": all_tasks_completed}))
+            return HttpResponse(status=200, content=json.dumps({"status_code": "200", "all_tasks_completed": all_tasks_completed, "response_saved": False}))
         return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
     return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
 
