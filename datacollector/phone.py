@@ -22,6 +22,7 @@ import random
 import re
 
 SESSION_TYPE_ID_PHONE = 2
+TASK_FIELD_ID_WINOGRAD = 23
 
 @csrf_exempt
 def status(request):
@@ -450,6 +451,35 @@ def generate_pin(request):
             num_updated += 1
         return HttpResponse(status=200, content=json.dumps({"status_code": "200", "num_updated": num_updated }))
     return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
+
+@csrf_exempt
+def winograd_value(request, assoc_id):
+    '''
+        API call for retrieving Winograd value
+    '''
+
+    # Validate the headers
+    auth_token = lib.validate_authorization_header(request.META)
+    if not auth_token:
+        response = HttpResponse(status=400, \
+            content=json.dumps({"status_code": "400"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_request"'
+        return response
+
+    # Validate the access token
+    subject = lib.authenticate(auth_token)
+    if not subject:
+        response = HttpResponse(status=401, \
+            content=json.dumps({"status_code": "401"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_token"'
+        return response
+
+    if request.method == 'GET':
+        task_field_value = Task_Field_Value.objects.filter(assoc_id=assoc_id, task_field_id=TASK_FIELD_ID_WINOGRAD)
+        if task_field_value:
+            value = task_field_value[0].value
+            return HttpResponse(status=200, content=json.dumps({"status_code": "200", "value": value}))
+        return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
 
 @csrf_exempt
 def old_session(request):
