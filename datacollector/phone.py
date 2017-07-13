@@ -200,7 +200,8 @@ def session_id(request, session_id):
 
     if request.method == 'GET':
         # Return all tasks for the requested session ID IFF the session belongs to the authenticated user
-        session_tasks = Session_Task.objects.filter(session=session)
+        # Only return tasks that haven't been completed yet
+        session_tasks = Session_Task.objects.filter(session=session, date_completed__isnull=True)
         list_session_tasks = []
         date_format = "%Y-%m-%d %H:%M:%S"
         for session_task in session_tasks:
