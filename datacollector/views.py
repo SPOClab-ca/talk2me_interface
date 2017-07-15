@@ -66,7 +66,38 @@ DIFFICULTY_LOW_ID = 1
 DIFFICULTY_MEDIUM_ID = 2
 DIFFICULTY_HIGH_ID = 3
 
+NUM_TASK_INSTANCES_UHN = 5
+
 # Common lib functions ------------------------------------------------------
+
+def delete_session(session_id):
+    '''
+        Function for deleting a session. Takes as input a session ID and deletes
+        the session, as well as its associated tasks, task instances, and session
+        response objects. Returns True upon completion.
+    '''
+
+    # Get session tasks associated with session id
+    session_tasks = Session_Task.objects.filter(session_id=session_id)
+
+    # Get session task instances associated with each session task id
+    for session_task in session_tasks:
+        session_task_instances = Session_Task_Instance.objects.filter(session_task_id=session_task.session_task_id)
+        # Get response object associated with each session task instance id, and delete it
+        for session_task_instance in session_task_instances:
+            Session_Response.objects.get(session_task_instance_id=session_task_instance.session_task_instance_id).delete()
+
+            # Once the session response is deleted, delete the session task instance
+            session_task_instance.delete()
+
+        # Once all the session task instances are deleted, delete the session task
+        session_task.delete()
+
+    # Now that all the session tasks are deleted, remove the session
+    Session.objects.get(session_id=session_id).delete()
+
+    return True
+
 def generate_session(subject, session_type):
     '''
         Function for generating a new session.
@@ -86,14 +117,16 @@ def generate_session(subject, session_type):
             bundle_tasks = subj_bundle.bundle.bundle_task_set.all()
 
             if bundle_id == 'uhn_web':
-                while len(bundle_tasks) > 6:
+                while len(bundle_tasks) > NUM_TASK_INSTANCES_UHN:
                     idx_to_remove = random.randint(0, len(bundle_tasks) - 1)
                     id_task_to_remove = bundle_tasks[idx_to_remove].task.task_id
                     if not id_task_to_remove == '13':
                         bundle_tasks = bundle_tasks[:idx_to_remove] + bundle_tasks[idx_to_remove+1:]
 
+            # If necessary, add another task instance. (Note: This might not be necessary, given current
+            # number of tasks in the bundle).
             elif bundle_id == 'uhn_phone':
-                while len(bundle_tasks) < 6:
+                while len(bundle_tasks) < NUM_TASK_INSTANCES_UHN:
                     idx_to_add = random.randint(0, len(bundle_tasks) - 1)
                     id_task_to_add = bundle_tasks[idx_to_add].task.task_id
                     if not id_task_to_add == '13':

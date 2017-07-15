@@ -48,39 +48,79 @@
             <th>Session ID</th>
             <th>Start date</th>
             <th>Date of completion</th>
+            <th> </th>
         </tr>
     </thead>
 
 {% for session in sessions %}
-    <tr {% if session.end_date %} class="success" {% endif %} data-toggle="modal" data-target="#sessionModal{{ session.session_id }}">
-    <div id="sessionModal{{ session.session_id }}" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-body">
-                   {% for session_task in session.session_tasks %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading">{{ session_task.task }}</div>
-                        <ul class="list-group">
-                            {% for task_instance in session_task.task_instances %}
-                            <li class="list-group-item">
-                                {{ task_instance.value }} ({{ task_instance.difficulty }})
-                            </li>
-                            {% endfor %}
-                        </ul>
+    <tr {% if session.end_date %} class="success" {% endif %}>
+        <td>
+            <span data-toggle="modal" data-target="#sessionModal{{ session.session_id }}">{{ session.session_id }}</span>
+             <div id="sessionModal{{ session.session_id }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-body">
+                       {% for session_task in session.session_tasks %}
+                        <div {% if session_task.date_completed %} class="panel  panel-success" {% else %} class="panel panel-default" {% endif %}>
+                            <div class="panel-heading">{{ session_task.task }}</div>
+                            <ul class="list-group">
+                                {% for task_instance in session_task.task_instances %}
+                                <li class="list-group-item">
+                                    {{ task_instance.value }} ({{ task_instance.difficulty }})
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                           {% endfor %}
                     </div>
-                       {% endfor %}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
-        <td>{{ session.session_id }}</td>
+        </td>
         <td>{{ session.start_date }}</td>
         <td>{{ session.end_date }}</td>
+        <td>
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteSession{{ session.session_id }}">Delete</button>
+
+            <div id="deleteSession{{ session.session_id }}" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Delete session {{ session.session_id }}</h4>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete session {{ session.session_id }}? This can't be reversed. To confirm the deletion, enter the session #. Note that the content displayed below will be deleted permanently.
+
+                            <form method="post">
+                            {% csrf_token %}
+                                <input type="hidden" id="form_type" name="form_type" value="delete_session" />
+                                <input type="hidden" id="session_id" name="session_id" value="{{ session.session_id }}" /><br>
+                                <input type="text" id="session_id_check" name="session_id_check" value="" placeholder="Session #"/>
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+
+                            {% for session_task in session.session_tasks %}
+                            <div class="panel panel-default">
+                                <div class="panel-heading">{{ session_task.task }}</div>
+                                <ul class="list-group">
+                                    {% for task_instance in session_task.task_instances %}
+                                    <li class="list-group-item">
+                                        {{ task_instance.value }} ({{ task_instance.difficulty }})
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                           {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
     </tr>
 {% endfor %}
 </table>
