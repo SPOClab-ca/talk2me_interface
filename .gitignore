@@ -30,6 +30,3 @@ docker/logs/
 settings.prod.py
 *.sql
 /venv/*
-
-# Ignore audio files
-datacollector/static/audio
