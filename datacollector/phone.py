@@ -390,7 +390,6 @@ def response(request):
             session_task_instance_id = request.POST['session_task_instance_id']
             date_responded = request.POST['date_responded']
 
-
             if request.FILES and 'audio' in request.FILES:
                 audio_data = ContentFile(request.FILES['audio'].read())
             if 'transcript' in request.POST:
@@ -426,7 +425,7 @@ def response(request):
                 session_task.save()
 
                 # If all session_tasks have been completed, update the Session object and set it to complete
-                incomplete_session_tasks = Session_Task.objects.get(session_id=session_task.session_id, date_completed__isnull=True)
+                incomplete_session_tasks = Session_Task.objects.filter(session_id=session_task.session_id, date_completed__isnull=True)
                 if not incomplete_session_tasks:
                     session = Session.objects.get(session_id=session_task.session_id)
                     session.end_date = date_responded
