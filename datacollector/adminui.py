@@ -11,7 +11,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from datacollector.models import (Bundle, Gender, Session, Session_Task, Session_Task_Instance,
-                                  Session_Task_Instance_Value, Session_Type, Settings, Subject, Subject_Bundle, Task)
+                                  Session_Task_Instance_Value, Session_Type, Settings, Subject, Subject_Bundle, 
+                                  Task, User)
 from datacollector.views import generate_session, delete_session
 
 from csc2518.settings import STATIC_URL
@@ -161,7 +162,8 @@ def uhn_session(request, bundle_uhn, user_id):
             'bundle': bundle,
             'subject': subject,
             'sessions': sessions,
-            'session_deleted': session_deleted
+            'session_deleted': session_deleted,
+            'username': User.objects.get(id=subject.user_id).username
         }
         passed_vars.update(global_passed_vars)
 
