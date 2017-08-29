@@ -11,7 +11,8 @@ from datacollector.models import Session, Subject
 from datacollector import adminui
 
 from utils import (create_uhn_web_bundle, create_uhn_web_subject,
-                   create_session_types, create_admin_user)
+                   create_session_types, create_admin_user,
+                   create_uhn_phone_bundle, create_uhn_phone_subject)
 
 TODAY = datetime.datetime.now().date()
 setup_test_environment()
@@ -107,6 +108,18 @@ class AdminUiUhnSessionTestCase(TestCase):
         self.assertTrue(context['is_authenticated'])
         self.assertEquals(context['bundle'].name_id, self.uhn_web_bundle.name_id)
         self.assertEquals(len(context['sessions']), 2)
+
+    def test_uhn_update_phone_pin(self):
+        '''
+            test_uhn_update_phone_pin should update the phone_pin of the subject
+        '''
+
+        uhn_phone_bundle = create_uhn_phone_bundle()
+        uhn_phone_subject = create_uhn_phone_subject(uhn_phone_bundle)
+
+        adminui.uhn_update_phone_pin(uhn_phone_subject.user_id, 1234)
+        updated_subject = Subject.objects.get(user_id=uhn_phone_subject.user_id)
+        self.assertEquals(updated_subject.phone_pin, '1234')
 
 class AdminUiUhnDashboardTestCase(TestCase):
     '''

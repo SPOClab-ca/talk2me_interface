@@ -37,7 +37,22 @@
     </li>
     {% if bundle.name_id == 'uhn_phone' %}
     <li class="list-group-item">
-        <b>Phone PIN:</b> {{ subject.phone_pin }}
+        <form class="form-inline" method="post">
+        {% csrf_token %}
+            <div class="form-group">
+                <label for="phonePin"><b>Phone PIN: </b></label>
+            </div>
+        {% if subject.phone_pin %}
+            <div class="form-group">{{ subject.phone_pin }} </div>
+        {% else %}
+            <div class="form-group">
+                <input type="hidden" id="form_type" name="form_type" value="update_phone_pin">
+                <input type="text" class="form-control" id="phone_pin" name="phone_pin" placeholder="####"> 
+                <button class="btn btn-secondary btn-success" type="submit">Enter phone pin</button>
+            </div>
+            
+        </form>
+        {% endif %}
     </li>
     {% endif %}
 </ul>

@@ -96,6 +96,17 @@ def uhn_consent_submitted(subject_id, alternate_decision_maker):
     if alternate_decision_maker:
         Subject.objects.filter(user_id=subject_id).update(consent_alternate=1)
 
+def uhn_update_phone_pin(subject_id, phone_pin):
+    '''
+        Update phone_pin for subject
+    '''
+
+    if len(str(phone_pin)):
+        Subject.objects.filter(user_id=subject_id).update(phone_pin=phone_pin)
+        return True
+    else:
+        return False
+
 def uhn_session(request, bundle_uhn, user_id):
     '''
         Function for admin dashboard specific to UHN studies.
@@ -106,6 +117,7 @@ def uhn_session(request, bundle_uhn, user_id):
     subject = None
     sessions = []
     session_deleted = False
+    phone_pin_updated = False
 
     if request.user.is_authenticated() and request.user.is_superuser:
 
@@ -123,6 +135,13 @@ def uhn_session(request, bundle_uhn, user_id):
                     session_deleted = uhn_delete_session(session_id)
                 else:
                     session_deleted = False
+
+            elif form_type == 'update_phone_pin':
+                phone_pin = request.POST['phone_pin']
+                if phone_pin:
+                    phone_pin_updated = uhn_update_phone_pin(subject.user_id, phone_pin)
+                else:
+                    phone_pin_updated = False
 
         sessions_from_db = Session.objects.filter(subject_id=user_id)
 
@@ -163,6 +182,7 @@ def uhn_session(request, bundle_uhn, user_id):
             'subject': subject,
             'sessions': sessions,
             'session_deleted': session_deleted,
+            'phone_pin_updated': phone_pin_updated,
             'username': User.objects.get(id=subject.user_id).username
         }
         passed_vars.update(global_passed_vars)
