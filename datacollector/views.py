@@ -1274,7 +1274,13 @@ def session(request, session_id):
                             # For UHN study, record RIG answers as audio
                             if is_uhn_study:
                                 requires_audio = True
-                                display_field = re.sub(timer_duration, "<br /><br />", instance_value.value)
+
+                                display_value = instance_value.value
+                                display_value = display_value.replace('write down a random non-repeating list of different types of', 'say as many different items of type')
+                                display_value = display_value.replace('in the box below', 'that come to mind randomly')
+                                display_value = display_value.replace('Separate them with commas. Keep writing for 1 minute', 'Keep talking for 1 minute')
+
+                                display_field = re.sub(timer_duration, "<br /><br />", display_value)
                                 display_field += '''<div class='timer_display' id='timer_display_%s'>01:00</div>
                                                     <input type='hidden' id='timer_val_%s' value='%s' />
                                                     <input class='form-field' name='instanceid' type='hidden' value='%s' />''' % (instance_id, instance_id, dur_sec, instance_id)
