@@ -1064,6 +1064,7 @@ def session(request, session_id):
             serial_startslide = ""
             active_session_task_id = None
             display_thankyou = False
+            is_uhn_study = False
 
             # Initialize global vars for session page
             requires_audio = False
@@ -1373,7 +1374,33 @@ def session(request, session_id):
                     session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                     counter += 1
 
-            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'serial_instances': serial_instances, 'serial_startslide': serial_startslide, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'display_thankyou': display_thankyou, 'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications}
+            # Check if UHN study
+            today = datetime.datetime.now().date()
+            subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+            if subject_bundle:
+                subject_bundle = subject_bundle[0]
+                if subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone':
+                    is_uhn_study = True
+
+            # Get next session
+            next_session_date = None
+            next_sessions = Session.objects.filter(subject_id=subject.user_id, end_date__isnull=True).order_by('start_date')
+            if next_sessions:
+                next_session_date = next_sessions[0].start_date
+
+            passed_vars = {
+                'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks,
+                'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)),
+                'active_task': active_task, 'active_session_task_id': active_session_task_id,
+                'serial_instances': serial_instances, 'serial_startslide': serial_startslide,
+                'active_instances': active_instances, 'requires_audio': requires_audio,
+                'existing_responses': existing_responses, 'completed_date': completed_date,
+                'session_summary': session_summary, 'display_thankyou': display_thankyou,
+                'user': request.user, 'is_authenticated': is_authenticated,
+                'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted,
+                'active_notifications': active_notifications, 'is_uhn_study': is_uhn_study,
+                'next_session_date': next_session_date
+            }
             passed_vars.update(global_passed_vars)
 
             return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))
