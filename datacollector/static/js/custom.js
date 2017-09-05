@@ -462,6 +462,25 @@ function startTimerRig(start_btn, instance_id) {
     $(start_btn).text("Started timer...");
 }
 
+/* Use to update timer in timed tasks.
+ * Update display every second.
+ */
+function startTimerRigAudio(start_btn, instance_id) {
+    timer_rig = setInterval(function(){ 
+        updateTimerDisplayAudio(start_btn, instance_id); 
+    }, 1000);
+    
+    // (1) disable the Submit button, 
+    // (2) disable the Start button, 
+    // (3) enable the response field, and bring focus to it
+    $("#submit_btn").prop("disabled", true);
+    $(start_btn).prop('disabled', true);
+    // $(start_btn).parent().find("[name=response]").each(function() {
+    //     $(this).prop('readonly', false).removeClass("input-disabled").focus();
+    // });
+    //$(start_btn).text("Started timer...");
+}
+
 /* Pad a number 'n' with character 'z' to a given 'width'.
  * If character 'z' is empty, pad with '0'.
  */
@@ -508,6 +527,68 @@ function updateTimerDisplay(start_btn, instance_id) {
             $("#timer_val_" + instance_id).val(timer_rig_max);
         }
     }
+}
+/*
+ * Stop/Start recording audio for the RIG task.
+ */
+function toggleRecordingRig( e ) {
+    var instance_id = $(e).siblings("[name=instanceid]").val();
+    if (e.classList.contains("recording")) {
+        // stop recording
+        audioRecorder.stop();
+        e.classList.remove("recording");
+        
+        // Disable the current audio button to prevent repeated recordings, 
+        // and if applicable, enable the next audio recording button (if one exists).
+        // (At any point in time there should only be one active audio recording button to prevent user 
+        // from clicking all of them at the same time).
+        $(e).val("Done recording");
+        $(e).prop("disabled", true);
+        
+        audioRecorder.getBuffers( gotBuffers );
+    } else {
+        // start recording
+        if (!audioRecorder)
+            return;
+        e.classList.add("recording");
+        $(e).val("Recording audio...").prop("disabled", false);
+        audioRecorder.clear();
+        audioRecorder.setInstanceId(instance_id);
+        audioRecorder.record();
+    }
+}
+
+/*
+ * Decrease the timer value. Once timer hits 0,
+ * (1) stop recording,
+ * (2) enable submit button,
+ * (3) disable 'Record' button
+ */
+function updateTimerDisplayAudio(start_btn, instance_id) {
+    var current_value = parseInt($("#timer_val_" + instance_id).val());
+    if (timer_rig_max == null) {
+        timer_rig_max = current_value;
+    }
+    var new_value = current_value - 1;
+    $("#timer_val_" + instance_id).val(new_value);
+    var display_min = Math.floor(new_value / 60);
+    var display_sec = new_value - display_min * 60;
+    
+    $("#timer_display_" + instance_id).html(pad(display_min,2,'0') + ":" + pad(display_sec,2,'0'));
+    
+    if (new_value <= 0) {
+        stopTimerRig();
+
+        // (1) Stop recording
+        toggleRecordingRig(start_btn);
+        
+        // (2) enable the submit button 
+        $("#submit_btn").prop("disabled", false);
+
+        // (3) disable the record button
+        $(start_btn).prop("disabled", true);
+
+    }    
 }
 
 function stopTimerRig() {
