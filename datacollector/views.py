@@ -1357,7 +1357,11 @@ def session(request, session_id):
 
                                 response_field = "<div class='row'><div class='col-xs-6'><div class='scale_" + str(scale_start) + "_" + str(scale_end) + "' style=\"" + style_attributes + "\"></div><div class='scale_display' style='font-size: 20px;'></div><input class='form-field' name='response' type='hidden' value='' /></div></div><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
 
-                        active_instances += [display_field + "<br/>" + response_field]
+                        # For picture description, display 'Record' button before image
+                        if active_task.name_id == 'picture_description':
+                            active_instances += [response_field + "<br/>" + display_field]
+                        else:
+                            active_instances += [display_field + "<br/>" + response_field]
                         count_inst += 1
 
             else:
