@@ -40,7 +40,7 @@ website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 uhn_website_root = website_root + UHN_STUDY
 
-colour_lookup = {'red': 'ff0000', 'green': '00ff00', 'blue': '0000ff', 'brown': '6f370f', 'purple': '7c26cb'}
+colour_lookup = {'red': 'e41a1c', 'green': '4daf4a', 'blue': '377eb8', 'brown': '6f370f', 'purple': '984ea3'}
 
 date_format = "%Y-%m-%d"
 age_limit = 18
@@ -53,6 +53,7 @@ UHN_PHONE_BUNDLE_ID = 4
 
 # Task ID variables
 VOCABULARY_TASK_ID = 1
+RIG_TASK_ID = 12
 
 # Bundle task ID variables
 VOCABULARY_UHN_WEB_BUNDLE_TASK_ID = 5
@@ -1035,6 +1036,7 @@ def session(request, session_id):
     consent_submitted = False
     demographic_submitted = False
     active_notifications = []
+    is_uhn_study = False
 
     if request.user.is_authenticated():
 
@@ -1048,6 +1050,14 @@ def session(request, session_id):
             # Fetch all notifications that are active and have not been dismissed by the user
             # (NB: Q objects must appear before keyword parameters in the filter)
             active_notifications = notify.get_active_new(subject)
+
+        # Check if UHN study
+        today = datetime.datetime.now().date()
+        subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+        if subject_bundle:
+            subject_bundle = subject_bundle[0]
+            if subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone':
+                is_uhn_study = True
 
         session = Session.objects.filter(session_id=session_id)
         if session:
@@ -1064,6 +1074,12 @@ def session(request, session_id):
             serial_startslide = ""
             active_session_task_id = None
             display_thankyou = False
+            next_session_date = None
+
+            # Get next session
+            next_sessions = Session.objects.filter(subject_id=subject.user_id, end_date__isnull=True).order_by('start_date')
+            if next_sessions:
+                next_session_date = next_sessions[0].start_date
 
             # Initialize global vars for session page
             requires_audio = False
@@ -1099,7 +1115,7 @@ def session(request, session_id):
                             question_response = Task_Field.objects.get(assoc=question.task_field)
 
                             next_instance = instances.pop(0)
-                            if question_response.field_data_type.name == 'select' or question_response.field_data_type.name == 'audio':
+                            if question_response.field_data_type.name == 'select' or question_response.field_data_type.name == 'audio' or (active_task.task_id == RIG_TASK_ID and is_uhn_study):
                                 # If the associated response field is 'select' or 'audio', then there will be 'response_{instanceid}' fields
                                 audio_label = 'response_audio_' + str(next_instance)
                                 if not audio_label in request.POST:
@@ -1139,7 +1155,7 @@ def session(request, session_id):
                                 question_response = Task_Field.objects.get(assoc=question.task_field)
 
                                 next_instance = instances.pop(0)
-                                if question_response.field_data_type.name == 'select' or question_response.field_data_type.name == 'audio':
+                                if question_response.field_data_type.name == 'select' or question_response.field_data_type.name == 'audio' or (active_task.task_id == RIG_TASK_ID and is_uhn_study):
                                     # If the associated response field is 'select' or 'audio', then there will be 'response_{instanceid}' fields
                                     audio_label = 'response_audio_' + str(next_instance)
                                     if not audio_label in request.POST:
@@ -1254,10 +1270,31 @@ def session(request, session_id):
                                 # Default duration
                                 dur_sec = 60
 
-                            display_field = re.sub(timer_duration, "<br /><br /><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start</button><br />", instance_value.value)
 
-                            # Associated textarea where the user will type out the RIG response
-                            display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea class='form-control form-field input-disabled' name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
+                            # For UHN study, record RIG answers as audio
+                            if is_uhn_study:
+                                requires_audio = True
+
+                                display_value = instance_value.value
+                                display_value = display_value.replace('write down a random non-repeating list of different types of', 'say as many different items of type')
+                                display_value = display_value.replace('in the box below', 'that come to mind randomly')
+                                display_value = display_value.replace('Separate them with commas. Keep writing for 1 minute', 'Keep talking for 1 minute')
+
+                                display_field = re.sub(timer_duration, "<br /><br />", display_value)
+                                display_field += '''<div class='timer_display' id='timer_display_%s'>01:00</div>
+                                                    <input type='hidden' id='timer_val_%s' value='%s' />
+                                                    <input class='form-field' name='instanceid' type='hidden' value='%s' />''' % (instance_id, instance_id, dur_sec, instance_id)
+
+                                response_field = ""
+                                response_field += "<p id='record-btn_" + instance_id + "'"
+                                response_field += "><input id='btn_recording_" + instance_id + "' type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: toggleRecordingRig(this); startTimerRigAudio(this, " + instance_id + ");' value='Start recording'>&nbsp;<span class='invisible' id='status_recording_" + instance_id + "'><img src='" + STATIC_URL + "img/ajax_loader.gif' /> <span id='status_recording_" + instance_id + "_msg'></span></span><input class='form-field' type='hidden' id='response_audio_" + instance_id + "' name='response_audio_" + instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
+
+                            else:
+                                display_field = re.sub(timer_duration, "<br /><br /><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start Recording</button><br />", instance_value.value)
+                                # Associated textarea where the user will type out the RIG response
+                                display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea class='form-control form-field input-disabled' name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
+
+
                         elif field_data_type == "text_newlines":
                             sents = instance_value.value.split(" || ")
                             regex_nonalpha = re.compile(r"^[^a-zA-Z0-9]+$")
@@ -1357,7 +1394,11 @@ def session(request, session_id):
 
                                 response_field = "<div class='row'><div class='col-xs-6'><div class='scale_" + str(scale_start) + "_" + str(scale_end) + "' style=\"" + style_attributes + "\"></div><div class='scale_display' style='font-size: 20px;'></div><input class='form-field' name='response' type='hidden' value='' /></div></div><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
 
-                        active_instances += [display_field + "<br/>" + response_field]
+                        # For picture description, display 'Record' button before image
+                        if active_task.name_id == 'picture_description':
+                            active_instances += [response_field + "<br/>" + display_field]
+                        else:
+                            active_instances += [display_field + "<br/>" + response_field]
                         count_inst += 1
 
             else:
@@ -1369,7 +1410,19 @@ def session(request, session_id):
                     session_summary += "<tr><td>" + str(counter) + "</td><td>" + next_task.task.name + "</td><td>" + str(next_task_instances['count_instances']) + "</td></tr>"
                     counter += 1
 
-            passed_vars = {'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks, 'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)), 'active_task': active_task, 'active_session_task_id': active_session_task_id, 'serial_instances': serial_instances, 'serial_startslide': serial_startslide, 'active_instances': active_instances, 'requires_audio': requires_audio, 'existing_responses': existing_responses, 'completed_date': completed_date, 'session_summary': session_summary, 'display_thankyou': display_thankyou, 'user': request.user, 'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications}
+            passed_vars = {
+                'session': session, 'num_current_task': num_current_task, 'num_tasks': num_tasks,
+                'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)),
+                'active_task': active_task, 'active_session_task_id': active_session_task_id,
+                'serial_instances': serial_instances, 'serial_startslide': serial_startslide,
+                'active_instances': active_instances, 'requires_audio': requires_audio,
+                'existing_responses': existing_responses, 'completed_date': completed_date,
+                'session_summary': session_summary, 'display_thankyou': display_thankyou,
+                'user': request.user, 'is_authenticated': is_authenticated,
+                'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted,
+                'active_notifications': active_notifications, 'is_uhn_study': is_uhn_study,
+                'next_session_date': next_session_date
+            }
             passed_vars.update(global_passed_vars)
 
             return render_to_response('datacollector/session.html', passed_vars, context_instance=RequestContext(request))

@@ -40,6 +40,15 @@ def create_uhn_web_subject(uhn_bundle):
                                   bundle_id=uhn_bundle.bundle_id, active_startdate=TODAY)
     return uhn_subject
 
+def create_uhn_phone_subject(uhn_bundle):
+    ''' Create a UHN phone user and subject and return the UHN phone user.'''
+    uhn_user = User.objects.create_user(username='uhn_phone', email='@',
+                                        password='uhn_phone')
+    uhn_subject = Subject.objects.create(user_id=uhn_user.id, date_created=TODAY)
+    Subject_Bundle.objects.create(subject_bundle_id=2, subject_id=uhn_subject.user_id,
+                                  bundle_id=uhn_bundle.bundle_id, active_startdate=TODAY)
+    return uhn_subject
+
 def create_uhn_user(uhn_bundle):
     ''' Create a UHN user and subect and return the UHN subject.'''
     bundle_type = uhn_bundle.name_id

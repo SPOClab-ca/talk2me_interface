@@ -68,9 +68,19 @@
     {% else %}
         <h1>Session completed on {{ completed_date }}</h1>
         
-        {% if display_thankyou %}
-            <div class="bs-callout bs-callout-info"><strong>Thank you for completing this session!</strong></div>
-        {% endif %}
+            {% if display_thankyou %}
+            <div class="bs-callout bs-callout-info">
+                <strong>
+                    Thank you for completing this session!
+
+                    {% if is_uhn_study %}
+                        <br>We’ll see you at your next session currently scheduled for {{ next_session_date }}.
+
+                    {% endif %}
+                </strong>
+            </div>
+            {% endif %}
+        
         
         {% if session_summary %}
             <h3>Summary</h3>

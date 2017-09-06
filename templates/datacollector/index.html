@@ -285,7 +285,7 @@
                 {% endfor %}
             </li>
             
-            <li><strong>Have you ever been diagnosed with dementia? If yes, please select all applicable types:</strong><br />
+            <li><strong>Have you ever been diagnosed with dementia? Please select any type of dementia with which you’ve been diagnosed. If you’ve never been diagnosed, please leave this section blank:</strong><br />
                 {% for opt in dementia_options %}
                 <div class="checkbox">
                     <label class="checkbox"><input type="checkbox" name="dementia_type" value="{{ opt.dementia_type_id }}"{% if opt.dementia_type_id|to_int in form_values|getlist:'dementia_type'|to_int %} checked="checked"{% endif %}> {{ opt.name }}
