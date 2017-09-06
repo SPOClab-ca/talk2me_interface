@@ -40,7 +40,7 @@ website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 uhn_website_root = website_root + UHN_STUDY
 
-colour_lookup = {'red': 'ff0000', 'green': '00ff00', 'blue': '0000ff', 'brown': '6f370f', 'purple': '7c26cb'}
+colour_lookup = {'red': 'e41a1c', 'green': '4daf4a', 'blue': '377eb8', 'brown': '6f370f', 'purple': '984ea3'}
 
 date_format = "%Y-%m-%d"
 age_limit = 18
