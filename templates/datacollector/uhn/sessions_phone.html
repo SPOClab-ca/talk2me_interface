@@ -9,7 +9,7 @@
 
     <div class="jumbotron">
         <p>To complete a session, call the following number:</p>
-        <h2>1-###-###-#####</h2>
+        <h2>1-844-257-6497</h2>
         <p>Your credentials are:</p>
         <h3>User ID: {{ subject_bundle.subject.user_id }}</h3>
         <h3>Pin number: {{ subject_bundle.subject.phone_pin }}</h3>
@@ -36,14 +36,14 @@
             <a class="list-group-item" data-toggle="modal" data-target="#phoneModal">
                 <h4 class="list-group-item-heading">Session {{session_counter}} <span class="label label-success">Active</span></h4>
                 {% if percentage_completed > 0 %}
-                    <p class="list-group-item-text">This is an active session. To continue, call 1-###-###-####.</p>
+                    <p class="list-group-item-text">This is an active session. To continue, call 1-844-257-6497.</p>
                     <div class="progress">
                         <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ percentage_completed }}" aria-valuemin="0" aria-valuemax="100" style="font-size: 16px; width: {{ percentage_completed }}%;">
                             {{ percentage_completed }}%
                         </div>
                     </div>
                 {% else %}
-                    <p class="list-group-item-text">This session is active. To get started, call 1-###-###-####.</p>
+                    <p class="list-group-item-text">This session is active. To get started, call 1-844-257-6497.</p>
                 {% endif %}
             </a>
             <div id="phoneModal" class="modal fade" role="dialog">
@@ -51,7 +51,7 @@
                     <!-- Modal content-->
                     <div class="modal-content">
                         <div class="modal-body">
-                            <p>To complete this session, call 1-###-###-####.</p>
+                            <p>To complete this session, call 1-844-257-6497.</p>
                             <p>Use the following credentials:<br>
                             User ID: {{ subject_bundle.subject.user_id }}<br>
                             Pin number: {{ subject_bundle.subject.phone_pin }}</p>
