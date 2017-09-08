@@ -33,7 +33,7 @@
 </div>
 <hr />
 
-{% if 'uhn' in request.path or subject_bundle and subject_bundle.bundle and subject_bundle.bundle.name_id == 'uhn_web' %}
+{% if 'uhn' in request.path or is_uhn_study %}
         {% include 'datacollector/uhn/about.html' %}
 {% else %}
 
