@@ -389,6 +389,7 @@ def response(request):
         if request.POST and 'session_task_instance_id' in request.POST and 'date_responded' in request.POST:
             session_task_instance_id = request.POST['session_task_instance_id']
             date_responded = request.POST['date_responded']
+            num_repeats = request.POST['num_repeats'][0]
 
             if request.FILES and 'audio' in request.FILES:
                 audio_data = ContentFile(request.FILES['audio'].read())
@@ -405,7 +406,13 @@ def response(request):
                     session_response.value_audio.save('', audio_data)
                 if transcript:
                     session_response.value_text = transcript
+                if num_repeats:
+                    session_response.num_repeats = num_repeats
                 session_response.date_completed = date_responded
+
+                # Update num_repeats if applicable
+                if num_repeats:
+                    session_response.num_repeats = num_repeats
                 session_response.save()
 
             # Check if all session task instances associated with session_task are completed
