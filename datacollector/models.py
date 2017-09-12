@@ -558,3 +558,4 @@ class Session_Response(models.Model):
                    upload_to=generate_upload_filename)
     value_multiselect = models.CommaSeparatedIntegerField(max_length=100, null=True, blank=True)
     value_expected = models.TextField(null=True, blank=True)
+    num_repeats = models.IntegerField(null=True, blank=True)
