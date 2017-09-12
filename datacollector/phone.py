@@ -392,7 +392,7 @@ def response(request):
             num_repeats = None
 
             if 'num_repeats' in request.POST:
-                num_repeats = request.POST['num_repeats'][0]
+                num_repeats = request.POST['num_repeats']
             if request.FILES and 'audio' in request.FILES:
                 audio_data = ContentFile(request.FILES['audio'].read())
             if 'transcript' in request.POST:
@@ -411,10 +411,6 @@ def response(request):
                 if num_repeats:
                     session_response.num_repeats = num_repeats
                 session_response.date_completed = date_responded
-
-                # Update num_repeats if applicable
-                if num_repeats:
-                    session_response.num_repeats = num_repeats
                 session_response.save()
 
             # Check if all session task instances associated with session_task are completed
