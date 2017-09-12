@@ -389,8 +389,10 @@ def response(request):
         if request.POST and 'session_task_instance_id' in request.POST and 'date_responded' in request.POST:
             session_task_instance_id = request.POST['session_task_instance_id']
             date_responded = request.POST['date_responded']
-            num_repeats = request.POST['num_repeats'][0]
+            num_repeats = None
 
+            if 'num_repeats' in request.POST:
+                num_repeats = request.POST['num_repeats'][0]
             if request.FILES and 'audio' in request.FILES:
                 audio_data = ContentFile(request.FILES['audio'].read())
             if 'transcript' in request.POST:
