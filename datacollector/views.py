@@ -1275,10 +1275,16 @@ def session(request, session_id):
                             if is_uhn_study:
                                 requires_audio = True
 
+                                # TODO: Use regex or update in DB
                                 display_value = instance_value.value
-                                display_value = display_value.replace('write down a random non-repeating list of different types of', 'say as many different items of type')
+                                display_value = display_value.replace('write down', 'say')
+
                                 display_value = display_value.replace('in the box below', 'that come to mind randomly')
+
                                 display_value = display_value.replace('Separate them with commas. Keep writing for 1 minute', 'Keep talking for 1 minute')
+                                display_value = display_value.replace('Separate the names with commas. Keep writing for 1 minute', 'Keep talking for 1 minute')
+                                display_value = display_value.replace('Separate the letters with commas. Keep writing for 1 minute', 'Keep talking for 1 minute')
+                                display_value = display_value.replace('Separate the numbers with commas. Keep writing for 1 minute', 'Keep talking for 1 minute')
 
                                 display_field = re.sub(timer_duration, "<br /><br />", display_value)
                                 display_field += '''<div class='timer_display' id='timer_display_%s'>01:00</div>
