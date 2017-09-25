@@ -366,12 +366,19 @@ def index(request):
     subject_bundle = None
     bundle_id = None
     bundle_token = None
+    user_id = None
+    phone_pin = None
+    start_new_phone_session = True
+
     if 'bid' in request.GET and 'bt' in request.GET:
         bundle_id = request.GET['bid']
         bundle_token = request.GET['bt']
 
     if request.user.is_authenticated():
         is_authenticated = True
+
+        user_id = request.user.id
+        phone_pin = Subject.objects.get(user_id=user_id).phone_pin
 
         if request.method == 'POST':
             date_submitted = datetime.datetime.now()
@@ -929,8 +936,13 @@ def register(request):
             cd = form.cleaned_data
             new_user = form.save()
 
+            # Generate a new PIN for the phone interface
+            pin_length = 4
+            random_pin = random.randint(0, 10**pin_length-1)
+            phone_pin = str(random_pin).zfill(pin_length) # zero pad where necessary
+
             # Create a corresponding subject in the app
-            new_subject = Subject.objects.create(user_id=new_user.id, date_created=datetime.datetime.now())
+            new_subject = Subject.objects.create(user_id=new_user.id, date_created=datetime.datetime.now(), phone_pin=phone_pin)
 
             # Validate the passed in bundle parameters
             bundle_exists = False
