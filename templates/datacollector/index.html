@@ -359,7 +359,9 @@
         {% else %}
 
         <div class="unsupported_html5">
-            <h4><a href="/{{ website_id }}/startsession" onClick="preventResubmission(this, '');">Start a new session</a><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></h4>
+            <h4><a href="/{{ website_id }}/startsession" onClick="preventResubmission(this, '');">Start a new session <i class="fa fa-laptop"></i> (on the web)</a><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></h4>
+            <hr/><h4>Start a new session <span class="glyphicon glyphicon-earphone"></span> (on the phone)</h4>
+
             {% if user.is_superuser %}
             <hr/><h4><a href="/{{ website_id }}/admin">Admin Dashboard</a></h4>
             {% endif %}
@@ -383,6 +385,24 @@
                     <tbody>
                     {% for session in active_sessions %}
                         <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td><a href="/{{ website_id }}/session/{{ session.session_id }}">Continue session</a></td></tr>
+                        <tr>
+                            {% if user.is_superuser %}
+
+                            <td>
+                                <form method="post">
+                                {% csrf_token %}
+                                    <input type="hidden" id="form_type" name="form_type" value="delete_session" />
+                                    <input type="hidden" id="session_id" name="session_id" value="{{ session.session_id }}" /><br>
+                                    <input type="text" id="session_id_check" name="session_id_check" value="" placeholder="Session #"/>
+                                    <button type="submit" class="btn btn-sm btn-info">Delete session</button>
+                                </form>
+                                    
+                                
+                            </td>
+        
+                            
+                            {% endif %}
+                        </tr>
                     {% endfor %}
                     </tbody>
                     </table>

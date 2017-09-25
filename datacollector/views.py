@@ -686,6 +686,14 @@ def index(request):
                     # Set the demographic flag to 1
                     Subject.objects.filter(user_id=request.user.id).update(date_demographics_submitted=date_submitted)
 
+            elif form_type == 'delete_session':
+                session_id = request.POST['session_id']
+                session_id_check = request.POST['session_id_check']
+                if session_id_check == session_id:
+                    session_deleted = delete_session(session_id)
+                else:
+                    session_deleted = False
+
         # Assume that every authenticated user exists in subject. If they don't, add them with the appropriate ID, and all flags initialized to null/false.
         subject = Subject.objects.filter(user_id=request.user.id)
         if subject:
