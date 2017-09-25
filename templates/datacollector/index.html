@@ -360,7 +360,40 @@
 
         <div class="unsupported_html5">
             <h4><a href="/{{ website_id }}/startsession" onClick="preventResubmission(this, '');">Start a new session <i class="fa fa-laptop"></i> (on the web)</a><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></h4>
-            <hr/><h4>Start a new session <span class="glyphicon glyphicon-earphone"></span> (on the phone)</h4>
+            <hr/><h4>
+                {% if start_new_phone_session %}
+                    <a data-toggle="modal" data-target="#newSessionPhone">Start a new session <span class="glyphicon glyphicon-earphone"></span> (on the phone)</a>
+                {% else %}
+                    <h4 class="text-muted">Start a new session <span class="glyphicon glyphicon-earphone"></span> (on the phone) &nbsp; <span class="small text-muted">CANNOT START ANOTHER PHONE SESSION. YOU ALREADY HAVE ONE IN PROGRESS.</span></h4> 
+                {% endif %}
+            </h4>
+            <div id="newSessionPhone" class="modal fade" role="dialog">
+                <div class="modal-dialog"> 
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title text-info">Start a new session <span class="glyphicon glyphicon-earphone"></span> (on the phone)</h4>
+                        </div>
+                        <div class="modal-body jumbotron" style="margin-bottom: 0px;">
+
+                            <p>To complete a session, call the following number:</p>
+                            <h2>1-844-257-6497</h2>
+                            <p>Your credentials are:</p>
+                            <h3>User ID: {{ user_id }}</h3>
+                            <h3>Pin number: {{ phone_pin }}</h3><p>
+
+                            <h2>General instructions for the phone:</h2>
+                            <ul>
+                                <li>Press on the star '*' button to log in your answer.</li>
+                                <li>Press on the pound '#' button to repeat the previous prompt.</li>
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {% if user.is_superuser %}
             <hr/><h4><a href="/{{ website_id }}/admin">Admin Dashboard</a></h4>
