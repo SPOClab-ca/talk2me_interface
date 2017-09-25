@@ -3,6 +3,7 @@
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
@@ -31,7 +32,6 @@ def status(request):
 @csrf_exempt
 def login(request):
     if request.method == "POST" and request.body:
-        print request.body
         request_json = json.loads(request.body)
         if 'subject_id' in request_json and 'pin' in request_json and 'grant_type' in request_json and \
             'client_id' in request_json and 'client_secret' in request_json:
@@ -89,8 +89,18 @@ def login(request):
                 subject.auth_token = new_auth_token
                 subject.auth_token_expirydate = new_auth_token_expirydate
                 subject.save()
+
+                # Check if the user is part of the UHN study
+                is_uhn_study = False
+                today = datetime.datetime.now().date()
+                subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+                if subject_bundle:
+                    subject_bundle = subject_bundle[0]
+                    if subject_bundle.bundle.name_id == 'uhn_phone':
+                        is_uhn_study = True
+
                 return HttpResponse(status=200, content=json.dumps({"status_code": "200", "access_token": new_auth_token, \
-                        "expires_in": expires_in, "token_type": "bearer"}))
+                        "expires_in": expires_in, "token_type": "bearer", "is_uhn_study": is_uhn_study}))
             else:
                 # Either the user doesn't exist, the password is incorrect, or the account has been deactivated
                 return HttpResponse(status=400, content=json.dumps({"status_code": "400", "error": "invalid_grant"}))
