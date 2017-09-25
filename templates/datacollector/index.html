@@ -417,8 +417,50 @@
                     <thead><tr><th style='width: 20%;'>Session ID</th><th style='width: 30%;'>Start Date</th><th style='width: 30%;'></th></tr></thead>
                     <tbody>
                     {% for session in active_sessions %}
-                        <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td><a href="/{{ website_id }}/session/{{ session.session_id }}">Continue session</a></td></tr>
                         <tr>
+                            <td>
+                            {% if session.session_type_id == 2 %}
+                                <span class="glyphicon glyphicon-earphone"></span>
+                            {% else %}
+                                <i class="fa fa-laptop"></i> 
+                            {% endif %}
+                            {{ session.session_id }}
+                            </td>
+                            <td>{{ session.start_date }}</td>
+
+                            {% if session.session_type_id == 2 %}
+                                <td><a data-toggle="modal" data-target="#continueSessionPhone">Continue session</a></td>
+                                <div id="continueSessionPhone" class="modal fade" role="dialog">
+                                    <div class="modal-dialog"> 
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                <h4 class="modal-title text-info">Continue session {{ session.session_id }} <span class="glyphicon glyphicon-earphone"></span></h4>
+                                            </div>
+                                            <div class="modal-body jumbotron" style="margin-bottom: 0px;">
+
+                                                <p>To continue this session, call the following number:</p>
+                                                <h2>1-844-257-6497</h2>
+                                                <p>Your credentials are:</p>
+                                                <h3>User ID: {{ user_id }}</h3>
+                                                <h3>Pin number: {{ phone_pin }}</h3><br>
+                                                <h2>General instructions for the phone:</h2>
+                                                <ul>
+                                                    <li>Press on the star '*' button to log in your answer.</li>
+                                                    <li>Press on the pound '#' button to repeat the previous prompt.</li>
+                                                </ul>
+
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <td><a href="/{{ website_id }}/session/{{ session.session_id }}">Continue session</a></td>
+                            {% endif %}
+
                             {% if user.is_superuser %}
 
                             <td>
@@ -450,7 +492,13 @@
                 <thead><tr><th style='width: 20%;'>Session ID</th><th style='width: 30%;'>Start Date</th><th style='width: 30%;'>End Date</th></tr></thead>
                 <tbody>
                 {% for session in completed_sessions %}
-                    <tr><td>{{ session.session_id }}</td><td>{{ session.start_date }}</td><td>{{ session.end_date }} (<a href="/{{ website_id }}{% if 'uhn' in request.path %}/{{ uhn_study }}{% endif %}/session/{{ session.session_id }}">View</a>)</td></tr>
+                    <tr><td>
+                        {% if session.session_type_id == 2 %}
+                            <span class="glyphicon glyphicon-earphone"></span> 
+                        {% else %}
+                            <i class="fa fa-laptop"></i> 
+                        {% endif %}
+                        {{ session.session_id }}</td><td>{{ session.start_date }}</td><td>{{ session.end_date }} (<a href="/{{ website_id }}{% if 'uhn' in request.path %}/{{ uhn_study }}{% endif %}/session/{{ session.session_id }}">View</a>)</td></tr>
                 {% endfor %}
                 </tbody>
                 </table>

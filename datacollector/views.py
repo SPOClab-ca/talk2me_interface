@@ -726,8 +726,13 @@ def index(request):
         # page with their previously completed and active sessions, and any notifications
         if consent_submitted and demographic_submitted:
             # Only show website sessions in the website interface
-            completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False, session_type__name='website').order_by('-start_date')
-            active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('-start_date')
+            completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False).order_by('-start_date')
+            active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True).order_by('-start_date')
+
+            # Filter active sessions over the phone
+            active_sessions_phone = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True, session_type__name='phone')
+            if active_sessions_phone:
+                start_new_phone_session = False
 
             # Fetch all notifications that are active and have not been dismissed by the user
             # (NB: Q objects must appear before keyword parameters in the filter)
@@ -811,7 +816,19 @@ def index(request):
             dict_language_other[form_languages_other[i]] = ""
 
     # , 'form_languages': form_languages, 'form_languages_other': form_languages_other, 'form_languages_fluency': form_languages_fluency
-    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'usabilitysurvey_notsubmitted': usabilitysurvey_notsubmitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options, 'subject_bundle': subject_bundle, 'pending_sessions': pending_sessions }
+    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language,
+                   'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted,
+                   'demographic_submitted': demographic_submitted, 'usabilitysurvey_notsubmitted': usabilitysurvey_notsubmitted,
+                   'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency,
+                   'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')],
+                   'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions,
+                   'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options,
+                   'language_options': language_options, 'language_other': language_other,
+                   'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options,
+                   'education_options': education_options, 'dementia_options': dementia_options,
+                   'country_res_options': country_res_options, 'subject_bundle': subject_bundle,
+                   'pending_sessions': pending_sessions, 'user_id': user_id, 'phone_pin': phone_pin,
+                   'start_new_phone_session': start_new_phone_session }
     passed_vars.update(global_passed_vars)
     return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
 
