@@ -40,6 +40,8 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     url(r'^' + settings.SUBSITE_ID + 'bundle/completion/validate$', 'datacollector.views.bundle_completion_validate'),
     url(r'^' + settings.SUBSITE_ID + 'survey/usability$', 'datacollector.views.survey_usability'),
+    url(r'^' + settings.SUBSITE_ID + 'survey/usability_web$', 'datacollector.views.survey_usability_web'),
+    url(r'^' + settings.SUBSITE_ID + 'survey/usability_phone$', 'datacollector.views.survey_usability_phone'),
 
     # API for phone system
     url(r'^' + settings.SUBSITE_ID + 'phone/status$', 'datacollector.phone.status'),
