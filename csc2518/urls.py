@@ -40,6 +40,8 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     url(r'^' + settings.SUBSITE_ID + 'bundle/completion/validate$', 'datacollector.views.bundle_completion_validate'),
     url(r'^' + settings.SUBSITE_ID + 'survey/usability$', 'datacollector.views.survey_usability'),
+    url(r'^' + settings.SUBSITE_ID + 'survey/usability_web$', 'datacollector.views.survey_usability_web'),
+    url(r'^' + settings.SUBSITE_ID + 'survey/usability_phone$', 'datacollector.views.survey_usability_phone'),
 
     # API for phone system
     url(r'^' + settings.SUBSITE_ID + 'phone/status$', 'datacollector.phone.status'),
@@ -53,6 +55,7 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'phone/task_value$', 'datacollector.phone.task_value'),
     url(r'^' + settings.SUBSITE_ID + 'phone/difficulty_level$', 'datacollector.phone.difficulty_level'),
     url(r'^' + settings.SUBSITE_ID + 'phone/winograd_value/(?P<assoc_id>[0-9]+)$', 'datacollector.phone.winograd_value'),
+    url(r'^' + settings.SUBSITE_ID + 'phone/pin', 'datacollector.phone.generate_pin'),
 
     # UHN-specific
     url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + '$', 'datacollector.views.index'),

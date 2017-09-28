@@ -366,12 +366,19 @@ def index(request):
     subject_bundle = None
     bundle_id = None
     bundle_token = None
+    user_id = None
+    phone_pin = None
+    start_new_phone_session = True
+
     if 'bid' in request.GET and 'bt' in request.GET:
         bundle_id = request.GET['bid']
         bundle_token = request.GET['bt']
 
     if request.user.is_authenticated():
         is_authenticated = True
+
+        user_id = request.user.id
+        phone_pin = Subject.objects.get(user_id=user_id).phone_pin
 
         if request.method == 'POST':
             date_submitted = datetime.datetime.now()
@@ -686,6 +693,14 @@ def index(request):
                     # Set the demographic flag to 1
                     Subject.objects.filter(user_id=request.user.id).update(date_demographics_submitted=date_submitted)
 
+            elif form_type == 'delete_session':
+                session_id = request.POST['session_id']
+                session_id_check = request.POST['session_id_check']
+                if session_id_check == session_id:
+                    session_deleted = delete_session(session_id)
+                else:
+                    session_deleted = False
+
         # Assume that every authenticated user exists in subject. If they don't, add them with the appropriate ID, and all flags initialized to null/false.
         subject = Subject.objects.filter(user_id=request.user.id)
         if subject:
@@ -718,8 +733,13 @@ def index(request):
         # page with their previously completed and active sessions, and any notifications
         if consent_submitted and demographic_submitted:
             # Only show website sessions in the website interface
-            completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False, session_type__name='website').order_by('-start_date')
-            active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True, session_type__name='website').order_by('-start_date')
+            completed_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=False).order_by('-start_date')
+            active_sessions = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True).order_by('-start_date')
+
+            # Filter active sessions over the phone
+            active_sessions_phone = Session.objects.filter(subject__user_id=request.user.id, end_date__isnull=True, session_type__name='phone')
+            if active_sessions_phone:
+                start_new_phone_session = False
 
             # Fetch all notifications that are active and have not been dismissed by the user
             # (NB: Q objects must appear before keyword parameters in the filter)
@@ -803,7 +823,19 @@ def index(request):
             dict_language_other[form_languages_other[i]] = ""
 
     # , 'form_languages': form_languages, 'form_languages_other': form_languages_other, 'form_languages_fluency': form_languages_fluency
-    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language, 'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'usabilitysurvey_notsubmitted': usabilitysurvey_notsubmitted, 'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency, 'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')], 'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions, 'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options, 'language_options': language_options, 'language_other': language_other, 'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options, 'education_options': education_options, 'dementia_options': dementia_options, 'country_res_options': country_res_options, 'subject_bundle': subject_bundle, 'pending_sessions': pending_sessions }
+    passed_vars = {'is_authenticated': is_authenticated, 'dict_language': dict_language,
+                   'dict_language_other': dict_language_other, 'consent_submitted': consent_submitted,
+                   'demographic_submitted': demographic_submitted, 'usabilitysurvey_notsubmitted': usabilitysurvey_notsubmitted,
+                   'form_values': request.POST, 'form_languages_other_fluency': form_languages_other_fluency,
+                   'form_ethnicity': [int(sel_eth) for sel_eth in request.POST.getlist('ethnicity')],
+                   'form_errors': form_errors, 'completed_sessions': completed_sessions, 'active_sessions': active_sessions,
+                   'active_notifications': active_notifications, 'user': request.user, 'gender_options': gender_options,
+                   'language_options': language_options, 'language_other': language_other,
+                   'language_fluency_options': language_fluency_options, 'ethnicity_options': ethnicity_options,
+                   'education_options': education_options, 'dementia_options': dementia_options,
+                   'country_res_options': country_res_options, 'subject_bundle': subject_bundle,
+                   'pending_sessions': pending_sessions, 'user_id': user_id, 'phone_pin': phone_pin,
+                   'start_new_phone_session': start_new_phone_session }
     passed_vars.update(global_passed_vars)
     return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
 
@@ -904,8 +936,13 @@ def register(request):
             cd = form.cleaned_data
             new_user = form.save()
 
+            # Generate a new PIN for the phone interface
+            pin_length = 4
+            random_pin = random.randint(0, 10**pin_length-1)
+            phone_pin = str(random_pin).zfill(pin_length) # zero pad where necessary
+
             # Create a corresponding subject in the app
-            new_subject = Subject.objects.create(user_id=new_user.id, date_created=datetime.datetime.now())
+            new_subject = Subject.objects.create(user_id=new_user.id, date_created=datetime.datetime.now(), phone_pin=phone_pin)
 
             # Validate the passed in bundle parameters
             bundle_exists = False
@@ -1453,6 +1490,152 @@ def survey_usability(request):
     consent_submitted = False
     demographic_submitted = False
     active_notifications = []
+    form_errors = []
+    web_survey_completed = False
+    phone_survey_completed = False
+
+    phone_survey_type = Subject_UsabilitySurvey_Type.objects.get(name='phone').usabilitysurvey_type_id
+    web_survey_type = Subject_UsabilitySurvey_Type.objects.get(name='web').usabilitysurvey_type_id
+
+    if request.user.is_authenticated():
+        is_authenticated = True
+        date_completed = None
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
+
+            # Check if the user has not submitted a usability survey for the web yet
+            existing_web_survey = Subject_UsabilitySurvey.objects.filter(subject=subject,
+                                                                         date_completed__isnull=False,
+                                                                         usabilitysurvey_type_id=web_survey_type)
+            if not existing_web_survey:
+                web_survey_completed = True
+
+            # Check if the user has not submitted a usability survey for the phone yet
+            existing_phone_survey = Subject_UsabilitySurvey.objects.filter(subject=subject,
+                                                                           date_completed__isnull=False,
+                                                                           usabilitysurvey_type_id=phone_survey_type)
+            if not existing_phone_survey:
+                phone_survey_completed = True
+
+    passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted,
+                   'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications,
+                   'web_survey_completed': web_survey_completed, 'phone_survey_completed': phone_survey_completed}
+    passed_vars.update(global_passed_vars)
+    return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
+
+def survey_usability_phone(request):
+    is_authenticated = False
+    consent_submitted = False
+    demographic_submitted = False
+    active_notifications = []
+    survey_date_completed = False
+    form_errors = []
+
+    # The HTML IDs/names of the questions in the survey template
+    questions = {'radio': ['h1_phone', 'h2_phone', 'h3_phone',
+                           'h4_phone', 'h5_phone', 'h6_phone',
+                           'h7_phone', 'h8_phone',
+                           'sat1_phone', 'sat2_phone',
+                           'ease1_phone', 'ease2_phone', 'ease3_phone',
+                           'ease4_phone', 'ease5_phone', 'ease6_phone',
+                           'use1_phone', 'use2_phone'],
+                 'textarea': ['prev_tests_phone', 'phone_vs_inperson',
+                              'complaints_phone', 'phone_comm', 'phone_frustration',
+                              't2m_phone_use', 'future_use_phone']
+                }
+    question_numbers = {'h1_phone': 1, 'h2_phone': 1, 'h3_phone': 1, 'h4_phone': 1,
+                        'h5_phone': 1, 'h6_phone': 1, 'h7_phone': 1, 'h8_phone': 1,
+                        'sat1_phone': 2, 'sat2_phone': 2,
+                        'ease1_phone': 3, 'ease2_phone': 3, 'ease3_phone': 3,
+                        'ease4_phone': 3, 'ease5_phone': 3, 'ease6_phone': 3,
+                        'use1_phone': 4, 'use2_phone': 4,
+                        'prev_tests_phone': 5,
+                        'phone_vs_inperson': 6,
+                        'complaints_phone': 7,
+                        'phone_comm': 8,
+                        'phone_frustration': 9,
+                        't2m_phone_use': 10,
+                        'future_use_phone': 11}
+    question_order = ['h1_phone', 'h2_phone', 'h3_phone', 'h4_phone',
+                      'h5_phone', 'h6_phone','h7_phone', 'h8_phone',
+                      'sat1_phone', 'sat2_phone',
+                      'ease1_phone', 'ease2_phone', 'ease3_phone',
+                      'ease4_phone', 'ease5_phone', 'ease6_phone',
+                      'use1_phone', 'use2_phone',
+                      'prev_tests_phone', 'phone_vs_inperson',
+                      'complaints_phone', 'phone_comm', 'phone_frustration',
+                      't2m_phone_use', 'future_use_phone']
+
+    phone_survey_type = Subject_UsabilitySurvey_Type.objects.get(name='phone').usabilitysurvey_type_id
+
+    if request.user.is_authenticated():
+        is_authenticated = True
+        date_completed = None
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
+
+            # Fetch all notifications that are active and have not been dismissed by the user
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = notify.get_active_new(subject)
+
+            if request.method == "POST":
+                # Check for missing responses
+                for question_type in questions:
+                    question_names = questions[question_type]
+                    for n in question_names:
+                        if n not in request.POST or not request.POST[n]:
+                            form_errors += ['You did not provide a response to question #%d' % (question_numbers[n])]
+
+                # Save the submitted survey responses if there are no errors
+                if not form_errors:
+                    date_completed = datetime.datetime.now()
+                    for question_type in questions:
+                        for n in questions[question_type]:
+                            if n in request.POST and request.POST[n]:
+                                response_id = request.POST[n]
+                                question = request.POST['%s_question' % n]
+                                key_response = '%s_%s_response' % (n, response_id)
+                                if key_response in request.POST:
+                                    response = request.POST[key_response]
+                                else:
+                                    response = response_id
+                                Subject_UsabilitySurvey.objects.create(subject=subject,
+                                                                       question_id=n,
+                                                                       question=question,
+                                                                       question_type=question_type,
+                                                                       question_order=question_order.index(n),
+                                                                       response_id=response_id,
+                                                                       response=response,
+                                                                       date_completed=date_completed,
+                                                                       usabilitysurvey_type_id=phone_survey_type)
+                    survey_date_completed = date_completed
+                else:
+                    # Sort the errors and unique only
+                    form_errors = sorted(list(set(form_errors)))
+
+            existing_survey = Subject_UsabilitySurvey.objects.filter(subject=subject,
+                                                                     date_completed__isnull=False,
+                                                                     usabilitysurvey_type_id=phone_survey_type)
+            if existing_survey:
+                survey_date_completed = existing_survey[0].date_completed
+
+    passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted,
+                   'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications,
+                   'form_errors': form_errors, 'form_values': request.POST, 'survey_date_completed': survey_date_completed}
+    passed_vars.update(global_passed_vars)
+    return render_to_response('datacollector/usabilitysurvey_phone.html', passed_vars, context_instance=RequestContext(request))
+
+def survey_usability_web(request):
+    is_authenticated = False
+    consent_submitted = False
+    demographic_submitted = False
+    active_notifications = []
     survey_date_completed = False
     form_errors = []
     # The HTML IDs/names of the questions in the survey template
@@ -1494,6 +1677,8 @@ def survey_usability(request):
                         'comp_use_other',
                         't2m_use',
                         'future_use']
+
+    web_survey_type = Subject_UsabilitySurvey_Type.objects.get(name='web').usabilitysurvey_type_id
     if request.user.is_authenticated():
         is_authenticated = True
         date_completed = None
@@ -1538,20 +1723,30 @@ def survey_usability(request):
                                     response = request.POST[key_response]
                                 else:
                                     response = response_id
-                                Subject_UsabilitySurvey.objects.create(subject=subject, question_id=n, question=question, question_type=question_type, question_order=question_order.index(n), response_id=response_id, response=response, date_completed=date_completed)
+                                Subject_UsabilitySurvey.objects.create(subject=subject,
+                                                                       question_id=n,
+                                                                       question=question,
+                                                                       question_type=question_type,
+                                                                       question_order=question_order.index(n),
+                                                                       response_id=response_id,
+                                                                       response=response,
+                                                                       date_completed=date_completed,
+                                                                       usabilitysurvey_type_id=web_survey_type)
                     survey_date_completed = date_completed
                 else:
                     # Sort the errors and unique only
                     form_errors = sorted(list(set(form_errors)))
 
             # Check if the survey has been submitted previously
-            existing_survey = Subject_UsabilitySurvey.objects.filter(subject=subject, date_completed__isnull=False)
+            existing_survey = Subject_UsabilitySurvey.objects.filter(subject=subject,
+                                                                     date_completed__isnull=False,
+                                                                     usabilitysurvey_type_id=web_survey_type)
             if existing_survey:
                 survey_date_completed = existing_survey[0].date_completed
 
             passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'form_errors': form_errors, 'form_values': request.POST, 'survey_date_completed': survey_date_completed}
             passed_vars.update(global_passed_vars)
-            return render_to_response('datacollector/usabilitysurvey.html', passed_vars, context_instance=RequestContext(request))
+            return render_to_response('datacollector/usabilitysurvey_web.html', passed_vars, context_instance=RequestContext(request))
         else:
             return HttpResponseRedirect(website_root)
     else:
