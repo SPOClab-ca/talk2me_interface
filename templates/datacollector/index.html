@@ -211,9 +211,13 @@
         <ol>
             <li><strong>Gender:</strong><br />
                 {% for opt in gender_options %}
-                <div class="radio">
+                <div class="radio" {% if opt.requires_detail %}style="display:inline-block;"{% endif %}>
                     <label class="radio"><input type="radio" name="gender" value="{{ opt.gender_id }}"{% ifequal form_values.gender opt.gender_id %} checked="checked"{% endifequal %}> {{ opt.name }}</label>
                 </div>
+                {% if opt.requires_detail %}
+                    {% with gen='gender_detail_'|str_concat:opt.gender_id %}: <input name="gender_detail_{{ opt.gender_id }}" type="text" value="{{ form_values|hash:gen }}" />
+                    {% endwith %}
+                {% endif %}
                 {% endfor %}
             </li>
             

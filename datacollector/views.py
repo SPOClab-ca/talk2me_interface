@@ -582,6 +582,18 @@ def index(request):
                 if not form_errors:
                     # Gender
                     Subject.objects.filter(user_id=request.user.id).update(gender=selected_gender)
+                    gender_name = None
+                    subject = Subject.objects.filter(user_id=request.user.id)
+                    if subject:
+                        subject = subject[0]
+                    if 'gender_detail_o' in request.POST:
+                        gender_name = request.POST['gender_detail_o']
+
+                    subject_gender_exists = Subject_Gender.objects.filter(subject=subject, gender_id=selected_gender.gender_id)
+                    if not subject_gender_exists:
+                        Subject_Gender.objects.create(subject=subject,
+                                                      gender_id=selected_gender.gender_id,
+                                                      gender_name=gender_name)
 
                     # DOB
                     Subject.objects.filter(user_id=request.user.id).update(dob=selected_dob)
