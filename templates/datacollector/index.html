@@ -441,7 +441,7 @@
                             <td>{{ session.start_date }}</td>
 
                             {% if session.session_type_id == 2 %}
-                                <td><a data-toggle="modal" data-target="#continueSessionPhone">Continue session</a></td>
+                                <td><a data-toggle="modal" data-target="#continueSessionPhone">Continue session (phone)</a></td>
                                 <div id="continueSessionPhone" class="modal fade" role="dialog">
                                     <div class="modal-dialog"> 
                                         <div class="modal-content">
@@ -470,7 +470,7 @@
                                     </div>
                                 </div>
                             {% else %}
-                                <td><a href="/{{ website_id }}/session/{{ session.session_id }}">Continue session</a></td>
+                                <td><a href="/{{ website_id }}/session/{{ session.session_id }}">Continue session (web)</a></td>
                             {% endif %}
 
                             {% if user.is_superuser %}
