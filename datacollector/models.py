@@ -53,6 +53,7 @@ class Gender(models.Model):
     gender_id = models.CharField(max_length=1, primary_key=True)
     name = models.CharField(max_length=20)
     ranking = models.IntegerField()
+    requires_detail = models.IntegerField(default=0)
 
 class Language(models.Model):
     # the possible values for the spoken languages by the subject
@@ -298,6 +299,18 @@ class Subject_Ethnicity(models.Model):
     
     subject = models.ForeignKey(Subject)
     ethnicity = models.ForeignKey(Ethnicity)
+
+class Subject_Gender(models.Model):
+    # data collected for user regarding their gender
+    # The gender type either exists in Gender table, OR it is a new type manually
+    # entered by the user.
+
+    def __unicode__(self):
+        return "User " +str(self.subject.user_id) + " - " + str(self.gender_name) 
+
+    subject = models.ForeignKey(Subject)
+    gender_id = models.CharField(max_length=1)
+    gender_name = models.CharField(max_length=200)
 
 class Subject_Bundle(models.Model):
     def __unicode__(self):

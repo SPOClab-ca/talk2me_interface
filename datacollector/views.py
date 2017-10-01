@@ -582,6 +582,18 @@ def index(request):
                 if not form_errors:
                     # Gender
                     Subject.objects.filter(user_id=request.user.id).update(gender=selected_gender)
+                    gender_name = None
+                    subject = Subject.objects.filter(user_id=request.user.id)
+                    if subject:
+                        subject = subject[0]
+                    if 'gender_detail_o' in request.POST:
+                        gender_name = request.POST['gender_detail_o']
+
+                    subject_gender_exists = Subject_Gender.objects.filter(subject=subject, gender_id=selected_gender.gender_id)
+                    if not subject_gender_exists:
+                        Subject_Gender.objects.create(subject=subject,
+                                                      gender_id=selected_gender.gender_id,
+                                                      gender_name=gender_name)
 
                     # DOB
                     Subject.objects.filter(user_id=request.user.id).update(dob=selected_dob)
@@ -1333,7 +1345,7 @@ def session(request, session_id):
                                 response_field += "><input id='btn_recording_" + instance_id + "' type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: toggleRecordingRig(this); startTimerRigAudio(this, " + instance_id + ");' value='Start recording'>&nbsp;<span class='invisible' id='status_recording_" + instance_id + "'><img src='" + STATIC_URL + "img/ajax_loader.gif' /> <span id='status_recording_" + instance_id + "_msg'></span></span><input class='form-field' type='hidden' id='response_audio_" + instance_id + "' name='response_audio_" + instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
 
                             else:
-                                display_field = re.sub(timer_duration, "<br /><br /><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start Recording</button><br />", instance_value.value)
+                                display_field = re.sub(timer_duration, "<br /><br /><button type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: startTimerRig(this, " + instance_id + ");'>Start Timer</button><br />", instance_value.value)
                                 # Associated textarea where the user will type out the RIG response
                                 display_field += "<div class='timer_display' id='timer_display_" + instance_id + "'>01:00</div><input type='hidden' id='timer_val_" + instance_id + "' value='" + dur_sec + "' /><textarea class='form-control form-field input-disabled' name='response' readonly='readonly' style=\"" + style_attributes + "\"></textarea><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
 
