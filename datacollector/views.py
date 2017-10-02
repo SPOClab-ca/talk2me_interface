@@ -54,6 +54,7 @@ UHN_PHONE_BUNDLE_ID = 4
 # Task ID variables
 VOCABULARY_TASK_ID = 1
 RIG_TASK_ID = 12
+GENERAL_DISPOSITION_TASK_ID = 13
 
 # Bundle task ID variables
 VOCABULARY_UHN_WEB_BUNDLE_TASK_ID = 5
@@ -121,7 +122,7 @@ def generate_session(subject, session_type):
                 while len(bundle_tasks) > NUM_TASK_INSTANCES_UHN:
                     idx_to_remove = random.randint(0, len(bundle_tasks) - 1)
                     id_task_to_remove = bundle_tasks[idx_to_remove].task.task_id
-                    if not id_task_to_remove == '13':
+                    if id_task_to_remove != GENERAL_DISPOSITION_TASK_ID:
                         bundle_tasks = bundle_tasks[:idx_to_remove] + bundle_tasks[idx_to_remove+1:]
 
             # If necessary, add another task instance. (Note: This might not be necessary, given current
@@ -130,7 +131,7 @@ def generate_session(subject, session_type):
                 while len(bundle_tasks) < NUM_TASK_INSTANCES_UHN:
                     idx_to_add = random.randint(0, len(bundle_tasks) - 1)
                     id_task_to_add = bundle_tasks[idx_to_add].task.task_id
-                    if not id_task_to_add == '13':
+                    if id_task_to_add != GENERAL_DISPOSITION_TASK_ID:
                         bundle_tasks = bundle_tasks[:] + [bundle_tasks[idx_to_add]]
 
             # For each Bundle_Task record the task and the num instances
