@@ -22,7 +22,11 @@
 <h2>Studies</h2>
 <ul>
 {% for bundle in bundles %}
-    <li><a href="/{{ website_id }}/uhn/admin/{{ bundle.name_id }}">{{ bundle.name_id }}</a></li>
+    {% if 'uhn' in bundle.name_id %}
+        <li><a href="/{{ website_id }}/uhn/admin/{{ bundle.name_id }}">{{ bundle.name_id }}</a></li>
+    {% else %}
+        <li><a href="/{{ website_id }}/admin/{{ bundle.name_id }}">{{ bundle.name_id }}</a></li>
+    {% endif %}
 {% endfor %}
 </ul>
 
