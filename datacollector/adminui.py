@@ -3,12 +3,14 @@
 import datetime
 import notify
 import numpy
+import random
 
 from django.db import connection
 from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.contrib.auth.forms import UserCreationForm
 
 from datacollector.models import (Bundle, Gender, Session, Session_Task, Session_Task_Instance,
                                   Session_Task_Instance_Value, Session_Type, Settings, Subject, Subject_Bundle,
@@ -101,8 +103,7 @@ def uhn_update_phone_pin(subject_id, phone_pin):
     if phone_pin:
         Subject.objects.filter(user_id=subject_id).update(phone_pin=phone_pin)
         return True
-    else:
-        return False
+    return False
 
 def uhn_session(request, bundle_uhn, user_id):
     '''
@@ -216,6 +217,29 @@ def uhn_dashboard(request, bundle_uhn):
                 subject_id = request.POST['subject_id']
                 uhn_create_sessions(subject_id, bundle)
 
+            elif form_type == 'create_user':
+                form = UserCreationForm(request.POST)
+
+                if form.is_valid():
+                    # Save user
+                    cd = form.cleaned_data
+                    new_user = form.save()
+
+                    # Generate a new PIN for the phone interface
+                    pin_length = 4
+                    random_pin = random.randint(0, 10**pin_length-1)
+                    phone_pin = str(random_pin).zfill(pin_length) # zero pad where necessary
+
+                    # Create a corresponding subject in the app
+                    new_subject = Subject.objects.create(user_id=new_user.id, date_created=datetime.datetime.now(), phone_pin=phone_pin)
+
+                    # Create subject bundle
+                    today = datetime.datetime.now().date()
+                    Subject_Bundle.objects.create(subject=new_subject,
+                                                  bundle=bundle,
+                                                  active_startdate=today)
+
+
         is_authenticated = True
 
         subject_bundle_users = Subject_Bundle.objects.filter(bundle=bundle)
@@ -242,7 +266,8 @@ def uhn_dashboard(request, bundle_uhn):
             'is_authenticated': is_authenticated,
             'bundle': bundle,
             'subject_bundle_users': subject_bundle_users,
-            'subjects': subjects
+            'subjects': subjects,
+            'form': UserCreationForm()
         }
 
         passed_vars.update(GLOBAL_PASSED_VARS)

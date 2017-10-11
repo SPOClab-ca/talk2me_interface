@@ -94,5 +94,28 @@
 {% endfor %}
 </table>
 
+<hr/>
+<h2>Create a new user</h2>
+
+    <!-- <input type="hidden" id="form_type" name="form_type" value="create_user">
+    <input type="hidden" id="bundle_name" name="bundle_name" value="{{ bundle.name_id }}">
+    <b>Username</b>: <input type="text" id="username" name="username" value=""><br>
+    <b>Password</b>: <input type="text" id="password" name="password" value=""><br>
+    <button type="submit" class="btn btn-lg btn-primary">Create a new user</button> -->
+
+<form method="post" action="{{ bundle.name_id }}">
+{% csrf_token %}
+    <input type="hidden" id="form_type" name="form_type" value="create_user">
+    <input type="hidden" id="bundle_name" name="bundle_name" value="{{ bundle.name_id }}">
+    {% for field in form %}
+        <b>{{ field.label }}</b>
+        {% if forloop.first %}
+           {{ field }} {{ field.errors }}<br>
+        {% else %}
+            {{ field }} {{ field.errors }}<br>
+        {% endif %}
+    {% endfor %}
+<button type="submit" class="btn btn-lg btn-primary">Create a new user</button>
+</form>
 
 {% endblock %}
