@@ -32,6 +32,7 @@ urlpatterns = patterns('',
 
     # Miscellaneous
     url(r'^' + settings.SUBSITE_ID + 'admin$', 'datacollector.adminui.dashboard'),
+    url(r'^' + settings.SUBSITE_ID + 'admin/(?P<study>.+)$', 'datacollector.adminui.study_dashboard'),
     url(r'^' + settings.SUBSITE_ID + 'pagetime$', 'datacollector.views.pagetime'),
     url(r'^' + settings.SUBSITE_ID + 'about/$', 'datacollector.views.about'),
     url(r'^' + settings.SUBSITE_ID + 'account/$', 'datacollector.views.account'),
