@@ -57,6 +57,7 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + 'phone/difficulty_level$', 'datacollector.phone.difficulty_level'),
     url(r'^' + settings.SUBSITE_ID + 'phone/winograd_value/(?P<assoc_id>[0-9]+)$', 'datacollector.phone.winograd_value'),
     url(r'^' + settings.SUBSITE_ID + 'phone/pin', 'datacollector.phone.generate_pin'),
+    url(r'^' + settings.SUBSITE_ID + 'phone/duration$', 'datacollector.phone.duration'),
 
     # UHN-specific
     url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + '$', 'datacollector.views.index'),
