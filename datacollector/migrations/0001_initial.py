@@ -117,6 +117,7 @@ class Migration(migrations.Migration):
                 ('gender_id', models.CharField(max_length=1, serialize=False, primary_key=True)),
                 ('name', models.CharField(max_length=20)),
                 ('ranking', models.IntegerField()),
+                ('requires_detail', models.IntegerField(default=0)),
             ],
         ),
         migrations.CreateModel(
@@ -164,6 +165,14 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='Session_Phone_Duration',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('duration', models.IntegerField(null=True, blank=True)),
+                ('session', models.ForeignKey(to='datacollector.Session')),
+            ],
+        ),
+        migrations.CreateModel(
             name='Session_Response',
             fields=[
                 ('session_response_id', models.AutoField(serialize=False, primary_key=True)),
@@ -172,6 +181,7 @@ class Migration(migrations.Migration):
                 ('value_audio', models.FileField(null=True, upload_to=datacollector.models.generate_upload_filename, blank=True)),
                 ('value_multiselect', models.CommaSeparatedIntegerField(max_length=100, null=True, blank=True)),
                 ('value_expected', models.TextField(null=True, blank=True)),
+                ('num_repeats', models.IntegerField(null=True, blank=True)),
             ],
         ),
         migrations.CreateModel(
@@ -292,6 +302,15 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='Subject_Gender',
+            fields=[
+                ('id', models.AutoField(serialize=False, primary_key=True)),
+                ('gender_id', models.CharField(max_length=1, null=True, blank=True)),
+                ('gender_name', models.CharField(max_length=200, null=True, blank=True)),
+                ('subject', models.ForeignKey(to='datacollector.Subject')),
+            ],
+        ),
+        migrations.CreateModel(
             name='Subject_Language',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -329,10 +348,18 @@ class Migration(migrations.Migration):
                 ('question', models.TextField()),
                 ('question_type', models.CharField(max_length=50)),
                 ('question_order', models.IntegerField()),
-                ('response_id', models.CharField(max_length=50, null=True, blank=True)),
+                ('response_id', models.TextField(null=True, blank=True)),
                 ('response', models.TextField(null=True, blank=True)),
                 ('date_completed', models.DateField()),
+                ('usabilitysurvey_type_id', models.IntegerField()),
                 ('subject', models.ForeignKey(to='datacollector.Subject')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Subject_UsabilitySurvey_Type',
+            fields=[
+                ('usabilitysurvey_type_id', models.AutoField(serialize=False, primary_key=True)),
+                ('name', models.CharField(max_length=50)),
             ],
         ),
         migrations.CreateModel(

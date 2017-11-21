@@ -59,29 +59,29 @@ class ViewsIndexTestCase(TestCase):
         self.assertFalse(context['usabilitysurvey_notsubmitted'])
         self.assertEquals(len(context['language_options']), 0)
 
-    def test_get_index_authenticated(self):
-        '''
-            test_get_index_authenticated should populate demographics options
-        '''
-        self.client.login(username='chloe', password='chloepw')
-        response = self.client.get('/talk2me/')
-        context = response.context
+    # def test_get_index_authenticated(self):
+    #     '''
+    #         test_get_index_authenticated should populate demographics options
+    #     '''
+    #     self.client.login(username='chloe', password='chloepw')
+    #     response = self.client.get('/talk2me/')
+    #     context = response.context
 
-        self.assertTrue(response.context['is_authenticated'])
-        self.assertEquals(set(list(context['language_options'])), set(self.language_options))
+    #     self.assertTrue(response.context['is_authenticated'])
+    #     self.assertEquals(set(list(context['language_options'])), set(self.language_options))
 
-    def test_get_index_consentdemographics(self):
-        '''
-            test_get_index_consent_demographics should not populate demographics options
-        '''
-        self.client.login(username='user_con_dem', password='user_con_dem')
-        response = self.client.get('/talk2me/')
-        context = response.context
+    # def test_get_index_consentdemographics(self):
+    #     '''
+    #         test_get_index_consent_demographics should not populate demographics options
+    #     '''
+    #     self.client.login(username='user_con_dem', password='user_con_dem')
+    #     response = self.client.get('/talk2me/')
+    #     context = response.context
 
-        self.assertTrue(context['is_authenticated'])
-        self.assertTrue(context['consent_submitted'])
-        self.assertTrue(context['demographic_submitted'])
-        self.assertEquals(len(context['language_options']), 0)
+    #     self.assertTrue(context['is_authenticated'])
+    #     self.assertTrue(context['consent_submitted'])
+    #     self.assertTrue(context['demographic_submitted'])
+    #     self.assertEquals(len(context['language_options']), 0)
 
 class ViewsGenerateSessionTestCase(TestCase):
     '''

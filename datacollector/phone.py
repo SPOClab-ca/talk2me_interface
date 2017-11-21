@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from datacollector.views import generate_session
 from datacollector.models import *
+from datacollector.phone_helper import create_session_phone_duration
 from csc2518.settings import MEDIA_ROOT
 
 import bcrypt
@@ -27,7 +28,7 @@ TASK_FIELD_ID_WINOGRAD = 23
 
 @csrf_exempt
 def status(request):
-	return HttpResponse(json.dumps({"status_code": "200"}))
+    return HttpResponse(json.dumps({"status_code": "200"}))
 
 @csrf_exempt
 def login(request):
@@ -71,7 +72,7 @@ def login(request):
                     username = user.username
                 except:
                     # Subject ID doesn't exist
-                    return HttpResponse(status=400, content=json.dumps({"status_code": "400", "error": "invalid_grant"}))
+                    return HttpResponse(status=400, content=json.dumps({"status_code": "400", "error": "Subject ID doesn't exist"}))
 
             # Validate the PIN
             subject = Subject.objects.filter(user_id=subject_id, phone_pin=pin)
@@ -135,7 +136,10 @@ def session(request):
             str_enddate = session.end_date
             if str_enddate is not None:
                 str_enddate = str_enddate.strftime(date_format)
-            list_sessions += [{"session_id": session.session_id, "start_date": str_startdate, "end_date": str_enddate, "session_type": session.session_type.name}]
+            list_sessions += [{"session_id": session.session_id, \
+                               "start_date": str_startdate, \
+                               "end_date": str_enddate, \
+                               "session_type": session.session_type.name}]
         return HttpResponse(status=200, content=json.dumps({"status_code": "200", "sessions": list_sessions}))
 
     elif request.method == 'POST':
@@ -177,8 +181,8 @@ def active_session(request):
                 "status_code": "200",
                 "session_id": active_sessions[0].session_id
                 }))
-        else:
-            return HttpResponse(status=404, content=json.dumps({
+        
+        return HttpResponse(status=404, content=json.dumps({
                 "status_code": "400",
                 "error": "no active session"
                 }))
@@ -219,7 +223,11 @@ def session_id(request, session_id):
             str_datecompleted = session_task.date_completed
             if str_datecompleted is not None:
                 str_datecompleted = str_datecompleted.strftime(date_format)
-            list_session_tasks += [{"session_task_id": session_task.session_task_id, "task_name": session_task.task.name_id, "task_instruction": session_task.task.instruction_phone, "order": session_task.order, "date_completed": str_datecompleted}]
+            list_session_tasks += [{"session_task_id": session_task.session_task_id, \
+                                    "task_name": session_task.task.name_id, \
+                                    "task_instruction": session_task.task.instruction_phone, \
+                                    "order": session_task.order, \
+                                    "date_completed": str_datecompleted}]
         return HttpResponse(status=200, content=json.dumps({"status_code": "200", "session_tasks": list_session_tasks}))
 
     elif request.method == 'PUT' and request.body:
@@ -260,7 +268,9 @@ def task(request):
         tasks = Task.objects.filter(instruction_phone__isnull=False, is_active=1)
         list_tasks = []
         for task in tasks:
-            list_tasks += [{"task_id": task.task_id, "task_name": task.name_id, "task_instruction": task.instruction_phone, "default_num_instances": task.default_num_instances}]
+            list_tasks += [{"task_id": task.task_id, "task_name": task.name_id, \
+                            "task_instruction": task.instruction_phone, \
+                            "default_num_instances": task.default_num_instances}]
 
         return HttpResponse(status=200, content=json.dumps({"status_code": "200", "tasks": list_tasks}))
 
@@ -286,7 +296,9 @@ def task_value(request):
 
     if request.method == 'GET':
         # Return all phone-based tasks
-        task_values = Task_Field_Value.objects.filter(task_field__task__instruction_phone__isnull=False, task_field__task__is_active=1, task_field__field_type__name='display')
+        task_values = Task_Field_Value.objects.filter(task_field__task__instruction_phone__isnull=False, \
+                                                      task_field__task__is_active=1, \
+                                                      task_field__field_type__name='display')
         list_task_values = []
         for task_value in task_values:
             list_task_values += [{"task_value_id": task_value.task_field_value_id, "task_id": task_value.task_field.task.task_id,
@@ -320,7 +332,7 @@ def difficulty_level(request):
         difficulty_levels = Value_Difficulty.objects.all()
         list_difficulty_levels = []
         for difficulty_level in difficulty_levels:
-            list_difficulty_levels += [{"difficulty_id": difficulty_level.value_difficulty_id, "name": difficulty_level.name }]
+            list_difficulty_levels += [{"difficulty_id": difficulty_level.value_difficulty_id, "name": difficulty_level.name}]
 
         return HttpResponse(status=200, content=json.dumps({"status_code": "200", "difficulty_levels": list_difficulty_levels }))
 
@@ -455,10 +467,17 @@ def response(request):
                     # Compute a checksum for the file stored on the server
                     filepath = os.path.join(MEDIA_ROOT, session_response.value_audio.name)
                     file_checksum = lib.generate_md5_checksum(filepath)
-                    return HttpResponse(status=200, content=json.dumps({"status_code": "200", "file_checksum": file_checksum, "response_saved": True, "all_tasks_completed": all_tasks_completed}))
+                    return HttpResponse(status=200, content=json.dumps({"status_code": "200", \
+                                                                        "file_checksum": file_checksum, \
+                                                                        "response_saved": True, \
+                                                                        "all_tasks_completed": all_tasks_completed}))
                 elif transcript:
-                    return HttpResponse(status=200, content=json.dumps({"status_code": "200", "response_saved": True, "all_tasks_completed": all_tasks_completed}))
-            return HttpResponse(status=200, content=json.dumps({"status_code": "200", "all_tasks_completed": all_tasks_completed, "response_saved": False}))
+                    return HttpResponse(status=200, content=json.dumps({"status_code": "200", \
+                                                                        "response_saved": True, \
+                                                                        "all_tasks_completed": all_tasks_completed}))
+            return HttpResponse(status=200, content=json.dumps({"status_code": "200", \
+                                                                "all_tasks_completed": all_tasks_completed, \
+                                                                "response_saved": False}))
         return HttpResponse(status=404, content=json.dumps({"status_code": "404", "error": "Not Found"}))
     return HttpResponse(status=405, content=json.dumps({"status_code": "405", "error": "Invalid method"}))
 
@@ -563,7 +582,7 @@ def old_session(request):
 
                                     # Look for latest active *phone* session, if one exists (only one phone session is allowed to exist at a time)
                                     session_type = Session_Type.objects.get(name='phone')
-                                    active_sess = Session.objects.filter(subject=user,session_type=session_type).order_by('-session_id')
+                                    active_sess = Session.objects.filter(subject=user, session_type=session_type).order_by('-session_id')
                                     if active_sess:
                                         active_sess = active_sess[0]
                                     else:
@@ -587,11 +606,11 @@ def old_session(request):
                                             value_text = val.value
                                             if val.value_display:
                                                 value_text = val.value_display
-                                            json_values += [ {'value_id': val.session_task_instance_value_id, \
+                                            json_values += [{'value_id': val.session_task_instance_value_id, \
                                                               'value_text': value_text, \
                                                               'value_type': val.task_field.field_type.name } ]
 
-                                        json_task_instances += [ { 'task_id': response.session_task_instance.session_task.task_id, \
+                                        json_task_instances += [{ 'task_id': response.session_task_instance.session_task.task_id, \
                                                                    'task_name': response.session_task_instance.session_task.task.name, \
                                                                    'task_instruction': response.session_task_instance.session_task.task.instruction_phone, \
                                                                    'session_task_id': response.session_task_instance.session_task_id, \
@@ -599,7 +618,7 @@ def old_session(request):
                                                                    'total_time': response.session_task_instance.session_task.total_time, \
                                                                    'session_task_instance_id': response.session_task_instance_id, \
                                                                    'response_id': response.session_response_id, \
-                                                                   'values': json_values } ]
+                                                                   'values': json_values}]
                                     json_data['session_task_instances'] = json_task_instances
 
                                 else:
@@ -635,3 +654,34 @@ def old_session(request):
 
     # If the request is not OPTIONS or POST, just return 401
     return HttpResponse("Unauthorized", status=401)
+
+@csrf_exempt
+def duration(request):
+    """
+        API for updating call duration
+    """
+    # Validate the headers
+    auth_token = lib.validate_authorization_header(request.META)
+    if not auth_token:
+        response = HttpResponse(status=400, \
+            content=json.dumps({"status_code": "400"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_request"'
+        return response
+
+    # Validate the access token
+    subject = lib.authenticate(auth_token)
+    if not subject:
+        response = HttpResponse(status=401, \
+            content=json.dumps({"status_code": "401"}))
+        response['WWW-Authenticate'] = 'Bearer error="invalid_token"'
+        return response
+
+    if request.method == 'POST':
+        session_id = request.POST['session_id']
+        duration = request.POST['duration']
+        session = Session.objects.get(session_id=session_id)
+
+        create_session_phone_duration(session, duration)
+        return HttpResponse(status=200, \
+                            content=json.dumps({"status_code": "200"}))
+    return HttpResponse("Should send a POST request", status=401)
