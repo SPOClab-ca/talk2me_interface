@@ -6,14 +6,14 @@ var page_start_time = false;
 var website_id = 'talk2me';
 var default_dialog_width = 450;
 
-/* 
+/*
  * Run on page load
  */
 $(document).ready(function () {
-    
+
     // Add date picker to date fields. The subject has to be at least 18 years old.
     $(".datefield").each(function() {
-        $(this).datepicker({ 
+        $(this).datepicker({
             dateFormat: "yy-mm-dd",
             changeMonth: true,
             changeYear: true,
@@ -22,7 +22,7 @@ $(document).ready(function () {
             yearRange: "-150:-18"
         });
     });
-    
+
     // Add "scale" slider (jquery UI element for selecting a value on a scale)
     $("[class^='scale_']").each(function() {
         var regex_scale = /scale[_]([0-9]+)[_]([0-9]+)/i;
@@ -30,7 +30,7 @@ $(document).ready(function () {
         if (matches && matches.length >= 3) {
             var slider_min = parseInt(matches[1]);
             var slider_max = parseInt(matches[2]);
-            
+
             var default_val = median(range(slider_min, slider_max));
             // Math.round((slider_max-slider_min+1)/2);
             $(this).slider({
@@ -45,18 +45,18 @@ $(document).ready(function () {
                     setUnsavedChanges();
                 }
             });
-            
+
             // Update the label with the default value for the slider
             $(this).siblings(".scale_display").html(default_val);
             $(this).siblings("[name=response]").val(default_val);
         }
     });
-    
+
     // Check browser for HTML5 support of:
     // (1) getUserMedia() API for capturing raw audio
     // (2) FormData used to send raw audio stream back to server
-    support_getUserMedia = navigator.getUserMedia !== undefined || 
-                           navigator.webkitGetUserMedia !== undefined || 
+    support_getUserMedia = navigator.getUserMedia !== undefined ||
+                           navigator.webkitGetUserMedia !== undefined ||
                            navigator.mozGetUserMedia !== undefined;
     support_FormData = window.FormData !== undefined;
     if (!support_getUserMedia || !support_FormData) {
@@ -69,7 +69,7 @@ $(document).ready(function () {
             $(this).addClass("invisible");
         });
     }
-    
+
     // Make sure that any changes made to any form elements will trigger an "unsaved changes" dialog on page exit.
     // If the form elements are cleared (made blank), then reset the unsaved changes flag.
     // "keyup" ensures that changes are captured on input fields and textareas *before* they lose focus (e.g., type into
@@ -77,15 +77,15 @@ $(document).ready(function () {
     // captures changes on radio, select, and checkbox fields.
     $(".form-field").keyup(function() { detectFieldChanges(this); })
                     .change(function() { detectFieldChanges(this); });
-    
+
     // If the user is currently loading a session page, scroll to top to prevent
     // the browser from scrolling down when the next task is displayed on the same page.
     var session_task_id = $("#session_task_id").val();
     if (session_task_id !== undefined) {
         $(window).scrollTop(0);
-        
+
         // If there are multiple audio recording buttons on the session page, disable all but the first.
-        // (At any point in time there should only be one active audio recording button to prevent user 
+        // (At any point in time there should only be one active audio recording button to prevent user
         // from clicking all of them at the same time).
         var id_audio_buttons = "btn_recording_";
         if ($("[id^='" + id_audio_buttons + "']").length > 1) {
@@ -97,12 +97,12 @@ $(document).ready(function () {
             }
         }
     }
-    
+
     // Make all clickable table rows links
     $(".clickable-row").click(function() {
         window.document.location = $(this).data("href");
     });
-    
+
     // Notifications
     $(".dropdown-toggle").click(function() {
         var toggle = $(this);
@@ -113,7 +113,7 @@ $(document).ready(function () {
             url: '/' + website_id + '/notify/dismiss/',
             data: {'target_notif': '' },
             dataType: 'json',
-            error: function(jqXHR, textStatus, errorThrown) { 
+            error: function(jqXHR, textStatus, errorThrown) {
                 console.log('Unable to dismiss notifications: ' + textStatus + ", " + errorThrown);
             },
             success: function(data, textStatus, jqXHR) {
@@ -123,7 +123,7 @@ $(document).ready(function () {
             }
         });
     });
-    
+
     // If we're on the admin page, load the Google Charts API
     var page_name = document.location.pathname;
     if (page_name.lastIndexOf("/") != -1) {
@@ -134,7 +134,7 @@ $(document).ready(function () {
         google.load('visualization', '1.0', {'packages':['corechart'],
                                              'callback': function() { populateAdminUI(); } });
     }
-    
+
     // Measure time spent on page
     page_start_time = new Date().getTime();
 });
@@ -146,12 +146,12 @@ function populateAdminUI() {
     var chart_height = 300;
     var data_col_sep = $("#data_col_sep").val();
     var data_row_sep = $("#data_row_sep").val();
-    
+
     $(".adminui_data").each(function() {
         var chart_type = $(this).attr("chart-type");
         var next_title = $(this).attr("data-title");
         var next_val = $(this).val();
-        
+
         // Convert to DataTable (array of arrays)
         var dta = [];
         var rows = next_val.split(data_row_sep);
@@ -176,12 +176,12 @@ function drawChart(chartType, dataTableArray, chartTitle, w, h) {
 
     // Create the data table.
     var data = new google.visualization.arrayToDataTable(dataTableArray, false);
-    
+
     // Set chart options
     var options = {'title':chartTitle,
                    'width':w,
                    'height':h};
-    
+
     // Instantiate and draw our chart, passing in some options.
     var new_chart = $("<div></div>").appendTo("#chart_div");
     if (chartType == 'pie') {
@@ -196,15 +196,15 @@ function drawChart(chartType, dataTableArray, chartTitle, w, h) {
 window.onbeforeunload = function (e) {
     var e = e || window.event;
     var msg = 'You have unsaved data that will be lost if you leave this page.';
-    
-    // If the user is currently on a session page and has entered in some unsaved data, 
+
+    // If the user is currently on a session page and has entered in some unsaved data,
     // ask them to confirm leaving the page.
     var session_task_id = $("#session_task_id").val();
     if (session_task_id !== undefined) {
         var unsaved_changes_id = "unsaved_changes";
         if ($("#" + unsaved_changes_id).length > 0) {
             if ($("#" + unsaved_changes_id).val() == "yes") {
-                
+
                 // For IE6-8 and Firefox prior to version 4
                 if (e) {
                     e.returnValue = msg;
@@ -220,21 +220,21 @@ window.onbeforeunload = function (e) {
  * Run when window is closed/left
  */
 $(window).unload(function() {
-    
+
     // If the user is currently on a session page, record the time they spent on it
     var session_task_id = $("#session_task_id").val();
     if (session_task_id !== undefined) {
-        
+
         // By default, store the time elapsed in seconds in db
         var page_time_elapsed = Math.round((new Date().getTime() - page_start_time) / 1000);
-        
+
         $.ajax({
             async: false,
             type: 'POST',
             url: '/' + website_id + '/pagetime',
             data: {'timeelapsed': page_time_elapsed, 'sessiontaskid': session_task_id },
             dataType: 'json',
-            error: function(jqXHR, textStatus, errorThrown) { 
+            error: function(jqXHR, textStatus, errorThrown) {
                 console.log('Page time error: ' + textStatus + ", " + errorThrown);
             },
             success: function(data, textStatus, jqXHR) {
@@ -242,26 +242,26 @@ $(window).unload(function() {
             }
         });
     }
-    
+
 });
 
 
 $.preload = function(array, fn_when_done) {
-	var length = array.length,
-	    document = window.document,
-	    body = document.body,
-	    isIE = 'fileSize' in document,
-	    object;
-	while (length--) {
-		if (isIE) {
-			new Image().src = array[length];
-			continue;
-		}
-		object = document.createElement('object');
-		object.data = array[length];
-		object.width = object.height = 0;
-		body.appendChild(object);
-	}
+    var length = array.length,
+        document = window.document,
+        body = document.body,
+        isIE = 'fileSize' in document,
+        object;
+    while (length--) {
+        if (isIE) {
+            new Image().src = array[length];
+            continue;
+        }
+        object = document.createElement('object');
+        object.data = array[length];
+        object.width = object.height = 0;
+        body.appendChild(object);
+    }
     fn_when_done();
 };
 
@@ -275,9 +275,9 @@ function range(start, end) {
 
 function median(values) {
     values.sort( function(a,b) {return a - b;} );
- 
+
     var half = Math.floor(values.length/2);
- 
+
     if(values.length % 2)
         return values[half];
     else
@@ -290,16 +290,16 @@ function formSubmit(submit_btn, ajax_msg) {
 }
 
 function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
-    
+
     // As soon as the submit button is pressed, (1) disable the button to prevent resubmits,
-    // (2) show an ajax indicator to the user to indicate that their data is being sent to 
+    // (2) show an ajax indicator to the user to indicate that their data is being sent to
     // the server, and (3) clear the errors display div.
     $(submit_btn).prop("disabled", true);
     $(submit_btn).siblings(".ajax_loader").removeClass("invisible");
     $(submit_btn).siblings(".ajax_loader").children(".ajax_loader_msg").html(ajax_msg);
     $("#form_errors").addClass("invisible");
     $("#save_msg_container").addClass("invisible");
-    
+
     var post_params = "";
     var the_form = $(submit_btn).closest("form");
     $(the_form).find(".form-field").each(function() {
@@ -319,18 +319,18 @@ function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
             post_params += $(this).attr('name') + "=" + encodeURIComponent($(this).val());
         }
     });
-    
+
     $.ajax({
         async: true,
         type: 'POST',
         url: $(the_form).attr("action"),
         data: post_params,
         dataType: 'json',
-        error: function(jqXHR, textStatus, errorThrown) { 
+        error: function(jqXHR, textStatus, errorThrown) {
             // (1) Re-enable submit button, (2) hide the ajax indicator
             $(submit_btn).prop("disabled", false);
             $(submit_btn).siblings(".ajax_loader").addClass("invisible");
-            
+
             // (3) Display error message
             $("#form_errors").html("<strong>The form could not be submitted.</strong> Error 601: " + textStatus + " - " + errorThrown + ". Please contact the website administrators to report this error.").removeClass("invisible");
             $("body").scrollTop(0);
@@ -339,13 +339,13 @@ function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
             // (1) Re-enable submit button, (2) hide the ajax indicator
             $(submit_btn).prop("disabled", false);
             $(submit_btn).siblings(".ajax_loader").addClass("invisible");
-            
+
             response_text = jqXHR.responseText;
             page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
             if (page_response['status'] == 'success') {
                 // Now that the data have been saved on the server, reset the "unsaved changes" flag (if it exists)
                 resetUnsavedChanges();
-                
+
                 success_fn(page_response);
             } else {
                 var errors = page_response['error'];
@@ -355,7 +355,7 @@ function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
                         display_errors += "<li>" + errors[i].msg + "</li>";
                     }
                     display_errors += "</ul>";
-                    
+
                     // (3) Display error message
                     $("#form_errors").html(display_errors).removeClass("invisible");
                     $("body").scrollTop(0);
@@ -365,15 +365,19 @@ function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
     });
 }
 
-/* Functions used as success functions after AJAX form submission 
+/* Functions used as success functions after AJAX form submission
  * "params" - the page response dictionary (returned from corresponding view)
  */
- 
+
 // Used on the Session page to refresh and display the next task
 function reloadPage(params) {
     window.location.reload();
 }
 
+// Used on the OISE Session page to refresh and display the next task
+function reloadPageOise(params) {
+    window.location = window.location.href;
+}
 // Used on Account Settings page: display success message up top, and clear any password fields
 function displayConfirmMsg(params) {
     $("#save_msg_container").html(params['save_msg']).removeClass("invisible");
@@ -428,9 +432,9 @@ $(document).ajaxSend(function(event, xhr, settings) {
 });
 
 
-/* Use in tasks where the task instance has to be hidden while the user 
- * is responding (e.g., hiding the story while the user attempts to 
- * re-tell it in their own words) 
+/* Use in tasks where the task instance has to be hidden while the user
+ * is responding (e.g., hiding the story while the user attempts to
+ * re-tell it in their own words)
  */
 function hideDisplay(btn) {
     var container = $(btn).closest("li");
@@ -442,17 +446,34 @@ function hideDisplay(btn) {
     $(container).html("Click the \"Start recording\" button below to begin recording. Tell the story in your own words, as you remember it. Try to speak for at least a minute. When done, click the \"Stop recording\" button.<p class='space-top-small space-bottom-small'>" + record_btn.html() + "</p>");
 }
 
+/* Use in tasks where the task instance has to be hidden while the user
+ * is responding (e.g., hiding the story while the user attempts to
+ * re-tell it in their own words)
+ */
+function hideDisplayOise(btn) {
+    var container = $(btn).closest("li");
+    if ($(btn).closest("li").length == 0) {
+        container = $(btn).closest("div");
+    }
+    var instance_id = $(container).find("[name=instanceid]").val();
+    var record_btn = $(container).find("#record-btn_" + instance_id);
+    var task_container = document.getElementsByClassName('oise-task-instance-prompt')[0]
+    $(task_container).html("Click the \"Start recording\" button below to begin recording. Tell the story in your own words, as you remember it. Try to speak for at least a minute. When done, click the \"Stop recording\" button.<p class='space-top-small space-bottom-small'></p>");
+    $(btn).css('display','none');
+    $(record_btn).removeClass('invisible');
+}
+
 
 /* Use to update timer in timed tasks.
  * Update display every second.
  */
 function startTimerRig(start_btn, instance_id) {
-    timer_rig = setInterval(function(){ 
-        updateTimerDisplay(start_btn, instance_id); 
+    timer_rig = setInterval(function(){
+        updateTimerDisplay(start_btn, instance_id);
     }, 1000);
-    
-    // (1) disable the Submit button, 
-    // (2) disable the Start button, 
+
+    // (1) disable the Submit button,
+    // (2) disable the Start button,
     // (3) enable the response field, and bring focus to it
     $("#submit_btn").prop("disabled", true);
     $(start_btn).prop('disabled', true);
@@ -466,12 +487,12 @@ function startTimerRig(start_btn, instance_id) {
  * Update display every second.
  */
 function startTimerRigAudio(start_btn, instance_id) {
-    timer_rig = setInterval(function(){ 
-        updateTimerDisplayAudio(start_btn, instance_id); 
+    timer_rig = setInterval(function(){
+        updateTimerDisplayAudio(start_btn, instance_id);
     }, 1000);
-    
-    // (1) disable the Submit button, 
-    // (2) disable the Start button, 
+
+    // (1) disable the Submit button,
+    // (2) disable the Start button,
     // (3) enable the response field, and bring focus to it
     $("#submit_btn").prop("disabled", true);
     $(start_btn).prop('disabled', true);
@@ -491,7 +512,7 @@ function pad(n, width, z) {
 }
 
 /*
- * If there is still no user input at the end of the timer, 
+ * If there is still no user input at the end of the timer,
  * re-enable the timer button and keep submission disabled.
  */
 function updateTimerDisplay(start_btn, instance_id) {
@@ -503,21 +524,21 @@ function updateTimerDisplay(start_btn, instance_id) {
     $("#timer_val_" + instance_id).val(new_value);
     var display_min = Math.floor(new_value / 60);
     var display_sec = new_value - display_min * 60;
-    
+
     $("#timer_display_" + instance_id).html(pad(display_min,2,'0') + ":" + pad(display_sec,2,'0'));
-    
+
     if (new_value <= 0) {
         stopTimerRig();
-        
+
         // (1) disable the response field
         $(start_btn).parent().find("[name=response]").each(function() {
             $(this).prop('readonly', true).addClass("input-disabled");
         });
-        
+
         var unsaved_changes = $("#unsaved_changes").val();
         if (unsaved_changes != "") {
             // If the user provided a response, then:
-            // (2) enable the submit button 
+            // (2) enable the submit button
             $("#submit_btn").prop("disabled", false);
         } else {
             // Otherwise:
@@ -537,14 +558,14 @@ function toggleRecordingRig( e ) {
         // stop recording
         audioRecorder.stop();
         e.classList.remove("recording");
-        
-        // Disable the current audio button to prevent repeated recordings, 
+
+        // Disable the current audio button to prevent repeated recordings,
         // and if applicable, enable the next audio recording button (if one exists).
-        // (At any point in time there should only be one active audio recording button to prevent user 
+        // (At any point in time there should only be one active audio recording button to prevent user
         // from clicking all of them at the same time).
         $(e).val("Done recording");
         $(e).prop("disabled", true);
-        
+
         audioRecorder.getBuffers( gotBuffers );
     } else {
         // start recording
@@ -573,22 +594,22 @@ function updateTimerDisplayAudio(start_btn, instance_id) {
     $("#timer_val_" + instance_id).val(new_value);
     var display_min = Math.floor(new_value / 60);
     var display_sec = new_value - display_min * 60;
-    
+
     $("#timer_display_" + instance_id).html(pad(display_min,2,'0') + ":" + pad(display_sec,2,'0'));
-    
+
     if (new_value <= 0) {
         stopTimerRig();
 
         // (1) Stop recording
         toggleRecordingRig(start_btn);
-        
-        // (2) enable the submit button 
+
+        // (2) enable the submit button
         $("#submit_btn").prop("disabled", false);
 
         // (3) disable the record button
         $(start_btn).prop("disabled", true);
 
-    }    
+    }
 }
 
 function stopTimerRig() {
@@ -614,7 +635,7 @@ function showCbDetails(cb) {
 function demographicsAddLanguage(link) {
     if ($("#language_selection").length > 0) {
         var tbl = $("#language_selection")[0];
-        
+
         // Clone last row, and update all IDs and field names, reset select
         var tr_last = $(tbl).find("tr:last");
         var tr_clone = $(tr_last).clone();
@@ -630,7 +651,7 @@ function demographicsAddLanguage(link) {
             }
         });
         $(tr_clone).find("select").prop("selectedIndex",0);
-        
+
         // Insert the cloned row last in the table
         $(tr_last).after($(tr_clone));
     }
@@ -644,7 +665,7 @@ function selectCorrespondingLanguage(rb) {
     }
 }
 
-// This function creates a jQuery UI dialog widget, assuming the existence of 
+// This function creates a jQuery UI dialog widget, assuming the existence of
 // a #dialog-message div on the current page
 function createDialog(title, body, width) {
     var dialog_id = "dialog-message";
@@ -662,18 +683,18 @@ function createDialog(title, body, width) {
 function createDialogRedirect(title, body, width, redirectBtnTitle, redirectFn) {
     var dialog_id = "dialog-message";
     if ($("#" + dialog_id).length > 0) {
-        
+
         $("#" + dialog_id).attr("title", title).html(body).dialog({
             closeOnEscape: false,
             modal: true,
             width: width,
             open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog | ui).hide() }
         });
-        
-        // Need to create the buttons as an object because otherwise the button name cannot 
-        // be specified dynamically (jquery interprets the variable name as the button name even 
+
+        // Need to create the buttons as an object because otherwise the button name cannot
+        // be specified dynamically (jquery interprets the variable name as the button name even
         // when it's not in quotes). Additionally, this button object has to be created *after*
-        // the dialog is initialized, because the dynamic redirectFn needs a reference to the 
+        // the dialog is initialized, because the dynamic redirectFn needs a reference to the
         // existing dialog object.
         var dialog_obj = $("#" + dialog_id);
         var dialog_buttons = {};
@@ -700,10 +721,10 @@ function resendConfirmationEmail(btn) {
         url: '/' + website_id + '/account',
         data: {'resend-email': 'true' },
         dataType: 'json',
-        error: function(jqXHR, textStatus, errorThrown) { 
+        error: function(jqXHR, textStatus, errorThrown) {
             $(btn).removeAttr("disabled");
-            createDialog("Failed", 
-                        "<p>The confirmation email could not be resent due to the following error: " + errorThrown + "</p>", 
+            createDialog("Failed",
+                        "<p>The confirmation email could not be resent due to the following error: " + errorThrown + "</p>",
                         default_dialog_width);
         },
         success: function(data, textStatus, jqXHR) {
@@ -711,14 +732,14 @@ function resendConfirmationEmail(btn) {
             response_text = jqXHR.responseText;
             page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
             if (page_response['status'] == 'success') {
-                // Notify user 
-                createDialog("Success", 
-                        "<p>The confirmation email has been resent successfully. Please check your email client in a few minutes.</p>", 
+                // Notify user
+                createDialog("Success",
+                        "<p>The confirmation email has been resent successfully. Please check your email client in a few minutes.</p>",
                         default_dialog_width);
             } else {
                 var error_msg = page_response['error'];
-                createDialog("Failed", 
-                        "<p>" + error_msg + "</p>", 
+                createDialog("Failed",
+                        "<p>" + error_msg + "</p>",
                         default_dialog_width);
             }
         }
@@ -752,7 +773,7 @@ function resetUnsavedChanges() {
     }
 }
 
-function detectFieldChanges(field) { 
+function detectFieldChanges(field) {
     if ($(field).val() != "") {
         setUnsavedChanges();
     } else {
@@ -766,19 +787,19 @@ function ajaxToPhoneAPI() {
         type: 'POST',
         url: '/' + website_id + '/phone/session',
         crossDomain: true,
-        data: {'auth_name': 'system', 
+        data: {'auth_name': 'system',
                'auth_pass': '14a90af63c607ba3c1ff3906f9f5150b61eae1cc56654ef2595b7491c633619f156a8b08f1ae3798413e1bff17bf6a01f0cf1ae9417f8bfab2bce120e0fac5ba',
                'user_passcode': 1,
                'user_birthyear': 1990,
                'user_birthmonth': 9,
                'user_birthday': 25},
         dataType: 'json',
-        error: function(jqXHR, textStatus, errorThrown) { 
+        error: function(jqXHR, textStatus, errorThrown) {
             console.log('AJAX request error from /phone/session: ' + textStatus + ", " + errorThrown);
         },
         success: function(data, textStatus, jqXHR) {
             console.log('Sent AJAX request to /phone/session!');
-            
+
         }
     });
 }
@@ -786,7 +807,7 @@ function ajaxToPhoneAPI() {
 function stroopTaskBegin(btn) {
     // Start recording audio
     toggleRecordingSilent(btn, stroopTaskNextItemHelper, null, {"verboseFlag": true, "displayMsg": "Saving audio..."});
-    
+
     // Display the first item
     $(btn).closest("div.stroop-slide").addClass("invisible");
     $(btn).closest("div.stroop-slide").next("div.stroop-slide").removeClass("invisible");
@@ -797,20 +818,20 @@ function stroopTaskNextItemHelper(audioRecordingInstance) {
     // "btn" is the initiating DOM element that was clicked to start the audio recording.
     var btn = audioRecordingInstance.initiatingElement; // this is the element that initiated the recording that just finished
     var btn_current = $(btn).closest("div.stroop-slide").next("div.stroop-slide").children("button")[0];
-    
+
     // Display the next item, if there is one
     if ($(btn_current).closest("div.stroop-slide").next("div.stroop-slide").length > 0) {
-        
+
         // Start recording audio for the next instance, and display the next instance
         toggleRecordingSilent(btn_current, stroopTaskNextItemHelper, null, {"verboseFlag": true, "displayMsg": "Saving audio..."});
-        
+
         $(btn_current).closest("div.stroop-slide").addClass("invisible");
         $(btn_current).closest("div.stroop-slide").next("div.stroop-slide").removeClass("invisible");
     } else {
         // End of task - move on to next task (submit the form)
         $("#submit_btn").click();
     }
-    
+
 }
 
 function stroopTaskNextItem(btn) {

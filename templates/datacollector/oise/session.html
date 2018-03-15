@@ -1,0 +1,112 @@
+{% extends "datacollector/oise/base.html" %}
+{% load dict_extras %}
+
+{% block title %}{{ website_name }}{% endblock%}
+
+
+{% block content %}
+
+{% if form_errors %}
+<div class="bs-callout bs-callout-danger">
+    <strong>The form could not be submitted. Please correct the following error(s):</strong>
+    <ul>
+    {% for err in form_errors %}
+        <li>{{ err }}</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if session_completed %}
+    {% if demographic_submitted %}
+        <h1>You are finished.</h1>
+    {% else %}
+        {% include 'datacollector/oise/demographic.html' %}
+    {% endif %}
+{% else %}
+    <h1>Session in progress</h1>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" aria-valuenow="{{ num_current_task }}" aria-valuemin="0" aria-valuemax="{{ num_tasks }}" style="font-size: 16px; width: {{ percentage_completion }}%;">
+        {{ percentage_completion }}%
+        </div>
+    </div>
+
+    <div class="oise-task">
+        <div class="oise-task-name">
+            <h2>{{ active_task.task.name }}</h2>
+        </div>
+    <!-- Session task instruction -->
+    {% if not session_task_in_progress %}
+
+        <div class="oise-task-instruction">
+            {% autoescape off %}
+            {{ active_task.task.instruction }}
+            {% endautoescape %}
+
+            {% if active_task_instruction_audio %}
+                {% autoescape off %}
+                {{ active_task_instruction_audio }}
+                {% endautoescape %}
+            {% endif %}
+        </div>
+
+        <div class="oise-task-start-button">
+            <form method="post">
+            {% csrf_token %}
+                <input type="hidden" id="form_type" name="form_type" value="session_task_instance" />
+                <input type="hidden" id="session_id" name="session_id" value="{{ session.session_id }}" />
+                <input type="hidden" id="session_task_id" name="session_task_id" value="{{ active_session_task_id }}" />
+                {% if submit_button_message %}
+                    <button type="submit" class="btn btn-success">{{ submit_button_message }}</button>
+                {% else %}
+                    <button type="submit" class="btn btn-success">Next</button>
+                {% endif %}
+            </form>
+        </div>
+
+
+    <!-- Session task instance -->
+    {% else %}
+        <div class="oise-task-instance">
+            <div class="oise-task-instance-prompt">
+                {% autoescape off %}
+                {{ display_field }}
+                {% endautoescape %}
+            </div>
+
+            <form method="post">
+            {% csrf_token %}
+                <input type="hidden" id="form_type" name="form_type" value="submit_response" />
+                {% autoescape off %}{{ response_field }}{% endautoescape %}
+                <input type="hidden" id="session_task_id" name="session_task_id" value="{{ active_session_task_id }}" />
+
+            {% if requires_audio %}
+                {% if is_last_task_instance %}
+                    <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPageOise);" value="Submit" disabled />
+                {% else %}
+                    <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" disabled />
+                {% endif %}
+            {% else %}
+                {% if is_last_task_instance or active_task.task.name_id == 'word_completion_oise' %}
+                    <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPageOise);" value="Submit" />
+                {% else %}
+                    <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" />
+                {% endif %}
+            {% endif %}
+            </form>
+        </div>
+
+    {% endif %}
+    </div>
+
+{% endif %}
+{% endblock %}
+
+{% block page_js %}
+    {% if requires_audio %}
+        <!-- Audio libraries for wav recording -->
+        <script src="{{ STATIC_URL }}js/recorder.js"></script>
+        <script src="{{ STATIC_URL }}js/audiocapture_main.js"></script>
+        <script src="{{ STATIC_URL }}js/audiodisplay.js"></script>
+    {% endif %}
+{% endblock %}

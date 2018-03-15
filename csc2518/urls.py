@@ -5,8 +5,8 @@ from django.contrib.auth.views import login
 import settings
 
 # Uncomment the next two lines to enable the admin:
-from django.contrib import admin
-admin.autodiscover()
+# from django.contrib import admin
+# admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
@@ -70,6 +70,16 @@ urlpatterns = patterns('',
     url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'admin/uhn_(?P<bundle_uhn>[a-z]+)$', 'datacollector.adminui.uhn_dashboard'),
     url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'admin$', 'datacollector.adminui.dashboard'),
     url(r'^' + settings.SUBSITE_ID + settings.UHN_STUDY + 'admin/uhn_(?P<bundle_uhn>[a-z]+)/(?P<user_id>\d+)$', 'datacollector.adminui.uhn_session'),
+
+    # OISE-specific
+    url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + '$', 'datacollector.oise.views.index'),
+    url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'session/(?P<session_id>\d+)$', 'datacollector.oise.views.session'),
+    url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'demographics$', 'datacollector.oise.views.demographics'),
+    url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'login$', 'datacollector.views.login'),
+    url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'logout$', 'datacollector.views.logout'),
+    url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'about/$', 'datacollector.views.about'),
+    url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'account/$', 'datacollector.views.account'),
+    url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'admin$', 'datacollector.adminui.dashboard'),
 
     # Notifications
     url(r'^' + settings.SUBSITE_ID + 'notify/dismiss/$', 'datacollector.notify.dismiss'),

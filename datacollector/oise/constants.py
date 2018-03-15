@@ -1,0 +1,3 @@
+INFO_MESSAGE = '''Info message <p>
+'''
+READING_FLUENCY_TASK_ID = 16

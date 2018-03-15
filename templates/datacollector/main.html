@@ -7,7 +7,7 @@
     {% if is_authenticated %}
         Logged in as {{ user.username }} (<a href="/{{ website_id }}{% if 'uhn' in request.path %}/{{ uhn_study }}{% endif %}/logout">logout</a>)
     {% else %}
-        <a href="/{{ website_id }}{% if 'uhn' in request.path %}/{{ uhn_study }}{% endif %}/login">Login</a>
+        <a href="/{{ website_id }}{% if 'uhn' in request.path %}/{{ uhn_study }}{% endif %}/login">Login</a> 
         {% if 'uhn' not in request.path %}
             | <a href="/{{ website_id }}/register">New User</a>
         {% endif %}
@@ -33,7 +33,7 @@
                             <tr><td><input name="password" id="password" class="form-control" type="password" value="" placeholder="Password" /></td></tr>
                         </tbody>
                     </table>
-
+                    
                     {% csrf_token %}
                     <div class="login-container text-right">
                         <button type="submit" class="btn btn-primary btn-lg">Login</button><br />
@@ -44,7 +44,7 @@
                         </div>
                     {% endif %}
                 </form>
-
+                
             </div>
             </div>
         </div>
@@ -58,12 +58,12 @@
 
 
 {% if is_authenticated %}
-
+    
     {% if not consent_submitted %}
 
         <h1>Informed Consent</h1>
         <hr />
-
+        
         {% if form_errors %}
         <div class="bs-callout bs-callout-danger">
             <strong>The form could not be submitted. Please correct the following error{{ form_errors|pluralize }}:</strong>
@@ -74,7 +74,7 @@
             </ul>
         </div>
         {% endif %}
-
+        
         <form action="" method="POST">
         {% csrf_token %}
         <input type='hidden' id='form_type' name='form_type' value='consent' />
@@ -82,12 +82,12 @@
         {% if subject_bundle and subject_bundle.bundle and subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone' %}
             {% include 'datacollector/uhn/consent.html' %}
         {% else %}
-
+        
             <h3>Research Project</h3>
             <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study to analyze the differences in longitudinal progression of linguistic markers between healthy older adults and ones with dementia. We are interested in assessing the validity and usability of an automated web-based and phone-based system ({{ website_name }}) for linguistic data acquisition, as means for longitudinal monitoring of changes in language ability. To familiarize yourself with the purpose, procedures, and risks of the project, please <a target="_blank" href="/{{ website_id }}/about">click here</a>. When you have carefully read the linked document, you can proceed with the consent form below.</p>
 
             <h3>Contact Information</h3>
-
+            
             <div class="row" style='margin-bottom: 10px;'>
                 <div class="col-md-12">
                     <address>
@@ -115,7 +115,7 @@
                     </address>
                 </div>
             </div>
-
+            
             <div class="row" style='margin-bottom: 10px;'>
                 <div class="col-md-12">
                     <address>
@@ -131,7 +131,7 @@
             </div>
 
             <p><u>If you have any questions regarding your rights as a research participant, you can contact the Office of Research Ethics (<a href="mailto:ethics.review@utoronto.ca">ethics.review@utoronto.ca</a> or +1 416-946-3273).</u></p>
-
+            
             <p>The purpose, procedures and risks of the project have been explained to me and I fully understand them. I have been given the chance to ask questions and these were answered to my satisfaction. I understand that I am free to ask questions about the study at any time.</p>
 
             <p>I understand that I will be asked to complete a demographic questionnaire prior to participation in the study, participate in one or more sessions consisting of questions testing cognitive ability, and complete an optional post-study usability questionnaire. The data collected as part of this study will be used for research purposes only, and will be retained for an indefinite length of time to facilitate future research.</p>
@@ -148,35 +148,35 @@
                     </div>
                 </div>
             </div>
-
+            
             <br />
             <p>The following selections are optional, but would greatly benefit research outcomes:</p>
             <div class="checkbox">
                 <label><input id='cb_preference_public_release' name='cb_preference_public_release' type='checkbox'{% if 'cb_preference_public_release' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>In the event that the data recorded in this study is made public for research purposes, I agree to include my data, provided that all data is presented anonymously (i.e., my username and email address are not disclosed).</strong> I understand that the nature of the language data I provide during the study (e.g., audio recordings) may itself be used to discover my identity.</label>
             </div>
-
+            
             <div class="checkbox">
                 <label><input id='cb_preference_email_reminders' name='cb_preference_email_reminders' type='checkbox'{% if 'cb_preference_email_reminders' in form_values %} checked='checked'{% endif %} onClick="javascript: showCbDetails(this);">&nbsp;<strong>I wish to receive scheduled e-mail reminders (e.g., monthly) to complete new sessions on the website or on the telephone(each session takes approximately 15 minutes).</strong> I understand that I can easily unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to my e-mail address, which will <u>not</u> be shared with any third parties or used for commercial purposes.</label>
             </div>
             <div id="detail_preference_email_reminders"{% if 'cb_preference_email_reminders' not in form_values %} class="invisible"{% endif %} style="margin-left: 20px;">
-                Frequency:
+                Frequency: 
                 <div class="radio" style="display: inline; margin-left: 10px; margin-bottom: 15px;">
                     <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="7"{% if form_values.radio_email_reminders_freq == '7' %} checked="checked"{% endif %} /> Weekly</label>
                     <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="30"{% if form_values.radio_email_reminders_freq == '30' %} checked="checked"{% endif %}{% if 'radio_email_reminders_freq' not in form_values %} checked="checked"{% endif %} /> Monthly</label>
                     <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="365"{% if form_values.radio_email_reminders_freq == '365' %} checked="checked"{% endif %} /> Annually</label>
                 </div>
             </div>
-
+            
             <div class="checkbox">
                 <label><input id='cb_preference_email_updates' name='cb_preference_email_updates' type='checkbox'{% if 'cb_preference_email_updates' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>I wish to receive electronic communication regarding study outcomes, updates and research publications</strong> based on the data collected as part of this study. I understand that I can easily unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to my e-mail address, which will <u>not</u> be shared with any third parties or used for commercial purposes.</label>
             </div>
-
+            
             <!--div class="checkbox">
                 <label><input id='cb_preference_prizes' name='cb_preference_prizes' type='checkbox'{% if 'cb_preference_prizes' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>I would like to participate in the {{ website_name }} prize draws.</strong> Prize draws of total value of $1,500 over the course of the study will be held monthly, each prize being approximately $20. Completing sessions during the month, and filling out the (optional) usability questionnaire both increase the chances of winning. The winners will be notified on the last day of the month. I understand that if I win, I will be contacted via my e-mail address, which will <u>not</u> be shared with any third parties or used for commercial purposes.</label>
             </div>
-
+            
             <br /-->
-
+            
             <div>
                 E-mail address: <input class="form-control" id='email_address' name='email_address' style='width: 250px;' type='text' value="{{ form_values.email_address }}">
             </div>
@@ -185,13 +185,13 @@
             <div><button type="button" onClick="javascript: formSubmit(this, 'Submitting data, please wait...');" class="btn btn-primary btn-lg">Submit</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
             </form>
         {% endif %}
-
+        
     {% else %}
     {% if not demographic_submitted %}
-
+    
         <h1>Demographic Data</h1>
         <hr />
-
+        
         {% if form_errors %}
         <div class="bs-callout bs-callout-danger">
             <strong>The form could not be submitted. Please correct the following error{{ form_errors|pluralize }}:</strong>
@@ -202,9 +202,9 @@
             </ul>
         </div>
         {% endif %}
-
+        
         <p>Please provide the following anonymous demographic data, which will aid the analysis of your results.</p>
-
+        
         <form action="" method="POST">
         {% csrf_token %}
         <input type='hidden' id='form_type' name='form_type' value='demographic' />
@@ -220,13 +220,13 @@
                 {% endif %}
                 {% endfor %}
             </li>
-
+            
             <li><strong>Date of birth (YYYY-MM-DD):</strong><br />
-
+            
                 <input id="dob" class="form-control datefield" name="dob" type='text' value="{{ form_values.dob }}" style="width: 150px; margin-top: 5px;" placeholder="YYYY-MM-DD" />
-
+                
             </li>
-
+            
             <li><strong>People in Canada come from many racial or cultural groups. You may belong to more than one group on the following list. Are you:</strong><br />
                 {% for opt in ethnicity_options %}
                 <div class="checkbox">
@@ -234,7 +234,7 @@
                 </div>
                 {% endfor %}
             </li>
-
+            
             <li><strong>Select all languages you can communicate in (speak, understand, read, and write), along with the level of fluency for each:</strong><br />
                 <table class="table" id="language_selection">
                 <thead><tr><th style="width: 40%;">Language</th><th style="width: 60%;">Fluency</th></tr></thead>
@@ -253,7 +253,7 @@
                     </td>
                 </tr>
                 {% endfor %}
-
+                
                 {% for lang_id, level_id in dict_language_other.items %}
                 <tr>
                     <td>
@@ -273,7 +273,7 @@
                     </td>
                 </tr>
                 {% endfor %}
-
+                
                 <tr>
                     <td>
                         <select name="language_other" class="form-control">
@@ -294,7 +294,7 @@
                 </tbody></table>
                 <a href="javascript: void(0);" onClick="javascript: demographicsAddLanguage(this);">Add Another Language</a>
             </li>
-
+            
             <li><strong>Education level (highest completed, or currently being completed)</strong><br />
                 {% for opt in education_options %}
                 <div class="radio">
@@ -302,7 +302,7 @@
                 </div>
                 {% endfor %}
             </li>
-
+            
             <li><strong>Have you ever been diagnosed with dementia? Please select any type of dementia with which you’ve been diagnosed. If you’ve never been diagnosed, please leave this section blank:</strong><br />
                 {% for opt in dementia_options %}
                 <div class="checkbox">
@@ -316,7 +316,7 @@
                 </div>
                 {% endfor %}
             </li>
-
+            
             <li class="detail_dementia"><strong>Do you currently take any medications for dementia?</strong><br />
                 <div class="radio">
                     <label class="radio"><input type="radio" name="dementia_med" value="yes"{% ifequal form_values.dementia_med "yes" %} checked="checked"{% endifequal %}> Yes</label>
@@ -325,7 +325,7 @@
                     <label class="radio"><input type="radio" name="dementia_med" value="no"{% ifequal form_values.dementia_med "no" %} checked="checked"{% endifequal %}> No</label>
                 </div>
             </li>
-
+            
             <li><strong>Have you been a regular smoker (of tobacco) within the last 3 years?</strong><br />
                 <div class="radio">
                     <label class="radio"><input type="radio" name="smoking" value="yes"{% ifequal form_values.smoking "yes" %} checked="checked"{% endifequal %}> Yes</label>
@@ -334,7 +334,7 @@
                     <label class="radio"><input type="radio" name="smoking" value="no"{% ifequal form_values.smoking "no" %} checked="checked"{% endifequal %}> No</label>
                 </div>
             </li>
-
+            
             <li><strong>Country you were born in:</strong><br />
                 <select name="country_origin" class="form-control" style="width: 300px; margin-top: 5px;">
                     <option value="">Select country...</option>
@@ -343,7 +343,7 @@
                     {% endfor %}
                 </select>
             </li>
-
+            
             <li><strong>Country you currently reside in:</strong><br />
                 <select name="country_res" class="form-control" style="width: 300px; margin-top: 5px;">
                     <option value="">Select country...</option>
@@ -352,17 +352,17 @@
                     {% endfor %}
                 </select>
             </li>
-
+            
         </ol>
-
+        
         <div><button class="btn btn-primary btn-lg" type="button" onClick="javascript: formSubmit(this, 'Submitting data, please wait...');">Submit</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
         </form>
 
     {% else %}
-
+    
         <h1>Index</h1>
         <p>
-
+        
         <hr/>
         <div class="support_html5 bs-callout bs-callout-danger invisible">
             {{ website_name }} requires a modern browser which supports HTML5. You are using a browser which does not support this technology. <strong>To use {{ website_name }}, please download the latest version of <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank">Chrome</a> or <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank">Firefox</a></strong>. You cannot continue existing sessions, or create new ones, until you update your browser.<br />
@@ -384,11 +384,11 @@
                 {% if start_new_phone_session %}
                     <a data-toggle="modal" data-target="#newSessionPhone">Start a new session <span class="glyphicon glyphicon-earphone"></span> (on the phone)</a>
                 {% else %}
-                    <h4 class="text-muted">Start a new session <span class="glyphicon glyphicon-earphone"></span> (on the phone) &nbsp; <span class="small text-muted">CANNOT START ANOTHER PHONE SESSION. YOU ALREADY HAVE ONE IN PROGRESS.</span></h4>
+                    <h4 class="text-muted">Start a new session <span class="glyphicon glyphicon-earphone"></span> (on the phone) &nbsp; <span class="small text-muted">CANNOT START ANOTHER PHONE SESSION. YOU ALREADY HAVE ONE IN PROGRESS.</span></h4> 
                 {% endif %}
             </h4>
             <div id="newSessionPhone" class="modal fade" role="dialog">
-                <div class="modal-dialog">
+                <div class="modal-dialog"> 
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -419,17 +419,17 @@
             <hr/><h4><a href="/{{ website_id }}/admin">Admin Dashboard</a></h4>
             {% endif %}
             <hr/><h4><a href="/{{ website_id }}/survey/usability">Complete a usability survey</a></h4>
-
+                        
             {% if subject_bundle and subject_bundle.completion_req_sessions and completed_sessions|length >= subject_bundle.completion_req_sessions %}
             <div class='bs-callout bs-callout-info'>
                 <h4>Completion confirmation token:</h4><div class='small'>{{ subject_bundle.completion_token }}</div>
             </div>
             {% endif %}
         </div>
-
+        
             {% if active_sessions %}
             <div class="unsupported_html5">
-                <hr/>
+                <hr/>        
                 <h4>Active sessions:</h4>
                     <table class='table table-striped' style='width: 100%;'>
                     <thead><tr><th style='width: 20%;'>Session ID</th><th style='width: 30%;'>Start Date</th><th style='width: 30%;'></th></tr></thead>
@@ -440,7 +440,7 @@
                             {% if session.session_type_id == 2 %}
                                 <span class="glyphicon glyphicon-earphone"></span>
                             {% else %}
-                                <i class="fa fa-laptop"></i>
+                                <i class="fa fa-laptop"></i> 
                             {% endif %}
                             {{ session.session_id }}
                             </td>
@@ -449,7 +449,7 @@
                             {% if session.session_type_id == 2 %}
                                 <td><a data-toggle="modal" data-target="#continueSessionPhone">Continue session (phone)</a></td>
                                 <div id="continueSessionPhone" class="modal fade" role="dialog">
-                                    <div class="modal-dialog">
+                                    <div class="modal-dialog"> 
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -489,11 +489,11 @@
                                     <input type="text" id="session_id_check" name="session_id_check" value="" placeholder="Session #"/>
                                     <button type="submit" class="btn btn-sm btn-info">Delete session</button>
                                 </form>
-
-
+                                    
+                                
                             </td>
-
-
+        
+                            
                             {% endif %}
                         </tr>
                     {% endfor %}
@@ -501,10 +501,10 @@
                     </table>
             </div>
             {% endif %}
-
+            
 
             {% if completed_sessions %}
-            <hr/>
+            <hr/>        
             <h4>Completed sessions:</h4>
                 <table class='table table-striped' style='width: 100%;'>
                 <thead><tr><th style='width: 20%;'>Session ID</th><th style='width: 30%;'>Start Date</th><th style='width: 30%;'>End Date</th></tr></thead>
@@ -512,9 +512,9 @@
                 {% for session in completed_sessions %}
                     <tr><td>
                         {% if session.session_type_id == 2 %}
-                            <span class="glyphicon glyphicon-earphone"></span>
+                            <span class="glyphicon glyphicon-earphone"></span> 
                         {% else %}
-                            <i class="fa fa-laptop"></i>
+                            <i class="fa fa-laptop"></i> 
                         {% endif %}
                         {{ session.session_id }}</td><td>{{ session.start_date }}</td><td>{{ session.end_date }} (<a href="/{{ website_id }}{% if 'uhn' in request.path %}/{{ uhn_study }}{% endif %}/session/{{ session.session_id }}">View</a>)</td></tr>
                 {% endfor %}
@@ -525,7 +525,7 @@
     {% endif %}<!-- end UHN-specific view -->
     {% endif %} <!-- ends demographic if -->
     {% endif %} <!-- ends consent if -->
-
+    
 {% else %}
 
     <div class="support_html5 bs-callout bs-callout-danger invisible">
@@ -533,7 +533,7 @@
         <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank"><img src="{{ STATIC_URL }}img/chrome.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
         <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank"><img src="{{ STATIC_URL }}img/firefox.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
     </div>
-
+    
     <div>
         <a href="http://www.utoronto.ca/"><img class="logo logo-first" src="{{ STATIC_URL }}img/uoft_logo_web.jpg" /></a> <a href="http://www.nserc-crsng.gc.ca/"><img class="logo" src="{{ STATIC_URL }}img/nserc_logo_web.jpg" /></a>
         {% if 'uhn' in request.path %}

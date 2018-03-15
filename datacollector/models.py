@@ -598,3 +598,32 @@ class Session_Response(models.Model):
     value_multiselect = models.CommaSeparatedIntegerField(max_length=100, null=True, blank=True)
     value_expected = models.TextField(null=True, blank=True)
     num_repeats = models.IntegerField(null=True, blank=True)
+
+class Demographics_Oise(models.Model):
+    # Store the demographic information of OISE users
+
+    def __unicode__(self):
+        return "Subject " + str(self.subject.subject_id) + \
+               ", Gender: " + str(self.gender) + \
+               ", Age: " + str(self.age) + \
+               ", Grade: " + str(self.grade)
+
+    id = models.AutoField(primary_key=True)
+    subject = models.ForeignKey(Subject)
+    gender = models.ForeignKey(Gender, null=True, blank=True)
+    age = models.IntegerField(null=True, blank=True)
+    grade = models.IntegerField(null=True, blank=True)
+    iep = models.IntegerField(null=True, blank=True)
+    canada = models.IntegerField(null=True, blank=True)
+    language = models.CharField(max_length=100, null=True, blank=True)
+    language_speak_home = models.CharField(max_length=100, \
+                                           null=True, blank=True)
+    language_hear_home = models.CharField(max_length=100, \
+                                          null=True, blank=True)
+    reading_enjoy = models.IntegerField(null=True, blank=True)
+    reading_time = models.IntegerField(null=True, blank=True)
+    reading_talking = models.IntegerField(null=True, blank=True)
+    reading_present = models.IntegerField(null=True, blank=True)
+    reading_good = models.IntegerField(null=True, blank=True)
+    reading_fun = models.IntegerField(null=True, blank=True)
+    reading_choice = models.IntegerField(null=True, blank=True)

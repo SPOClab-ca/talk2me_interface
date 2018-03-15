@@ -168,6 +168,7 @@ ADMIN_MEDIA_PREFIX = _prefix + ADMIN_MEDIA_PREFIX
 SUBSITE_ID = "talk2me/"
 
 # System account password (stored in settings file so that it will not be shared/visible on github). Used by maintenance scripts (e.g., email reminders).
-SYSTEM_CRED = '' 
+SYSTEM_CRED = ''
 
 UHN_STUDY = 'uhn/'
+OISE_STUDY = 'oise/'
