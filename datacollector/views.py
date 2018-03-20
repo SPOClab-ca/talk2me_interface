@@ -985,6 +985,9 @@ def logout(request):
 
 
 def register(request):
+    '''
+        Register new user on POST request or display registration page on GET request.
+    '''
 
     bundle_id = None
     bundle_token = None
@@ -1048,14 +1051,25 @@ def register(request):
             new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
             auth_login(request,new_user)
 
+            # OISE-specific registration gets re-directed to the OISE index
+            if bundle_exists and bundle_valid and bundle_id:
+                bundle = Bundle.objects.get(bundle_id=bundle_id)
+                if bundle.name_id == 'oise':
+                    return HttpResponseRedirect(OISE_WEBSITE_ROOT)
             return HttpResponseRedirect(website_root)
     else:
         form = UserCreationForm()
 
-    passed_vars = {'form': form, 'bundle_id': bundle_id, 'bundle_token': bundle_token}
+    passed_vars = {
+        'form': form, \
+        'bundle_id': bundle_id, \
+        'bundle_token': bundle_token
+    }
     passed_vars.update(global_passed_vars)
 
-    return render_to_response('datacollector/register.html', passed_vars, context_instance=RequestContext(request))
+    return render_to_response('datacollector/register.html', \
+                              passed_vars, \
+                              context_instance=RequestContext(request))
 
 def question(request, session_id, instance_id):
     passed_vars = {'session': session, 'subject': subject, 'task_instance': instance}

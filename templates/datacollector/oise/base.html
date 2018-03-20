@@ -75,7 +75,6 @@
                     <span class="dropdown-label-new"{% if not active_notifications %} style="visibility: hidden;"{% endif %}>
                         &nbsp;{{ active_notifications|length }}&nbsp;
                     </span>
-                    <!-- <img id="dropdown_notifications" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="height: 28px; margin: 0; padding: 0; vertical-align: middle;" src="{{ STATIC_URL }}img/icon_announce.png" /> -->
 
                     <table id="list-notifications" class="dropdown-menu dropdown-notifications" aria-labelledby="dropdown_notifications">
                         <tbody>
@@ -108,7 +107,6 @@
             <li {% if request.path == "/{{ website_id }}/{{ oise_study }}/about" %}class="active"{% endif %}><a href="/{{ website_id }}/{{ oise_study }}/about">About</a></li>
             {% if is_authenticated and consent_submitted and demographic_submitted %}
             <li {% if request.path == "/{{ website_id }}/account" %}class="active"{% endif %}><a href="/{{ website_id }}/{{ oise_study }}/account">Account Settings</a></li>
-
             {% endif %}
           </ul>
         </div><!--/.nav-collapse -->

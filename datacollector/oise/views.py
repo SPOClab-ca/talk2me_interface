@@ -1,19 +1,20 @@
-from django import forms
-from django.db.models import Q, Count, Sum
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from django.contrib.auth.forms import UserCreationForm
-from django.core.files.base import ContentFile
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import RequestContext
-
-from datacollector.models import Subject_Bundle, Subject
-from datacollector.views import *
-from datacollector.constants import *
-from datacollector.oise.session_helper import display_session_task_instance, submit_response
-from datacollector.oise.demographics_helper import update_demographics
+'''
+    Views functions for OISE.
+'''
 
 import datetime
+import json
+
+from django.db.models import Q
+from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+
+from datacollector.models import Session, Session_Task, Subject, Subject_Bundle, Task
+from datacollector.views import global_passed_vars, notify, STATIC_URL
+from datacollector.constants import OISE_BUNDLE_ID
+from datacollector.oise.session_helper import display_session_task_instance, submit_response
+from datacollector.oise.demographics_helper import update_demographics
 
 WEBSITE_ROOT = '/talk2me/oise'
 
@@ -22,12 +23,13 @@ READING_FLUENCY_TASK_ID = Task.objects.get(name_id='reading_fluency').task_id
 PICTURE_DESCRIPTION_TASK_ID = Task.objects.get(name_id='picture_description_oise').task_id
 
 def index(request):
+    '''
+        Display main page
+    '''
 
     # User-specific variables
     is_authenticated = False
-    user_id = None
     subject_bundle = None
-    bundle_token = None
     is_oise_user = False
     consent_submitted = False
     demographic_submitted = False
@@ -42,7 +44,6 @@ def index(request):
 
     if request.user.is_authenticated():
         is_authenticated = True
-        user_id = request.user.id
         subject = Subject.objects.get(user_id=request.user.id)
 
         if subject:
@@ -50,7 +51,10 @@ def index(request):
             demographic_submitted = subject.date_demographics_submitted
 
             # Check if the user is associated with any active bundles
-            subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+            subject_bundle = Subject_Bundle.objects\
+                             .filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), \
+                                     subject=subject, \
+                                     active_startdate__lte=today)
             if subject_bundle:
                 subject_bundle = subject_bundle[0]
 
@@ -79,15 +83,12 @@ def index(request):
 
     return render_to_response('datacollector/oise/main.html', passed_vars, context_instance=RequestContext(request))
 
-
 def session(request, session_id):
+    '''
+        Display session view.
+    '''
 
-    is_authenticated = False
-    consent_submitted = False
     demographic_submitted = False
-    active_notifications = []
-
-    form_errors = None
 
     # Session-specific variables
     session_completed = False
@@ -131,22 +132,15 @@ def session(request, session_id):
 
             # If the session is active, find the first unanswered task instance to display
             active_task = None
-            active_instances = []
-            serial_instances = False
-            serial_startslide = ""
             active_session_task_id = None
-            display_thankyou = False
 
             # Initialize global vars for session page
-            existing_responses = False
-            num_current_task = Session_Task.objects.filter(session=session,date_completed__isnull=False).count() + 1
+            num_current_task = Session_Task.objects.filter(session=session, date_completed__isnull=False).count() + 1
             num_tasks = Session_Task.objects.filter(session=session).count()
-            completed_date = session.end_date
-            session_summary = ""
 
             if not session.end_date:
 
-                active_task = Session_Task.objects.filter(session=session,date_completed__isnull=True).order_by('order')
+                active_task = Session_Task.objects.filter(session=session, date_completed__isnull=True).order_by('order')
                 if active_task:
                     active_task = active_task[0]
                     active_session_task_id = active_task.session_task_id
@@ -154,37 +148,45 @@ def session(request, session_id):
 
                     if active_task.task.task_id == READING_FLUENCY_TASK_ID:
                         submit_button_message = 'Continue story'
-                        active_task_instruction_audio = '<audio controls autoplay style="display:none;"><source src="%s/audio/oise/instructions/example_instruction.mp3" type="audio/ogg">Your browser does not support the audio element.</audio>' % STATIC_URL
+                        active_task_instruction_audio = ('<audio controls autoplay style=' + \
+                                                         '"display:none;"><source src="%s/audio/oise/' + \
+                                                         'instructions/example_instruction.mp3" ' + \
+                                                         'type="audio/ogg">Your browser does not '+\
+                                                         'support the audio element.</audio>') % STATIC_URL
                     elif active_task.task.task_id == PICTURE_DESCRIPTION_TASK_ID:
-                        active_task_instruction_audio = '<audio controls autoplay style="display:none;"><source src="%s/audio/oise/instructions/example_instruction_pd.mp3" type="audio/ogg">Your browser does not support the audio element.</audio>' % STATIC_URL
-                # If session responses are submitted, perform validation. If validation passes, write them to the database and return a 'success' response to the AJAX script. If validation fails, return a 'fail' response to the AJAX script, along with the form errors found.
+                        active_task_instruction_audio = ('<audio controls autoplay style=' + \
+                                                         '"display:none;"><source src="%s/audio/oise/' + \
+                                                         'instructions/example_instruction_pd.mp3" ' + \
+                                                         'type="audio/ogg">Your browser does not ' + \
+                                                         'support the audio element.</audio>') % STATIC_URL
+                # If session responses are submitted, perform validation.
+                # If validation passes, write them to the database and return a
+                # 'success' response to the AJAX script. If validation fails,
+                # return a 'fail' response to the AJAX script, along with the
+                # form errors found.
                 if request.method == "POST":
                     json_data = {}
                     json_data['status'] = 'fail'
 
-                    print('POST request')
-                    print(request.POST)
-
                     if 'error' in request.POST:
                         form_errors = request.POST['error']
 
-                    if 'form_type' in request.POST and request.POST['form_type']== 'session_task_instance':
+                    if 'form_type' in request.POST and request.POST['form_type'] == 'session_task_instance':
                         active_session_task_id = request.POST['session_task_id']
-                        active_session_task_instances = Session_Task_Instance.objects.filter \
-                             (session_task_id=active_session_task_id)
 
                         session_task_in_progress = True
-                        active_session_task_instance, display_field, response_field, requires_audio, is_last_task_instance = display_session_task_instance(active_session_task_id)
+                        active_session_task_instance, display_field, \
+                        response_field, requires_audio, \
+                        is_last_task_instance = display_session_task_instance(active_session_task_id)
 
 
                     elif 'instanceid' in request.POST:
                         json_response = submit_response(request)
-                        print(json_response)
                         return HttpResponse(json.dumps(json_response))
                     else:
                         submit_response(request)
 
-                num_current_task = Session_Task.objects.filter(session=session,date_completed__isnull=False).count() + 1
+                num_current_task = Session_Task.objects.filter(session=session, date_completed__isnull=False).count() + 1
                 num_tasks = Session_Task.objects.filter(session=session).count()
             else:
                 session_completed = True
@@ -195,7 +197,7 @@ def session(request, session_id):
                 'session': session,
                 'active_task': active_task,
                 'active_session_task_id': active_session_task_id,
-                'percentage_completion': min(100,round(num_current_task*100.0/num_tasks)),
+                'percentage_completion': min(100, round(num_current_task*100.0/num_tasks)),
                 'session_task_in_progress': session_task_in_progress,
                 'active_session_task_instance': active_session_task_instance,
                 'active_task_instruction':  active_task_instruction,
@@ -215,24 +217,19 @@ def session(request, session_id):
         return HttpResponseRedirect(WEBSITE_ROOT)
 
 def demographics(request):
-    print('demographics POST')
-    print(request.method)
-
+    '''
+        Display post-session survey.
+    '''
     form_errors = []
     form_values = None
     demographic_submitted = False
     session_completed = True
-    
+
 
     if request.method == "POST":
         if request.user.is_authenticated():
-            
-            form_errors, has_errors, form_values = update_demographics(request)
-            # print(data)
-            # if 'form_errors' in data:
-            #     form_errors = data['form_errors']
 
-            print(form_errors)
+            form_errors, has_errors, form_values = update_demographics(request)
             if not has_errors:
                 demographic_submitted = True
             passed_vars = {
