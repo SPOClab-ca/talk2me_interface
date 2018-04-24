@@ -233,13 +233,11 @@ def generate_session(subject, session_type):
                                          mc_questions[2], short_stories[2], \
                                          mc_questions[3], mc_questions[4]]
 
-            # print(ordered_task_fields)
             total_num_instances_reading_fluency = 8
             for index_instance in range(total_num_instances_reading_fluency):
                 instance_value = ordered_task_field_values[index_instance]
                 field = ordered_task_fields[index_instance]
                 new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
-                #print(new_session_value)
 
                 # Using the task field value ("instance_value"), update the expected session response
                 Session_Response.objects.filter(session_task_instance=new_task_instances[cumulative_field_instances+index_instance]).update(value_expected=instance_value.response_expected)
@@ -384,12 +382,9 @@ def generate_session(subject, session_type):
                 # If there are any associated fields (e.g., answer field instances associated with the currently selected question field instances), add them to the session as well.
                 # Note that for select options, all options must be added, not just the one that is the correct response.
                 linked_field_instances = list(Task_Field_Value.objects.filter(Q(assoc=instance_value) | Q(assoc=instance_value.assoc)).exclude(task_field=field).exclude(assoc__isnull=True))
-                print(linked_field_instances)
 
                 # Unless the order of the options is supposed to remain fixed (e.g.,yes/no questions), we need to scramble
                 # the order of the linked instances randomly, so the subject won't know the order of the correct options.
-                print(field)
-                print(field.preserve_order)
                 if not field.preserve_order:
                     random.shuffle(linked_field_instances)
 
@@ -1096,8 +1091,6 @@ def startsession(request):
         session_type = Session_Type.objects.get(name='website')
         new_session = generate_session(subject, session_type)
 
-        print(subject_bundle)
-        print(subject_bundle[0].bundle.bundle_id)
         if subject_bundle and \
             subject_bundle[0].bundle.bundle_id == OISE_BUNDLE_ID:
             # Participants in the OISE study should be re-directed to the OISE-specific URL
@@ -1865,7 +1858,6 @@ def audiorecord(request):
                 # to the server media directory,
                 # and return a success message
 
-                print(request.FILES)
                 msg = "Received " + ", ".join(request.POST.keys())
                 files = "Received " + ", ".join(request.FILES.keys())
                 instanceid = request.POST['instanceid']

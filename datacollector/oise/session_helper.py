@@ -1,13 +1,14 @@
+"""
+    Helper functions for Session.
+"""
+
 import re
 import copy
 import datetime
-import json
 
 from csc2518.settings import STATIC_URL
 from datacollector.models import Field_Type, Session, Session_Response, Session_Task, Session_Task_Instance, \
                                  Session_Task_Instance_Value, Task, Task_Field, Task_Field_Data_Attribute
-
-from constants import READING_FLUENCY_TASK_ID
 
 WORD_COMPLETION = 'word_completion_oise'
 PICTURE_DESCRIPTION = 'picture_description_oise'
@@ -67,7 +68,10 @@ def display_session_task_instance(session_task_id):
         # TODO: All tasks were complete???
 
 def submit_response(request):
-    print('submit response')
+    """
+    Submit response and save to database.
+        :param request:
+    """
     json_data = {}
     # Validate the form first
     # Determine the order of the questions associated with this task (e.g., non-select questions have 'response' fields, whereas
@@ -77,8 +81,6 @@ def submit_response(request):
     form_instances = request.POST.getlist('instanceid')
     responses = copy.deepcopy(form_responses)
     instances = copy.deepcopy(form_instances)
-    print(responses)
-    print(instances)
     if len(form_instances) > 1:
         active_task_instance_questions = Session_Task_Instance_Value.objects \
                                          .filter(session_task_instance_id__in=form_instances)
@@ -111,12 +113,12 @@ def submit_response(request):
                     if not next_instance:
                         form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
                     instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
-                    Session_Response.objects.filter(session_task_instance=instance).update(value_text=next_response,date_completed=datetime.datetime.now())
+                    Session_Response.objects.filter(session_task_instance=instance).update(value_text=next_response, date_completed=datetime.datetime.now())
                     if not instance:
                         form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
                 else:
                     form_errors += ['You did not provide a response for question #' + str(counter_question+1) + '.']
-        elif response_field.field_data_type.name == 'text':
+        elif response_field.field_data_type.name == 'text' or response_field.field_data_type.name == 'suffix_completion':
             response_text = responses[counter_question]
             if response_text.strip():
                 instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
@@ -153,18 +155,15 @@ def submit_response(request):
 
         # Update Session_Task
         else:
-            print('Update session task')
             active_task = active_task_instance_question.session_task_instance.session_task
-            print(Session_Task.objects.filter(session=active_task.session,task=active_task.task))
-            Session_Task.objects.filter(session=active_task.session,task=active_task.task).update(date_completed=datetime.datetime.now())
+            Session_Task.objects.filter(session=active_task.session, task=active_task.task).update(date_completed=datetime.datetime.now())
             session_task_in_progress = False
 
             # Update Session if necessary
             session_tasks = Session_Task.objects.filter(session=active_task.session, date_completed__isnull=True)
             if not session_tasks:
-                print('update session')
                 Session.objects.filter(session_id=active_task.session.session_id).update(end_date=datetime.datetime.now())
- 
+
     # if response_field.field_data_type.name == 'select' or response_field.field_data_type.name == 'audio':
     #     # If the associated response field is 'select' or 'audio', then there will be 'response_{instanceid}' fields
     #     audio_label = 'response_audio_' + str(next_instance)
@@ -248,12 +247,14 @@ def submit_response(request):
     return json_data
 
 def display_reading_fluency(session_task_instance_id):
+    """
+    Display question field and response field for the reading
+    fluency task.
+        :param session_task_instance_id:
+    """
     task_id = Task.objects.get(name_id='reading_fluency')
     task_instances = Session_Task_Instance_Value.objects \
                     .filter(session_task_instance_id=session_task_instance_id)
-
-    print(session_task_instance_id)
-    print(task_instances)
 
     task_field_question = Task_Field.objects.get(name='reading_fluency_question')
     task_field_story = Task_Field.objects.get(name='reading_fluency_story')
@@ -264,8 +265,7 @@ def display_reading_fluency(session_task_instance_id):
     if task_field_id == task_field_story.task_field_id:
 
         response = Task_Field.objects.get(assoc_id=task_field_id)
-        response_field, requires_audio  = display_response(task_instance, str(response.field_data_type))
-        print('Response field: ' + response_field)
+        response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
 
     # For multiple choice questions, we display one question field and multiple response fields
     elif task_field_id == task_field_question.task_field_id:
@@ -273,40 +273,43 @@ def display_reading_fluency(session_task_instance_id):
         response_instances = Session_Task_Instance_Value.objects \
                                 .filter(session_task_instance_id=session_task_instance_id, \
                                  task_field_id=response.task_field_id)
-        print(response_instances)
         response_field = ''
         for response_instance in response_instances:
             response_instance_field, _ = display_response(response_instance, \
                                                           str(response.field_data_type))
-            print(response_instance_field)
-            print(response.field_data_type)
         response_field += response_instance_field
 
         requires_audio = False
 
     question = Task_Field.objects.get(task_field_id=task_field_id)
     display_field = display_question(task_instance, str(question.field_data_type))
-    print('Display field: ' + display_field)
 
     return display_field, response_field, requires_audio
 
 def display_picture_description(session_task_instance_id):
+    """
+    Display question field and response field the picture
+    description task.
+        :param session_task_instance_id:
+    """
     task_id = Task.objects.get(name_id='picture_description_oise').task_id
     task_instance = Session_Task_Instance_Value.objects \
                     .get(session_task_instance_id=session_task_instance_id)
     question = Task_Field.objects.get(task_id=task_id, field_type_id=1)
     response = Task_Field.objects.get(task_id=task_id, field_type_id=2)
 
-    print(question.field_data_type)
     display_field = display_question(task_instance, str(question.field_data_type))
-    print('Display field: ' + display_field)
 
-    response_field, requires_audio  = display_response(task_instance, str(response.field_data_type))
-    print('Response field: ' + response_field)
+    response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
 
     return display_field, response_field, requires_audio
 
 def display_story_retelling(session_task_instance_id):
+    """
+    Display question field and response field for story retelling
+    task.
+        :param session_task_instance_id:
+    """
     task_id = Task.objects.get(name_id='story_retelling_oise').task_id
     task_instance = Session_Task_Instance_Value.objects \
                     .get(session_task_instance_id=session_task_instance_id)
@@ -316,16 +319,18 @@ def display_story_retelling(session_task_instance_id):
 
     response = Task_Field.objects.get(assoc_id=task_field_id, field_data_type=2)
 
-    print(story_field.field_data_type)
     display_field = display_question(task_instance, str(story_field.field_data_type))
-    print('Display field: ' + display_field)
 
-    response_field, requires_audio  = display_response(task_instance, str(response.field_data_type))
-    print('Response field: ' + response_field)
+    response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
 
     return display_field, response_field, requires_audio
 
 def display_word_completion(session_task_id):
+    """
+    Display question field and task field for word completion
+    task.
+        :param session_task_id:
+    """
     task_id = Task.objects.get(name_id=WORD_COMPLETION).task_id
     task_instances = Session_Task_Instance.objects \
                     .filter(session_task_id=session_task_id)
@@ -334,32 +339,30 @@ def display_word_completion(session_task_id):
     response = Task_Field.objects.get(task_id=task_id, \
                                       field_type_id=FIELD_TYPE_INPUT_ID)
 
-    print(question.field_data_type)
     display_field = ''
     for idx, task_instance in enumerate(task_instances):
         task_instance_value = Session_Task_Instance_Value.objects \
                               .get(session_task_instance_id=task_instance \
                                                             .session_task_instance_id)
         display_field += ('%d. ' % (idx + 1)) + display_question(task_instance_value, str(question.field_data_type)) + '<br>'
-    print('Display field: ' + display_field)
 
-    print(response.field_data_type)
-    response_field, requires_audio  = display_response(task_instance_value, str(response.field_data_type))
-    print('Response field: ' + response_field)
+    response_field, requires_audio = display_response(task_instance_value, str(response.field_data_type))
 
     return '<br>', display_field, False
 
 def display_word_map(session_task_instance_id):
+    """
+    Display word map question field and response.
+        :param session_task_instance_id:
+    """
     task_id = Task.objects.get(name_id=WORD_MAP).task_id
     task_instance = Session_Task_Instance_Value.objects \
                     .get(session_task_instance_id=session_task_instance_id)
     question = Task_Field.objects.get(task_id=task_id, field_type_id=FIELD_TYPE_DISPLAY_ID)
 
-    print(question.field_data_type)
     display_field = '<h2>'
     display_field += display_question(task_instance, str(question.field_data_type))
     display_field += '</h2>'
-    print('Display field: ' + display_field)
 
     ## TODO: Response field
 
@@ -367,7 +370,6 @@ def display_word_map(session_task_instance_id):
 
 def display_puzzle_solving(session_task_instance_id):
     task_id = Task.objects.get(name_id=PUZZLE_SOLVING).task_id
-    print(session_task_instance_id)
 
     image_field = Task_Field.objects.get(task_id=task_id, \
                                          field_type_id=FIELD_TYPE_DISPLAY_ID)
@@ -377,27 +379,28 @@ def display_puzzle_solving(session_task_instance_id):
     task_instance = Session_Task_Instance_Value.objects \
                     .get(session_task_instance_id=session_task_instance_id, \
                          task_field_id=image_field.task_field_id)
-    print(image_field.field_data_type)
     display_field = display_question(task_instance, str(image_field.field_data_type))
-    print('Display field: ' + display_field)
 
     response_field = ''
     response_field_instances = Session_Task_Instance_Value.objects \
                                .filter(session_task_instance_id=session_task_instance_id, \
                                 task_field_id=response.task_field_id)
     for response_field_task_instance in response_field_instances:
-        response_field_instance, _  = display_response(response_field_task_instance, \
+        response_field_instance, _ = display_response(response_field_task_instance, \
                                                        str(response.field_data_type))
     response_field += response_field_instance
-    #print('Response field: ' + response_field)
 
     return display_field, response_field, False
 
 def display_question(instance_value, field_data_type):
-    # Determine how to display the value based on the field type
-    display_field = ""
+    """
+    Determine how to display the value based on the field type and construct style attributes string from the specified field
+    data attributes
+        :param instance_value:
+        :param field_data_type:
+    """
 
-    # Construct style attributes string from the specified field data attributes
+    display_field = ""
     field_data_attributes = Task_Field_Data_Attribute.objects.filter(task_field=instance_value.task_field)
     style_attributes = ";".join([str(attr.name) + ": " + str(attr.value) for attr in field_data_attributes])
 
@@ -409,9 +412,17 @@ def display_question(instance_value, field_data_type):
     elif field_data_type == "text_well":
         display_field = "<div class='well well-lg space-bottom-small'>" + instance_value.value.replace('\n', '<br>') + "</div>"
     elif field_data_type == "image":
-        display_field = "<img class=\"oise-picture-description\" src='" + STATIC_URL + "img/" + instance_value.value + "' style=\"" + style_attributes + "\" />"
+        display_field = "<img class=\"oise-picture-description\" src='" + \
+                        STATIC_URL + "img/" + instance_value.value + \
+                        "' style=\"" + style_attributes + "\" />"
     elif field_data_type == "text_withblanks":
-        display_field = (instance_value.value).replace("[BLANK]", "<input class='form-field' name='response' type='text' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />")
+        display_field = (instance_value.value)\
+                        .replace("[BLANK]", \
+                                 "<input class='form-field' " + \
+                                 "name='response' type='text' " + \
+                                 "value='' /><input class='form-field'" + \
+                                 " name='instanceid' type='hidden' value='" \
+                                 + instance_id + "' />")
     elif field_data_type == "text_newlines":
         sents = instance_value.value.split(" || ")
         regex_nonalpha = re.compile(r"^[^a-zA-Z0-9]+$")
@@ -419,7 +430,6 @@ def display_question(instance_value, field_data_type):
     elif field_data_type == "text_read_aloud":
         display_field = instance_value.value.replace('\n', '<br>')
         display_field += '[TO BE READ ALOUD]'
-        print(display_field)
     elif field_data_type == "word_map":
         display_field = '<h2>' + instance_value.value + '</h2>'
         display_field += "<input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
@@ -447,14 +457,27 @@ def display_response(instance_value, field_data_type):
 
         # If the display field is to be kept visible during the audio the subject provides, keep it visible and directly show a recording button
         keep_visible = instance_value.task_field.keep_visible
-        print(not keep_visible)
         response_field = ""
         if not keep_visible:
-            response_field += "<p><input class='btn btn-primary btn-med btn-fixedwidth' type='button' onClick='javascript: hideDisplayOise(this);' value='Continue'></p>"
+            response_field += "<p><input class='btn btn-primary " + \
+                              "btn-med btn-fixedwidth' type='button'" + \
+                              " onClick='javascript: hideDisplayOise(this);'" + \
+                              " value='Continue'></p>"
         response_field += "<p id='record-btn_" + instance_id + "'"
         if not keep_visible:
             response_field += " class='invisible'"
-        response_field += "><input id='btn_recording_" + instance_id + "' type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: toggleRecording(this);' value='Start recording'>&nbsp;" + "<span class='invisible' id='status_recording_" + instance_id + "'><img src='" + STATIC_URL + "img/ajax_loader.gif' /> <span id='status_recording_" + instance_id + "_msg'></span></span><input class='form-field' type='hidden' id='response_audio_" + instance_id + "' name='response_audio_" + instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
+        response_field += "><input id='btn_recording_" + instance_id + \
+                          "' type='button' class='btn btn-success btn-med" + \
+                          " btn-fixedwidth' onClick='javascript: toggleRecording(this);'" + \
+                          " value='Start recording'>&nbsp;" + \
+                          "<span class='invisible' id='status_recording_" + \
+                          instance_id + "'><img src='" + STATIC_URL + \
+                          "img/ajax_loader.gif' /> <span id='status_recording_" + \
+                          instance_id + "_msg'></span></span>" + \
+                          "<input class='form-field' type='hidden' id='response_audio_" + \
+                          instance_id + "' name='response_audio_" + instance_id + \
+                          "' value='' /><input class='form-field' name='instanceid' " + \
+                          "type='hidden' value='" + instance_id + "' /></p>"
 
     elif field_data_type == "select":
         existing_value = ""
@@ -463,7 +486,11 @@ def display_response(instance_value, field_data_type):
         response_field = ""
 
         # Get associated values for the select options.
-        sel_options = Session_Task_Instance_Value.objects.filter(session_task_instance=instance_value.session_task_instance,task_field__field_type__name='input').order_by('session_task_instance_value_id')
+        sel_options = Session_Task_Instance_Value.objects\
+                      .filter(session_task_instance=instance_value.\
+                                                    session_task_instance, \
+                              task_field__field_type__name='input')\
+                      .order_by('session_task_instance_value_id')
 
         for sel_option in sel_options:
             response_field += "<div class='radio'>"
@@ -477,7 +504,7 @@ def display_response(instance_value, field_data_type):
             response_field += "</div>"
 
         response_field += "<input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
-    
+
     # regex for field data type 'scale' (scale_{from}_{to})
     #regex_scale = re.compile(r'scale\_([0-9]+)\_([0-9]+)')
     '''
@@ -491,8 +518,8 @@ def display_response(instance_value, field_data_type):
         if response_object.value_text:
             existing_value = response_object.value_text
         response_field = "<input class='form-field form-control' name='response' type='text' value='" + existing_value + "'><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
-   
-    
+
+
     elif field_data_type == "textarea":
         existing_value = ""
         if response_object.value_text:
@@ -512,7 +539,7 @@ def display_response(instance_value, field_data_type):
         response_field += "><input id='btn_recording_" + instance_id + "' type='button' class='btn btn-success btn-med btn-fixedwidth' onClick='javascript: toggleRecording(this);' value='Start recording'>&nbsp;<span class='invisible' id='status_recording_" + instance_id + "'><img src='" + STATIC_URL + "img/ajax_loader.gif' /> <span id='status_recording_" + instance_id + "_msg'></span></span><input class='form-field' type='hidden' id='response_audio_" + instance_id + "' name='response_audio_" + instance_id + "' value='' /><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' /></p>"
 
         print(response_field)
-    
+
 
     # elif regex_scale.findall(field_data_type):
     #     matches = regex_scale.findall(field_data_type)
@@ -640,7 +667,7 @@ def display_response(instance_value, field_data_type):
             #         notify.generate_notifications(subject, "onSessionComplete")
 
             #     else:
-            
+
 
             #         # Add an attribute for each task, defining it as serial or not
             #         if active_task.name_id == "stroop":

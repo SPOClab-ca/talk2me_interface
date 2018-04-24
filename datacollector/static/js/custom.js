@@ -838,3 +838,24 @@ function stroopTaskNextItem(btn) {
     // Stop recording audio for the previous instance
     toggleRecordingSilent(btn, stroopTaskNextItemHelper, null, {"verboseFlag": true, "displayMsg": "Saving audio..."});
 }
+
+function demographicsAddLanguageOise(row) {
+    var table = document.getElementById('oise-other-languages')
+    var rowIndex = table.rows.length - 1;
+    var newRow = table.insertRow(rowIndex);
+    var newRowHtml = '<td><input type="text" name="other_language' + rowIndex +
+                     '_name" value=""></td>' +
+                     '<td><input type="radio" name="other_language' + rowIndex +
+                     '" value="1"> Poor</td>' +
+                     '<td><input type="radio" name="other_language' + rowIndex +
+                     '" value="2"> Not that good</td>' +
+                     '<td><input type="radio" name="other_language' + rowIndex +
+                     '" value="3"> Okay</td>' +
+                     '<td><input type="radio" name="other_language' + rowIndex +
+                     '" value="4"> Good</td>' +
+                     '<td><input type="radio" name="other_language' + rowIndex +
+                     '" value="5"> Excellent</td> <td>';
+    $(newRow).html(newRowHtml);
+
+    document.getElementById('num_other_languages').value = rowIndex;
+}

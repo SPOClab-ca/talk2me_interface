@@ -601,29 +601,30 @@ class Session_Response(models.Model):
 
 class Demographics_Oise(models.Model):
     # Store the demographic information of OISE users
-
     def __unicode__(self):
-        return "Subject " + str(self.subject.subject_id) + \
+        return "Subject " + str(self.subject.user_id) + \
                ", Gender: " + str(self.gender) + \
                ", Age: " + str(self.age) + \
-               ", Grade: " + str(self.grade)
+               ", Grade: " + str(self.grade) + \
+               " (" + str(self.id) + ")"
 
     id = models.AutoField(primary_key=True)
     subject = models.ForeignKey(Subject)
     gender = models.ForeignKey(Gender, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
     age = models.IntegerField(null=True, blank=True)
     grade = models.IntegerField(null=True, blank=True)
-    iep = models.IntegerField(null=True, blank=True)
+    identity = models.IntegerField(null=True, blank=True)
     canada = models.IntegerField(null=True, blank=True)
-    language = models.CharField(max_length=100, null=True, blank=True)
-    language_speak_home = models.CharField(max_length=100, \
-                                           null=True, blank=True)
-    language_hear_home = models.CharField(max_length=100, \
-                                          null=True, blank=True)
-    reading_enjoy = models.IntegerField(null=True, blank=True)
-    reading_time = models.IntegerField(null=True, blank=True)
-    reading_talking = models.IntegerField(null=True, blank=True)
-    reading_present = models.IntegerField(null=True, blank=True)
-    reading_good = models.IntegerField(null=True, blank=True)
-    reading_fun = models.IntegerField(null=True, blank=True)
-    reading_choice = models.IntegerField(null=True, blank=True)
+    english_ability = models.IntegerField(null=True, blank=True)
+    other_languages = models.IntegerField(null=True, blank=True)
+
+class Subject_Language_Oise(models.Model):
+    # Additional languages (other than English) spoken by
+    # participants of the OISE project
+    def __unicode__(self):
+        return "%s: %d (%d)" % (self.name, self.level, self.demographics_id)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, null=True, blank=True)
+    level = models.IntegerField(null=True, blank=True)
+    demographics_id = models.IntegerField(null=False, blank=False)

@@ -106,6 +106,8 @@ def session(request, session_id):
     requires_audio = False
     is_last_task_instance = False
 
+    form_errors = None
+
 
     if request.user.is_authenticated():
 
@@ -167,7 +169,6 @@ def session(request, session_id):
                 if request.method == "POST":
                     json_data = {}
                     json_data['status'] = 'fail'
-
                     if 'error' in request.POST:
                         form_errors = request.POST['error']
 
@@ -184,7 +185,9 @@ def session(request, session_id):
                         json_response = submit_response(request)
                         return HttpResponse(json.dumps(json_response))
                     else:
-                        submit_response(request)
+                        json_response = submit_response(request)
+                        if 'error' in json_response:
+                            form_errors = json_response['error']
 
                 num_current_task = Session_Task.objects.filter(session=session, date_completed__isnull=False).count() + 1
                 num_tasks = Session_Task.objects.filter(session=session).count()
@@ -207,7 +210,9 @@ def session(request, session_id):
                 'requires_audio': requires_audio,
                 'is_last_task_instance': is_last_task_instance,
                 'session_completed': session_completed,
-                'submit_button_message': submit_button_message
+                'submit_button_message': submit_button_message,
+                'form_errors': form_errors,
+                'demographics_type': 'general'
             }
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
@@ -222,23 +227,28 @@ def demographics(request):
     '''
     form_errors = []
     form_values = None
-    demographic_submitted = False
-    session_completed = True
+    demographics_type = 'general'
 
-
-    if request.method == "POST":
-        if request.user.is_authenticated():
-
-            form_errors, has_errors, form_values = update_demographics(request)
-            if not has_errors:
-                demographic_submitted = True
+    if request.user.is_authenticated():
+        if request.method == "POST":
+            form_errors, _, \
+                form_values, demographics_type, \
+                demographics_submitted = update_demographics(request)
             passed_vars = {
                 'form_errors': form_errors,
-                'demographic_submitted': demographic_submitted,
-                'session_completed': session_completed,
-                'form_values': form_values
+                'demographic_submitted': demographics_submitted,
+                'form_values': form_values,
+                'demographics_type': demographics_type
             }
+            if demographics_submitted:
+                return HttpResponseRedirect(WEBSITE_ROOT)
 
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
-
+        elif request.method == "GET":
+            passed_vars = {
+                'demographics_type': 'general'
+            }
+            return render_to_response('datacollector/oise/session.html', \
+                                      passed_vars, \
+                                      context_instance=RequestContext(request))
     return HttpResponseRedirect(WEBSITE_ROOT)

@@ -1,170 +1,112 @@
-<h1>Share a little bit about you!</h1>
-
-{% if form_errors %}
-<div class="bs-callout bs-callout-danger">
-    <strong>The form could not be submitted. Please correct the following error(s):</strong>
-    <ul>
-    {% for err in form_errors %}
-        <li>{{ err }}</li>
-    {% endfor %}
-    </ul>
-</div>
-{% endif %}
-
-{{ form_values }}
+{% if demographics_type == 'general'%}
+    <h1>We would like to learn about you!</h1>
+{% else %}
+    <h1>Tell us about your language background!</h1>
+{% endif %}<!-- End title display -->
 
 <form action="/talk2me/oise/demographics" method="POST">
 {% csrf_token %}
 <input type='hidden' id='form_type' name='form_type' value='demographic_oise' />
-<ol>
-    <li>
-        <strong>How old are you?</strong>
-        <input type="text" name="age" value="{{ form_values.age }}">
-    </li>
-    <li>
-        <strong>What grade are you in?</strong>
-        <div class="radio">
-            <label class="radio"><input type="radio" name="grade" value="3" {% if form_values.grade == '3' %} checked="checked"{% endif %}>Grade 3</label>
-            <label class="radio"><input type="radio" name="grade" value="4" {% if form_values.grade == '4' %} checked="checked"{% endif %}>Grade 4</label>
-            <label class="radio"><input type="radio" name="grade" value="5" {% if form_values.grade == '5' %} checked="checked"{% endif %}>Grade 5</label>
-            <label class="radio"><input type="radio" name="grade" value="6" {% if form_values.grade == '6' %} checked="checked"{% endif %}>Grade 6</label>
-            <label class="radio"><input type="radio" name="grade" value="7" {% if form_values.grade == '7' %} checked="checked"{% endif %}>Grade 7</label>
-        </div>
-    </li>
-    <li>
-        <strong>What is your gender?</strong>
-        <div class="radio">
-            <label class="radio"><input type="radio" name="gender" value="male" {% if form_values.gender == 'male' %} checked="checked"{% endif %}>Male</label>
-            <label class="radio"><input type="radio" name="gender" value="female" {% if form_values.gender == 'female' %} checked="checked"{% endif %}>Female</label>
-            <label class="radio"><input type="radio" name="gender" value="nb" {% if form_values.gender == 'nb' %} checked="checked"{% endif %}>Non-binary</label>
-        </div>
-    </li>
-    <li>
-        <strong>Do you have an IEP (Individual Education Plan)?</strong>
-        <div class="radio">
-            <label class="radio"><input type="radio" name="iep" value="yes" {% if form_values.iep == 'yes' %} checked="checked"{% endif %}>Yes</label>
-            <label class="radio"><input type="radio" name="iep" value="no" {% if form_values.iep == 'no' %} checked="checked"{% endif %}>No</label>
-            <label class="radio"><input type="radio" name="iep" value="idk" {% if form_values.iep == 'idk' %} checked="checked"{% endif %}>I don't know</label>
-        </div>
-    </li>
-    <li>
-        <strong>Are you born in Canada?</strong>
-        <div class="radio">
-            <label class="radio"><input type="radio" name="canada" value="yes" {% if form_values.canada == 'yes' %} checked="checked"{% endif %}>Yes</label>
-            <label class="radio"><input type="radio" name="canada" value="no" {% if form_values.canada == 'no' %} checked="checked"{% endif %}>No</label>
-        </div>
-    </li>
-    <li>
-        <strong>What is your most comfortable language?</strong>
-        <div class="radio">
-            <label class="radio"><input type="radio" name="language" value="english" {% if form_values.language == 'english' %} checked="checked"{% endif %}>English</label>
-            <label class="radio"><input type="radio" name="language" value="french" {% if form_values.language == 'french' %} checked="checked"{% endif %}>French</label>
-            <label class="radio"><input type="radio" name="language" value="other" {% if form_values.language == 'other' %} checked="checked"{% endif %}>Other <input type="text" name="other_language" value="{{ form_values.other_language }}"/></label>
-        </div>
-    </li>
-    <li>
-        <strong>What language do you mostly speak at home?</strong>
-        <input type="text" name="language_speak_home" value="{{ form_values.language_speak_home }}">
-    </li>
-    <li>
-        <strong>What language do you mostly hear at home?</strong>
-        <input type="text" name="language_hear_home" value="{{ form_values.language_hear_home }}">
-    </li>
-    <li>
-        <strong>What do you think about reading? Indicate how much you agree with each of these statements.</strong>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th style="width: 40%;"></th>
-                    <th style="width: 15%;">Agree a lot</th>
-                    <th style="width: 15%;">Agree a little</th>
-                    <th style="width: 15%;">Disagree a little</th>
-                    <th style="width: 15%;">Disagree a lot</th>
-                </tr>
-            </thead>
-            <tbody>
-                 <tr>
-                    <td><strong>I enjoy reading.</strong></td>
-                    <td><input name="reading_enjoy" type="radio" value="1" {% if form_values.reading_enjoy == '1' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_enjoy" type="radio" value="2" {% if form_values.reading_enjoy == '2' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_enjoy" type="radio" value="3" {% if form_values.reading_enjoy == '3' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_enjoy" type="radio" value="4" {% if form_values.reading_enjoy == '4' %} checked="checked"{% endif %}/></td>
-                </tr>
-                <tr>
-                    <td><strong>I would like to have more time for reading.</strong></td>
-                    <td><input name="reading_time" type="radio" value="1" {% if form_values.reading_time == '1' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_time" type="radio" value="2" {% if form_values.reading_time == '2' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_time" type="radio" value="3" {% if form_values.reading_time == '3' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_time" type="radio" value="4" {% if form_values.reading_time == '4' %} checked="checked"{% endif %}/></td>
-                </tr>
-                <tr>
-                    <td><strong>I like talking about what I read with others. </strong></td>
-                    <td><input name="reading_talking" type="radio" value="1" {% if form_values.reading_talking == '1' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_talking" type="radio" value="2" {% if form_values.reading_talking == '2' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_talking" type="radio" value="3" {% if form_values.reading_talking == '3' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_talking" type="radio" value="4" {% if form_values.reading_talking == '4' %} checked="checked"{% endif %}/></td>
-                </tr>
-                <tr>
-                    <td><strong>I would be happy if someone gave me a book as a present.</strong></td>
-                    <td><input name="reading_present" type="radio" value="1" {% if form_values.reading_present == '1' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_present" type="radio" value="2" {% if form_values.reading_present == '2' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_present" type="radio" value="3" {% if form_values.reading_present == '3' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_present" type="radio" value="4" {% if form_values.reading_present == '4' %} checked="checked"{% endif %}/></td>
-                </tr>
-                <tr>
-                    <td><strong>I am good at reading.</strong></td>
-                    <td><input name="reading_good" type="radio" value="1" {% if form_values.reading_good == '1' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_good" type="radio" value="2" {% if form_values.reading_good == '2' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_good" type="radio" value="3" {% if form_values.reading_good == '3' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_good" type="radio" value="4" {% if form_values.reading_good == '4' %} checked="checked"{% endif %}/></td>
-                </tr>
-            </tbody>
-        </table>
-    </li>
-    <li>
-        <strong>How often do you do these things outside of school?</strong>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th style="width: 30%;"></th>
-                    <th style="width: 10%;">Everyday</th>
-                    <th style="width: 10%;">3-4 times a week</th>
-                    <th style="width: 10%;">2-3 times a week</th>
-                    <th style="width: 10%;">1-2 times a week</th>
-                    <th style="width: 10%;">1-2 times a month</th>
-                    <th style="width: 10%;">Never or almost never</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    {% if form_values.reading_fun == '1' %}
-                        eq
-                    {% endif %}
-
-                    <td><strong>I read for fun.</strong></td>
-                    <td><input name="reading_fun" type="radio" value="1" {% if form_values.reading_fun == '1' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_fun" type="radio" value="2" {% if form_values.reading_fun == '2' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_fun" type="radio" value="3" {% if form_values.reading_fun == '3' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_fun" type="radio" value="4" {% if form_values.reading_fun == '4' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_fun" type="radio" value="5" {% if form_values.reading_fun == '5' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_fun" type="radio" value="6" {% if form_values.reading_fun == '6' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_fun" type="radio" value="7" {% if form_values.reading_fun == '7' %} checked="checked"{% endif %}/></td>
-                </tr>
-                <tr>
-                    <td><strong>I read things that I choose myself.</strong></td>
-                    <td><input name="reading_choice" type="radio" value="1" {% if form_values.reading_choice == '1' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_choice" type="radio" value="2" {% if form_values.reading_choice == '2' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_choice" type="radio" value="3" {% if form_values.reading_choice == '3' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_choice" type="radio" value="4" {% if form_values.reading_choice == '4' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_choice" type="radio" value="5" {% if form_values.reading_choice == '5' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_choice" type="radio" value="6" {% if form_values.reading_choice == '6' %} checked="checked"{% endif %}/></td>
-                    <td><input name="reading_choice" type="radio" value="7" {% if form_values.reading_choice == '7' %} checked="checked"{% endif %}/></td>
-                </tr>
-            </tbody>
-        </table>
-    </li>
-
-</ol>
+{% if demographics_type == 'general' %}
+    <input type='hidden' id='form_type_demographics' name='form_type_demographics' value='general'>
+    <ol>
+        <li>
+            <strong>What's your name?</strong>
+            <input type="text" name="name" value="{{ form_values.name }}">
+        </li>
+        <li>
+            <strong>How old are you?</strong>
+            <input type="text" name="age" value="{{ form_values.age }}">
+        </li>
+        <li>
+            <strong>What grade are you in?</strong>
+            <div class="radio">
+                <label class="radio"><input type="radio" name="grade" value="3" {% if form_values.grade == '3' %} checked="checked"{% endif %}>Grade 3</label>
+                <label class="radio"><input type="radio" name="grade" value="4" {% if form_values.grade == '4' %} checked="checked"{% endif %}>Grade 4</label>
+                <label class="radio"><input type="radio" name="grade" value="5" {% if form_values.grade == '5' %} checked="checked"{% endif %}>Grade 5</label>
+                <label class="radio"><input type="radio" name="grade" value="6" {% if form_values.grade == '6' %} checked="checked"{% endif %}>Grade 6</label>
+                <label class="radio"><input type="radio" name="grade" value="7" {% if form_values.grade == '7' %} checked="checked"{% endif %}>Grade 7</label>
+            </div>
+        </li>
+        <li>
+            <strong>What is your gender?</strong>
+            <div class="radio">
+                <label class="radio"><input type="radio" name="gender" value="male" {% if form_values.gender == 'male' %} checked="checked"{% endif %}>Male</label>
+                <label class="radio"><input type="radio" name="gender" value="female" {% if form_values.gender == 'female' %} checked="checked"{% endif %}>Female</label>
+                <label class="radio"><input type="radio" name="gender" value="nb" {% if form_values.gender == 'nb' %} checked="checked"{% endif %}>Non-binary</label>
+            </div>
+        </li>
+        <li>
+            <strong>Do you identify as First Nations, Métis, or Inuit?</strong>
+            <div class="radio">
+                <label class="radio"><input type="radio" name="identity" value="yes" {% if form_values.identity == 'yes' %} checked="checked"{% endif %}>Yes</label>
+                <label class="radio"><input type="radio" name="identity" value="no" {% if form_values.identity == 'no' %} checked="checked"{% endif %}>No</label>
+            </div>
+        </li>
+        <li>
+            <strong>Were you born in Canada?</strong>
+            <div class="radio">
+                <label class="radio"><input type="radio" name="canada" value="yes" {% if form_values.canada == 'yes' %} checked="checked"{% endif %}>Yes</label>
+                <label class="radio"><input type="radio" name="canada" value="no" {% if form_values.canada == 'no' %} checked="checked"{% endif %}>No</label>
+            </div>
+        </li>
+    </ol>
+{% elif demographics_type == 'language' %}
+    <input type='hidden' id='form_type_demographics' name='form_type_demographics' value='language'>
+    <ol>
+        <li>
+            <strong>How would you rate your English ability?</strong>
+            <div class="radio">
+                <label class="radio"><input type="radio" name="english" value="1" {% if form_values.english == '1' %} checked="checked"{% endif %}>Poor</label>
+                <label class="radio"><input type="radio" name="english" value="2" {% if form_values.english == '2' %} checked="checked"{% endif %}>Not that good</label>
+                <label class="radio"><input type="radio" name="english" value="3" {% if form_values.english == '3' %} checked="checked"{% endif %}>Okay</label>
+                <label class="radio"><input type="radio" name="english" value="4" {% if form_values.english == '4' %} checked="checked"{% endif %}>Good</label>
+                <label class="radio"><input type="radio" name="english" value="5" {% if form_values.english == '5' %} checked="checked"{% endif %}>Excellent</label>
+            </div>
+        </li>
+        <li>
+            <strong>Do you know any other languages?</strong>
+            <div class="radio">
+                <label class="radio"><input type="radio" name="other_languages" value="yes" {% if form_values.other_languages == 'yes' %} checked="checked"{% endif %}>Yes</label>
+                <label class="radio"><input type="radio" name="other_languages" value="no" {% if form_values.other_languages == 'no' %} checked="checked"{% endif %}>No</label>
+            </div>
+        </li>
+    </ol>
+{% elif demographics_type == 'other_languages' %}
+    <input type='hidden' id='form_type_demographics' name='form_type_demographics' value='other_languages'>
+    <input type="hidden" id="num_other_languages" name="num_other_languages" value="1">
+    What other languages do you know? Please rate your abilities.
+    <table class="table table-striped" id="oise-other-languages">
+        <thead>
+            <tr>
+                <td>Language</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" name="other_language1_name" value="{{ form_values.other_language1_name }}"></td>
+                <td><input type="radio" name="other_language1" value="1" {% if form_values.other_language1 == '1' %} checked="checked"{% endif %}> Poor</td>
+                <td><input type="radio" name="other_language1" value="2" {% if form_values.other_language1 == '2' %} checked="checked"{% endif %}> Not that good</td>
+                <td><input type="radio" name="other_language1" value="3" {% if form_values.other_language1 == '3' %} checked="checked"{% endif %}> Okay</td>
+                <td><input type="radio" name="other_language1" value="4" {% if form_values.other_language1 == '4' %} checked="checked"{% endif %}> Good</td>
+                <td><input type="radio" name="other_language1" value="5" {% if form_values.other_language1 == '5' %} checked="checked"{% endif %}> Excellent</td>
+            </tr>
+            <tr>
+                <td><a href="javascript: void(0);" onClick="javascript: demographicsAddLanguageOise(this);">+ Add Another Language</a></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+{% endif %}<!-- End if demographics_type-->
 
 <div><button class="btn btn-primary btn-lg" type="button" onClick="javascript: formSubmit(this, 'Submitting data, please wait...');">Submit</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
 </form>
