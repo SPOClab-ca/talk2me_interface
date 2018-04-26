@@ -5,10 +5,15 @@
 import re
 import copy
 import datetime
+import urllib
 
 from csc2518.settings import STATIC_URL
-from datacollector.models import Field_Type, Session, Session_Response, Session_Task, Session_Task_Instance, \
-                                 Session_Task_Instance_Value, Task, Task_Field, Task_Field_Data_Attribute
+from django.core.files.base import ContentFile
+from datacollector.models import Bundle, Bundle_Task, Bundle_Task_Field_Value, Field_Type, Session, Session_Response, \
+                                 Session_Task, Session_Task_Instance, \
+                                 Session_Task_Instance_Value, Task, Task_Field, Task_Field_Data_Attribute, Task_Field_Value
+
+from constants import MINDMAP_HTML, DEFAULT_MINDMAP_IMAGE
 
 WORD_COMPLETION = 'word_completion_oise'
 PICTURE_DESCRIPTION = 'picture_description_oise'
@@ -131,13 +136,20 @@ def submit_response(request):
             else:
                 form_errors += ['You did not provide a response for question #' + str(counter_question+1) + '.']
         elif response_field.field_data_type.name == 'word_map':
-            response_text = 'dummy answer'
-            if response_text.strip():
+            if 'imageurl' in request.POST:
+                image_url = request.POST['imageurl']
+
                 instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
                 if instance:
+                    instance = instance[0]
                     Session_Response.objects.filter(session_task_instance=instance) \
-                                    .update(value_text=response_text,\
-                                            date_completed=datetime.datetime.now())
+                                    .update(date_completed=datetime.datetime.now())
+                    session_response = Session_Response.objects.get(session_task_instance=instance)
+
+                    # Temporary, will need to save as value_image or value_text instead of value_audio
+                    temp_filename, _ = urllib.urlretrieve(image_url)
+                    file_content = ContentFile(open(temp_filename).read())
+                    session_response.value_image.save('', file_content)
                 else:
                     form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
             else:
@@ -364,9 +376,16 @@ def display_word_map(session_task_instance_id):
     display_field += display_question(task_instance, str(question.field_data_type))
     display_field += '</h2>'
 
-    ## TODO: Response field
+    response_field = MINDMAP_HTML % (session_task_instance_id, DEFAULT_MINDMAP_IMAGE)
+    response_field += "<input class='form-field'" + \
+                                 " name='instanceid' type='hidden' value='" \
+                                 + str(session_task_instance_id) + "' />"
+    response_field += "<input class='form-field'" + \
+                                 " id='imageurl'" + \
+                                 " name='imageurl' type='hidden' value='%s' />" \
+                                 % DEFAULT_MINDMAP_IMAGE
 
-    return '', display_field, False
+    return display_field, response_field, False
 
 def display_puzzle_solving(session_task_instance_id):
     task_id = Task.objects.get(name_id=PUZZLE_SOLVING).task_id

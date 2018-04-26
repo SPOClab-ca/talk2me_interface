@@ -557,16 +557,43 @@ def generate_upload_filename(instance, filename):
                  str(instance.session_task_instance.session_task.session.session_id) + "_" + \
                  str(instance.session_task_instance.session_task_instance_id) + ".wav"
 
+def generate_image_upload_filename(instance, filename):
+    """Generate filename for image file.
+    Params:
+    instance :
+    filename :
+
+    Return: A Unix-style path (with forward slashes) to be passed along to the storage system.
+    """
+    return "datacollector/image/" + \
+           datetime.now().strftime('%Y%m%d_%H%M%S') + "_" + \
+           str(instance.session_task_instance.session_task.session.subject.user_id) + "_" + \
+           str(instance.session_task_instance.session_task.session.session_id) + "_" + \
+           str(instance.session_task_instance.session_task_instance_id) + ".png"
+
 class Session_Response(models.Model):
-    # represents every instance of a response for a task by a subject during a session
+    """
+    Represents every instance of a response for a task by a subject during a session
+        :param models.Model:
+    """
 
     def update_audio_file(self):
+        """
+        Add the new audio file to the session response instance
+            :param self:
+        """
         # Delete old file from the response instance, if it exists
         #if self.value_audio:
         #    self.value_audio.delete()
 
-        # Add the new file to the session response instance
         return self.value_audio.upload_to
+
+    def update_image_file(self):
+        """
+        Add the new png file to the session response instance
+            :param self:
+        """
+        return self.value_image.upload_to
 
     def __unicode__(self):
         response_value = "Blank"
@@ -574,6 +601,8 @@ class Session_Response(models.Model):
             response_value = self.value_text
         elif self.value_audio:
             response_value = "Audio"
+        elif self.value_image:
+            response_value = "Image"
         elif self.value_multiselect:
             response_value = self.value_multiselect
 
@@ -595,6 +624,8 @@ class Session_Response(models.Model):
     value_audio = models.FileField(null=True,
                                    blank=True,
                                    upload_to=generate_upload_filename)
+    value_image = models.FileField(null=True, blank=True, \
+                                   upload_to=generate_image_upload_filename)
     value_multiselect = models.CommaSeparatedIntegerField(max_length=100, null=True, blank=True)
     value_expected = models.TextField(null=True, blank=True)
     num_repeats = models.IntegerField(null=True, blank=True)
