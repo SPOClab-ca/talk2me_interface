@@ -211,7 +211,8 @@ def generate_session(subject, session_type):
 
         # OISE Reading Fluency task needs to be:
         # short story 1, MC question, short story 2, MC question, MC question,
-        #   short story 3, MC question, MC question
+        #   short story 3, MC question, MC question, short story 4, \
+        #   MC question, MC question
         if bundle_task.bundle_task_id == FLUENCY_READING_OISE_BUNDLE_TASK_ID:
             task_field_values = Bundle_Task_Field_Value.objects.filter(bundle_task_id=bundle_task.bundle_task_id).order_by('bundle_task_field_value_id')
             task_field_value_ids = [x.task_field_value_id for x \
@@ -227,13 +228,16 @@ def generate_session(subject, session_type):
                                    task_field_id=mcq_task_field.task_field_id)
             ordered_task_fields = [short_story_task_field, mcq_task_field, \
                                    short_story_task_field, mcq_task_field, mcq_task_field, \
-                                   short_story_task_field, mcq_task_field, mcq_task_field]
+                                   short_story_task_field, mcq_task_field, mcq_task_field, \
+                                   short_story_task_field, mcq_task_field, mcq_task_field,]
             ordered_task_field_values = [short_stories[0], mc_questions[0], \
                                          short_stories[1], mc_questions[1], \
                                          mc_questions[2], short_stories[2], \
-                                         mc_questions[3], mc_questions[4]]
+                                         mc_questions[3], mc_questions[4], \
+                                         short_stories[3], mc_questions[5], \
+                                         mc_questions[6]]
 
-            total_num_instances_reading_fluency = 8
+            total_num_instances_reading_fluency = 11
             for index_instance in range(total_num_instances_reading_fluency):
                 instance_value = ordered_task_field_values[index_instance]
                 field = ordered_task_fields[index_instance]
@@ -328,7 +332,7 @@ def generate_session(subject, session_type):
                 else:
                     specified_values = specified_values_from_db
                     selected_values = [x.task_field_value for x in specified_values[len(existing_instances):len(existing_instances)+field_num_instances]]
-                    
+
             # Otherwise, randomly select values that haven't been viewed yet.
             else:
                 # Add to selected values. Make sure not to add field values that are associated with each other, or are already selected, or have been seen by the subject before in previous sessions. NB: here we are assuming that the total number of values for each field in the db is at least as big as the default number of instances for the field.
