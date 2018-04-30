@@ -20,6 +20,7 @@ PICTURE_DESCRIPTION = 'picture_description_oise'
 STORY_RETELLING = 'story_retelling_oise'
 WORD_MAP = 'word_map_oise'
 PUZZLE_SOLVING = 'puzzle_solving_oise'
+WORD_RECALL = 'word_recall_oise'
 
 FIELD_TYPE_INPUT_ID = Field_Type.objects.get(name='input')
 FIELD_TYPE_DISPLAY_ID = Field_Type.objects.get(name='display')
@@ -64,6 +65,8 @@ def display_session_task_instance(session_task_id):
             display_field, response_field, requires_audio = display_word_map(active_session_task_instance.session_task_instance_id)
         elif task_name == PUZZLE_SOLVING:
             display_field, response_field, requires_audio = display_puzzle_solving(active_session_task_instance.session_task_instance_id)
+        elif task_name == WORD_RECALL:
+            display_field, response_field, requires_audio = display_word_recall(active_session_task_instance.session_task_instance_id)
 
         if len(session_response_objects) == 1:
             is_last_task_instance = True
@@ -120,7 +123,8 @@ def submit_response(request):
                     instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
                     Session_Response.objects.filter(session_task_instance=instance).update(value_text=next_response, date_completed=datetime.datetime.now())
                     if not instance:
-                        form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
+                        form_errors += ['Question #' + str(counter_question+1) + \
+                                        ' is invalid.']
                 else:
                     form_errors += ['You did not provide a response for question #' + str(counter_question+1) + '.']
         elif response_field.field_data_type.name == 'text' or response_field.field_data_type.name == 'suffix_completion':
@@ -411,6 +415,37 @@ def display_puzzle_solving(session_task_instance_id):
 
     return display_field, response_field, False
 
+def display_word_recall(session_task_instance_id):
+    task_id = Task.objects.get(name_id=WORD_RECALL).task_id
+
+    question = Task_Field.objects.get(task_id=task_id, \
+                                      field_type_id=FIELD_TYPE_DISPLAY_ID, \
+                                      field_data_type=1)
+    task_instance = Session_Task_Instance_Value.objects \
+                    .get(session_task_instance_id=session_task_instance_id, \
+                         task_field_id=question.task_field_id)
+    display_field = display_question(task_instance, str(question.field_data_type))
+    display_field += '<br>'
+
+    words_field = Task_Field.objects.get(task_id=task_id, \
+                                         field_type_id=FIELD_TYPE_DISPLAY_ID, \
+                                         field_data_type=2)
+    words = Session_Task_Instance_Value.objects \
+                    .filter(session_task_instance_id=session_task_instance_id, \
+                         task_field_id=words_field.task_field_id)
+
+    for word in words:
+        display_field += display_question(word, str(words_field.field_data_type))
+        display_field += '<br>'
+
+    response = Task_Field.objects.get(assoc_id=question.task_field_id, \
+                                      field_type_id=FIELD_TYPE_INPUT_ID)
+    response_field, _ = display_response(task_instance, \
+                                         str(response.field_data_type), \
+                                         audio_instruction="Say as many words as you can remember!")
+
+    return display_field, response_field, True
+
 def display_question(instance_value, field_data_type):
     """
     Determine how to display the value based on the field type and construct style attributes string from the specified field
@@ -453,7 +488,7 @@ def display_question(instance_value, field_data_type):
         display_field = '<h2>' + instance_value.value + '</h2>'
         display_field += "<input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
     elif field_data_type == "audio":
-        display_field = '<audio controls>'
+        display_field = '<audio controls controlsList="nodownload">'
         display_field += '<source src="%saudio/oise/%s" type="audio/mpeg">' \
                             % (STATIC_URL, instance_value.value)
         display_field += 'Your browser does not support the audio element.</audio>'
@@ -462,7 +497,8 @@ def display_question(instance_value, field_data_type):
 
     return display_field
 
-def display_response(instance_value, field_data_type):
+def display_response(instance_value, field_data_type, \
+                     audio_instruction=None):
     requires_audio = False
     response_field = ""
     response_object = Session_Response.objects.filter(session_task_instance=instance_value.session_task_instance)[0]
@@ -479,9 +515,14 @@ def display_response(instance_value, field_data_type):
         response_field = ""
         if not keep_visible:
             response_field += "<p><input class='btn btn-primary " + \
-                              "btn-med btn-fixedwidth' type='button'" + \
-                              " onClick='javascript: hideDisplayOise(this);'" + \
-                              " value='Continue'></p>"
+                              "btn-med btn-fixedwidth' type='button'"
+            if audio_instruction:
+                response_field += " onClick='javascript: hideDisplayOise(this, \"" + \
+                                  audio_instruction + \
+                                  "\");'"
+            else:
+                response_field += " onClick='javascript: hideDisplayOise(this);'"
+            response_field += " value='Continue'></p>"
         response_field += "<p id='record-btn_" + instance_id + "'"
         if not keep_visible:
             response_field += " class='invisible'"
