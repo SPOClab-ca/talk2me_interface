@@ -5,12 +5,8 @@
 import datetime
 
 from datacollector.models import Demographics_Oise, Gender, Subject, Subject_Language_Oise
+from constants import yes_no_map 
 
-yes_no_map = {
-    'yes': 1,
-    'no': 0,
-    'idk': -1
-}
 def update_demographics(request):
     """
         Update demographics information.

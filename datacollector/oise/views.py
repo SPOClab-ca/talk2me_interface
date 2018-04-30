@@ -223,7 +223,7 @@ def session(request, session_id):
 
 def demographics(request):
     '''
-        Display post-session survey.
+        Display demographics survey, to be completed before starting any session.
     '''
     form_errors = []
     form_values = None
@@ -252,3 +252,29 @@ def demographics(request):
                                       passed_vars, \
                                       context_instance=RequestContext(request))
     return HttpResponseRedirect(WEBSITE_ROOT)
+
+def questionnaire(request):
+    '''
+        Display post-session survey.
+    '''
+    form_errors = []
+    form_values = None
+
+    if request.user.is_authenticated():
+        if request.method == "POST":
+            session_id = int(request.POST['session_id'])
+            session = Session.objects.get(session_id=session_id)
+            form_errors, form_values = save_questionnaire_responses(request)
+            if form_errors:
+                questionnaire_submitted = False
+            else:
+                questionnaire_submitted = True
+            passed_vars = {
+                'form_errors': form_errors,
+                'form_values': form_values,
+                'session': session,
+                'session_completed': True,
+                'questionnaire_submitted': questionnaire_submitted,
+            }
+
+            return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))

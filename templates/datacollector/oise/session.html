@@ -3,7 +3,6 @@
 
 {% block title %}{{ website_name }}{% endblock%}
 
-
 {% block content %}
 
 {% if form_errors %}
@@ -18,7 +17,8 @@
 {% endif %}
 
 {% if session_completed %}
-    <h1>You are finished.</h1>
+    <!-- Post-session questionnaire -->
+    {% include 'datacollector/oise/post_session_questionnaire.html' %}
 {% else %}
     {% if demographic_submitted %}
         <h1>Session in progress</h1>

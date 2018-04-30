@@ -397,7 +397,7 @@ class Task_Field(models.Model):
     embedded_response = models.IntegerField(default=0)
     keep_visible = models.IntegerField(default=1)
     generate_value = models.IntegerField(default=0)
-    assoc = models.ForeignKey("self",null=True, blank=True)
+    assoc = models.ForeignKey("self", null=True, blank=True)
     default_num_instances = models.IntegerField(null=True, blank=True)
     preserve_order = models.IntegerField(null=True, blank=True)
 
@@ -631,7 +631,10 @@ class Session_Response(models.Model):
     num_repeats = models.IntegerField(null=True, blank=True)
 
 class Demographics_Oise(models.Model):
-    # Store the demographic information of OISE users
+    """
+    Store the demographic information of OISE users
+        :param models.Model:
+    """
     def __unicode__(self):
         return "Subject " + str(self.subject.user_id) + \
                ", Gender: " + str(self.gender) + \
@@ -651,11 +654,32 @@ class Demographics_Oise(models.Model):
     other_languages = models.IntegerField(null=True, blank=True)
 
 class Subject_Language_Oise(models.Model):
-    # Additional languages (other than English) spoken by
-    # participants of the OISE project
+    """
+    Additional languages (other than English) spoken by
+    participants of the OISE project
+        :param models.Model:
+    """
     def __unicode__(self):
         return "%s: %d (%d)" % (self.name, self.level, self.demographics_id)
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50, null=True, blank=True)
     level = models.IntegerField(null=True, blank=True)
     demographics_id = models.IntegerField(null=False, blank=False)
+
+class Questionnaire_Oise(models.Model):
+    """
+    Post-session OISE questionnaire
+        :param models.Model:
+    """
+    def __unicode__(self):
+        return "Questionnaire for session %d" % self.session.session_id
+    id = models.AutoField(primary_key=True)
+    session = models.ForeignKey(Session)
+    enjoy_reading = models.IntegerField(null=True, blank=True)
+    fun_reading = models.IntegerField(null=True, blank=True)
+    good_reader = models.IntegerField(null=True, blank=True)
+    ease_reading = models.IntegerField(null=True, blank=True)
+    long_reading = models.IntegerField(null=True, blank=True)
+    challenging_reading = models.IntegerField(null=True, blank=True)
+    iep = models.IntegerField(null=True, blank=True)
+    esl = models.IntegerField(null=True, blank=True)

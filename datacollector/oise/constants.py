@@ -1,6 +1,11 @@
 """
     Constants used by OISE study (Talk2Me Jr)
 """
+yes_no_map = {
+    'yes': 1,
+    'no': 0,
+    'idk': -1
+}
 
 READING_FLUENCY_TASK_ID = 16
 
