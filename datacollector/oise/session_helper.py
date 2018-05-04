@@ -21,6 +21,7 @@ STORY_RETELLING = 'story_retelling_oise'
 WORD_MAP = 'word_map_oise'
 PUZZLE_SOLVING = 'puzzle_solving_oise'
 WORD_RECALL = 'word_recall_oise'
+WORD_SOUNDS = 'word_sounds_oise'
 
 FIELD_TYPE_INPUT_ID = Field_Type.objects.get(name='input')
 FIELD_TYPE_DISPLAY_ID = Field_Type.objects.get(name='display')
@@ -58,15 +59,16 @@ def display_session_task_instance(session_task_id):
             display_field, response_field, requires_audio = display_picture_description(active_session_task_instance.session_task_instance_id)
         elif task_name == 'story_retelling_oise':
             display_field, response_field, requires_audio = display_story_retelling(active_session_task_instance.session_task_instance_id)
-        elif task_name == WORD_COMPLETION:
-            # For word completion, display all session_task_instances on the same page
-            display_field, response_field, requires_audio = display_word_completion(session_task_id)
         elif task_name == WORD_MAP:
             display_field, response_field, requires_audio = display_word_map(active_session_task_instance.session_task_instance_id)
         elif task_name == PUZZLE_SOLVING:
             display_field, response_field, requires_audio = display_puzzle_solving(active_session_task_instance.session_task_instance_id)
         elif task_name == WORD_RECALL:
             display_field, response_field, requires_audio = display_word_recall(active_session_task_instance.session_task_instance_id)
+        elif task_name == WORD_SOUNDS:
+            display_field, response_field, \
+                requires_audio = display_task(active_session_task_instance.session_task_instance_id,\
+                                              task_id)
 
         if len(session_response_objects) == 1:
             is_last_task_instance = True
@@ -179,88 +181,34 @@ def submit_response(request):
             session_tasks = Session_Task.objects.filter(session=active_task.session, date_completed__isnull=True)
             if not session_tasks:
                 Session.objects.filter(session_id=active_task.session.session_id).update(end_date=datetime.datetime.now())
-
-    # if response_field.field_data_type.name == 'select' or response_field.field_data_type.name == 'audio':
-    #     # If the associated response field is 'select' or 'audio', then there will be 'response_{instanceid}' fields
-    #     audio_label = 'response_audio_' + str(next_instance)
-    #     if not audio_label in request.POST:
-    #         response_label = 'response_' + str(next_instance)
-    #         if response_label in request.POST:
-    #             next_response = request.POST[response_label]
-    #                 if not next_response:
-    #                     form_errors += ['You did not provide a response for question #' + str(counter_question+1) + '.']
-    #                 if not next_instance:
-    #                     form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
-    #                 else:
-    #                     instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
-    #                     if not instance:
-    #                         form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
-    #             else:
-    #                 form_errors += ['You did not provide a response for question #' + str(counter_question+1) + '.']
-    #     else:
-    #         # Otherwise, look for 'response' fields
-    #         next_response = responses.pop(0)
-    #         if not next_response:
-    #             form_errors += ['You did not provide a response for question #' + str(counter_question+1) + '.']
-    #         if not next_instance:
-    #             form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
-    #         else:
-    #             instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)
-    #             if not instance:
-    #                 form_errors += ['Question #' + str(counter_question+1) + ' is invalid.']
-    #     counter_question += 1
-
-
-    # # Process any input, textarea (text), and multiselect responses
-    # if not form_errors:
-    #     responses = copy.deepcopy(form_responses)
-    #     instances = copy.deepcopy(form_instances)
-
-    #     for question in active_task_questions:
-    #         question_response = Task_Field.objects.get(assoc=question.task_field)
-
-    #         next_instance = instances.pop(0)
-    #         if question_response.field_data_type.name == 'select' or question_response.field_data_type.name == 'audio' or (active_task.task_id == RIG_TASK_ID and is_uhn_study):
-    #             # If the associated response field is 'select' or 'audio', then there will be 'response_{instanceid}' fields
-    #             audio_label = 'response_audio_' + str(next_instance)
-    #             if not audio_label in request.POST:
-    #                 response_label = 'response_' + str(next_instance)
-    #                 if response_label in request.POST:
-    #                     next_response = request.POST[response_label]
-    #                     instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)[0]
-
-    #                     # Find the response field type for this task
-    #                     response_data_type = Task_Field.objects.filter(task=instance.session_task.task,field_type__name='input')[0].field_data_type
-
-    #                     if response_data_type == 'select':
-    #                         Session_Response.objects.filter(session_task_instance=instance).update(value_text=next_response,date_completed=datetime.datetime.now())
-    #                     else:
-    #                         Session_Response.objects.filter(session_task_instance=instance).update(value_text=next_response,date_completed=datetime.datetime.now())
-    #         else:
-    #             # Otherwise, look for 'response' fields
-    #             next_response = responses.pop(0)
-    #             instance = Session_Task_Instance.objects.filter(session_task_instance_id=next_instance)[0]
-
-    #             # Find the response field type for this task
-    #             response_data_type = Task_Field.objects.filter(task=instance.session_task.task,field_type__name='input')[0].field_data_type
-
-    #             # Update the appropriate entry in the database (NB: 'audio' responses are not handled here; they are saved to database as soon as they are recorded, to avoid loss of data)
-    #             if response_data_type == 'multiselect':
-    #                 Session_Response.objects.filter(session_task_instance=instance).update(value_multiselect=next_response,date_completed=datetime.datetime.now())
-    #             else:
-    #                 Session_Response.objects.filter(session_task_instance=instance).update(value_text=next_response,date_completed=datetime.datetime.now())
-
-
-    #     # Mark the task as submitted
-    #     Session_Task.objects.filter(session=session,task=active_task.task).update(date_completed=datetime.datetime.now())
-
     json_data['status'] = 'success'
 
-## SUBMITTING ANSWERS
+    ## SUBMITTING ANSWERS
     if form_errors:
         json_data['error'] = [dict(msg=x) for x in form_errors]
 
     return json_data
+
+def display_task(session_task_instance_id, task_id):
+    """
+    Generic task display
+        :param session_task_instance_id:
+        :param task_id:
+    """
+    #Query task instances
+    task_instance = Session_Task_Instance_Value.objects \
+                    .get(session_task_instance_id=session_task_instance_id)
+
+    # Get fields for question and response(s)
+    question = Task_Field.objects.get(task_id=task_id, field_type_id=1)
+    response = Task_Field.objects.get(task_id=task_id, field_type_id=2)
+
+    display_field = display_question(task_instance, str(question.field_data_type))
+
+    response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+
+    return display_field, response_field, requires_audio
+
 
 def display_reading_fluency(session_task_instance_id):
     """
