@@ -42,7 +42,7 @@ function gotBuffers( buffers ) {
 
     //drawBuffer( canvas.width, canvas.height, canvas.getContext('2d'), buffers[0] );
 
-    // the ONLY time gotBuffers is called is right after a new recording is completed - 
+    // the ONLY time gotBuffers is called is right after a new recording is completed -
     // so here's where we should set up the download.
     audioRecorder.exportWAV( doneEncoding );
 }
@@ -55,7 +55,7 @@ function doneEncoding( blob ) {
 
 // Turn the audio recording on/off. if turning off, then transmit the
 // data to the server, and invoke the callback function on success/failure,
-// if one is provided. Pass in "null" if cb is not needed. If "options['verboseFlag']" 
+// if one is provided. Pass in "null" if cb is not needed. If "options['verboseFlag']"
 // is set to True, then a message is displayed to the user to notify them that
 // data is being transmitted (specified by "options['displayMsg']").
 function toggleRecordingSilent(e, cbSuccess, cbFailure, options) {
@@ -64,11 +64,11 @@ function toggleRecordingSilent(e, cbSuccess, cbFailure, options) {
         // stop recording
         audioRecorder.stop();
         e.classList.remove("recording");
-        
+
         // Disable the button while the audio is being transmitted to server
         $(e).prop("disabled", true);
-        
-        // If the verboseFlag option is set, then display a message 
+
+        // If the verboseFlag option is set, then display a message
         // to the user
         if (options != null) {
             if (options['verboseFlag'] == true) {
@@ -76,11 +76,11 @@ function toggleRecordingSilent(e, cbSuccess, cbFailure, options) {
                 $(e).siblings(".status_recording").removeClass("invisible");
             }
         }
-        
+
         audioRecorder.getBuffers( gotBuffers );
     } else {
         var instance_id = $(e).siblings("[name=instanceid]").val();
-        
+
         // start recording
         if (!audioRecorder)
             return;
@@ -96,7 +96,7 @@ function toggleRecordingSilent(e, cbSuccess, cbFailure, options) {
         }
         // Set the HTML element that triggered the call as the initiating DOM element
         audioRecorder.setInitiatingElement(e);
-        
+
         audioRecorder.record();
     }
 }
@@ -108,10 +108,10 @@ function toggleRecording( e ) {
         // stop recording
         audioRecorder.stop();
         e.classList.remove("recording");
-        
-        // Disable the current audio button to prevent repeated recordings, 
+
+        // Disable the current audio button to prevent repeated recordings,
         // and if applicable, enable the next audio recording button (if one exists).
-        // (At any point in time there should only be one active audio recording button to prevent user 
+        // (At any point in time there should only be one active audio recording button to prevent user
         // from clicking all of them at the same time).
         $(e).val("Start recording").prop("disabled", true);
         var id_audio_buttons = "btn_recording_";
@@ -129,7 +129,15 @@ function toggleRecording( e ) {
                 }
             }
         }
-        
+
+        // // Toggle recording symbols if present
+        // var oiseRecordingSymbols = document.getElementsByClassName('oise-recording-active');
+        // if (oiseRecordingSymbols.length > 0) {
+        //     var oiseRecordingSymbol = oiseRecordingSymbols[0];
+        //     oiseRecordingSymbol.className = 'oise-recording-active';
+        //     var oiseRecordingSymbolInactive = document.getElementsByClassName('oise-recording-inactive')[0];
+        //     oiseRecordingSymbolInactive += ' hidden';
+        // }
         $("#status_recording_" + instance_id).addClass("invisible");
         audioRecorder.getBuffers( gotBuffers );
     } else {
@@ -141,6 +149,15 @@ function toggleRecording( e ) {
         $("#status_recording_" + instance_id + "_msg").html("Recording audio...");
         $("#status_recording_" + instance_id).find("img").addClass("invisible");
         $("#status_recording_" + instance_id).removeClass("invisible");
+
+        // // Toggle recording symbols if present
+        // var oiseRecordingSymbols = document.getElementsByClassName('oise-recording-active');
+        // if (oiseRecordingSymbols.length > 0){
+        //     var oiseRecordingSymbol = oiseRecordingSymbols[0];
+        //     oiseRecordingSymbol.className += ' hidden';
+        //     var oiseRecordingSymbolInactive = document.getElementsByClassName('oise-recording-inactive')[0];
+        //     oiseRecordingSymbolInactive = 'oise-recording-inactive';
+        // }
         audioRecorder.clear();
         audioRecorder.setInstanceId(instance_id);
         audioRecorder.record();
@@ -177,7 +194,7 @@ function updateAnalysers(time) {
         var numBars = Math.round(canvasWidth / SPACING);
         var freqByteData = new Uint8Array(analyserNode.frequencyBinCount);
 
-        analyserNode.getByteFrequencyData(freqByteData); 
+        analyserNode.getByteFrequencyData(freqByteData);
 
         analyserContext.clearRect(0, 0, canvasWidth, canvasHeight);
         analyserContext.fillStyle = '#F6D565';
@@ -197,7 +214,7 @@ function updateAnalysers(time) {
             analyserContext.fillRect(i * SPACING, canvasHeight, BAR_WIDTH, -magnitude);
         }
     }
-    
+
     rafID = window.requestAnimationFrame( updateAnalysers );
 }
 

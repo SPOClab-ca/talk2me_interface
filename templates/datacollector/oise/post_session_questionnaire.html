@@ -1,0 +1,95 @@
+{% if questionnaire_submitted %}
+    <h1>You are finished!</h1>
+{% else %}
+    <h1>Great work! Now, please tell us a little bit more about you.</h1>
+    <form action="/talk2me/oise/questionnaire" method="POST">
+    {% csrf_token %}
+    <input type='hidden' id='form_type' name='form_type' value='questionnaire' />
+    <input type="hidden" id="session_id" name="session_id" value="{{ session.session_id }} " />
+
+    <ol>
+        <li>
+            Do these statements sound like you?
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <td></td>
+                        <td>No not at all</td>
+                        <td>Not much</td>
+                        <td>A bit</td>
+                        <td>Yes, somewhat</td>
+                        <td>Yes, a lot</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>1. I enjoy reading.</b></td>
+                        <td><input type="radio" name="enjoy_reading" value="1" {% if form_values.enjoy_reading == '1' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="enjoy_reading" value="2" {% if form_values.enjoy_reading == '2' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="enjoy_reading" value="3" {% if form_values.enjoy_reading == '3' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="enjoy_reading" value="4" {% if form_values.enjoy_reading == '4' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="enjoy_reading" value="5" {% if form_values.enjoy_reading == '5' %} checked="checked"{% endif %}></td>
+                    </tr>
+                    <tr>
+                        <td><b>2. I like to read for fun.</b></td>
+                        <td><input type="radio" name="fun_reading" value="1" {% if form_values.fun_reading == '1' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="fun_reading" value="2" {% if form_values.fun_reading == '2' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="fun_reading" value="3" {% if form_values.fun_reading == '3' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="fun_reading" value="4" {% if form_values.fun_reading == '4' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="fun_reading" value="5" {% if form_values.fun_reading == '5' %} checked="checked"{% endif %}></td>
+                    </tr>
+                    <tr>
+                        <td><b>3. I am a good reader.</b></td>
+                        <td><input type="radio" name="good_reader" value="1" {% if form_values.good_reader == '1' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="good_reader" value="2" {% if form_values.good_reader == '2' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="good_reader" value="3" {% if form_values.good_reader == '3' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="good_reader" value="4" {% if form_values.good_reader == '4' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="good_reader" value="5" {% if form_values.good_reader == '5' %} checked="checked"{% endif %}></td>
+                    </tr>
+                    <tr>
+                        <td><b>4. Reading is easy for me.</b></td>
+                        <td><input type="radio" name="ease_reading" value="1" {% if form_values.ease_reading == '1' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="ease_reading" value="2" {% if form_values.ease_reading == '2' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="ease_reading" value="3" {% if form_values.ease_reading == '3' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="ease_reading" value="4" {% if form_values.ease_reading == '4' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="ease_reading" value="5" {% if form_values.ease_reading == '5' %} checked="checked"{% endif %}></td>
+                    </tr>
+                    <tr>
+                        <td><b>5. I like to read long texts.</b></td>
+                        <td><input type="radio" name="long_reading" value="1" {% if form_values.long_reading == '1' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="long_reading" value="2" {% if form_values.long_reading == '2' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="long_reading" value="3" {% if form_values.long_reading == '3' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="long_reading" value="4" {% if form_values.long_reading == '4' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="long_reading" value="5" {% if form_values.long_reading == '5' %} checked="checked"{% endif %}></td>
+                    </tr>
+                    <tr>
+                        <td><b>6. I like to tackle challenging texts. </b></td>
+                        <td><input type="radio" name="challenging_reading" value="1" {% if form_values.challenging_reading == '1' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="challenging_reading" value="2" {% if form_values.challenging_reading == '2' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="challenging_reading" value="3" {% if form_values.challenging_reading == '3' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="challenging_reading" value="4" {% if form_values.challenging_reading == '4' %} checked="checked"{% endif %}></td>
+                        <td><input type="radio" name="challenging_reading" value="5" {% if form_values.challenging_reading == '5' %} checked="checked"{% endif %}></td>
+                    </tr>
+                </tbody>
+            </table>
+        </li>
+        <li>
+            <strong>Do you have an IEP?</strong>
+            <div class="radio">
+                <label class="radio"><input type="radio" name="iep" value="yes" {% if form_values.iep == 'yes' %} checked="checked"{% endif %}>Yes</label>
+                <label class="radio"><input type="radio" name="iep" value="no" {% if form_values.iep == 'no' %} checked="checked"{% endif %}>No</label>
+                <label class="radio"><input type="radio" name="iep" value="idk" {% if form_values.iep == 'idk' %} checked="checked"{% endif %}>I don't know</label>
+            </div>
+        </li>
+        <li>
+            <strong>Have you taken an ESL class?</strong>
+            <div class="radio">
+                <label class="radio"><input type="radio" name="esl" value="yes" {% if form_values.esl == 'yes' %} checked="checked"{% endif %}>Yes</label>
+                <label class="radio"><input type="radio" name="esl" value="no" {% if form_values.esl == 'no' %} checked="checked"{% endif %}>No</label>
+                <label class="radio"><input type="radio" name="esl" value="idk" {% if form_values.esl == 'idk' %} checked="checked"{% endif %}>I don't know</label>
+            </div>
+        </li>
+    </ol>
+    <div><button class="btn btn-primary btn-lg" type="button" onClick="javascript: formSubmit(this, 'Submitting data, please wait...');">Submit</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
+    </form>
+{% endif %}

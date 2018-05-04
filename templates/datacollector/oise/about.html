@@ -1,0 +1,177 @@
+{% extends "datacollector/oise/base.html" %}
+
+{% block title %}{{ website_name }} - About{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ user.username }} (<a href="/{{ website_id }}{{ oise_study }}/logout">logout</a>)
+    {% else %}
+        <a href="/{{ website_id }}/{{oise_study}}/login">Login</a> | <a href="/{{ website_id }}/{{oise_study}}/register">New User</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h1>About</h1>
+<hr />
+
+<!-- TOC -->
+<div class="toc">
+    <div class="container">
+    <h3>On this page:</h3>
+    <ol compact>
+        <li><a href="#contactinfo">Contact Information</a></li>
+        <li><a href="#overview">Overview of Study</a></li>
+        <li><a href="#purpose">Purpose - Why are we doing this study?</a></li>
+        <li><a href="#procedures">Procedures - What will happen during the study?</a></li>
+        <li><a href="#risks">Risks - Are there any bad things about the study?</a></li>
+        <li><a href="#benefits">Benefits - Are there any good things about the study?</a></li>
+        <li><a href="#confidentiality">Confidentiality - Who will know what I did in the study?</a></li>
+        <li><a href="#rights">Subject's Rights - What are the decisions that I can make about the study?</a></li>
+    </ol>
+    </div>
+</div>
+<hr />
+
+<a class="anchor" name="contactinfo"></a>
+<div class="anchor-title"><h3>Contact Information</h3> <a href="#top">[back to top]</a></div>
+
+
+<div class="row" style='margin-bottom: 10px;'>
+    <div class="col-md-2">
+        <img style="width: 120px;" src="{{ STATIC_URL }}img/contact_cpouprom.jpg" />
+    </div>
+    <div class="col-md-10">
+        <address>
+        <strong>Chloé Pou-Prom, MSc </strong><br />
+        Principal Investigator<br />
+        Bahen Centre for Information Technology<br />
+        40 St George St, Toronto, Room BA4202<br />
+        Toronto, Ontario M5S 2E4<br />
+        514-710-9994<br />
+        <a href="mailto:chloe@cs.toronto.edu">chloe@cs.toronto.edu</a><br />
+        </address>
+    </div>
+</div>
+
+
+<div class="row" style='margin-bottom: 10px;'>
+    <div class="col-md-2">
+        <img style="width: 120px;" src="{{ STATIC_URL }}img/contact_frudzicz.jpg" />
+    </div>
+    <div class="col-md-10">
+        <address>
+        <strong>Frank Rudzicz, PhD</strong><br />
+        Faculty Supervisor<br />
+        Toronto Rehabilitation Institute - UHN<br />
+        550 University Avenue, Room 12-175<br />
+        Toronto, Ontario M5G 2A2<br />
+        416-597-3422 x7971<br />
+        <a href="mailto:frank@cs.toronto.edu">frank@cs.toronto.edu</a><br />
+        </address>
+    </div>
+</div>
+
+<a class="anchor" name="overview"></a>
+<div class="anchor-title"><h3>Overview of study</h3> <a href="#top">[back to top]</a></div>
+
+<p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study to analyze the differences in longitudinal progression of linguistic markers between healthy older adults and ones with dementia. We are interested in assessing the validity and usability of an automated web-based and phone-based system ({{ website_name }}) for linguistic data acquisition, as means for longitudinal monitoring of changes in language ability.</p>
+
+<a class="anchor" name="purpose"></a>
+<div class="anchor-title"><h3>Purpose – Why are we doing this study?</h3> <a href="#top">[back to top]</a></div>
+
+<p>The number of people affected by dementia grows every year, and research into the pathogenesis and progression of neurodegenerative disorders becomes ever more important. There is evidence of pathophysiological changes, including biomarker changes and subtle cognitive decline, occurring decades before clinical diagnosis. Cognitive abilities which may be impacted include memory, response time, visuo-spatial orientation, and language production and comprehension.</p>
+
+<p>We are interested in investigating how features of language, such as syntactic complexity, lexical richness, semantic content, and acoustics change over time, in populations of older adults who are (a) healthy, (b) asymptomatic but later develop dementia, and (c) diagnosed with dementia. We would like to determine whether automatic analysis of language measures is as, or more, effective at predicting pathology than in-person tests of cognitive ability performed in a clinical setting.</p>
+
+<p>Among those already diagnosed with dementia of the Alzheimer's type, we are interested in finding out whether linguistic decline occurs in different areas among different subgroups. For instance, are some individuals with clinical dementia more likely to experience lexical changes (e.g., vocabulary impoverishment), while others to experience loss of syntactic complexity? Such symptomatic differences could signify a different path of physiological progression of the disease.</p>
+
+<p>To conduct these analyses, we need a large corpus of linguistic data from people in various age groups, both asymptomatic (with no existing diagnosis) and symptomatic (with clinical diagnosis of dementia). Since subtle changes in language are salient markers of cognitive decline, we need multiple data samples for each individual, collected at periodic intervals (e.g., weekly, monthly or annually). The collected dataset will be a large step in the direction of preclinical assessment of cognitive decline, which can eventually lead to early diagnosis and treatment of neurodegeneration.</p>
+
+<a class="anchor" name="procedures"></a>
+<div class="anchor-title"><h3>Procedures – What will happen during the study?</h3> <a href="#top">[back to top]</a></div>
+
+<h4>Step 1: Informed consent</h4>
+
+<p>If you choose to participate, you will begin by <a href="/{{ website_id }}/register">creating a user account</a> and <a href="/{{ website_id }}/login">logging into this website</a>. Upon first logon, you will be shown a consent form, and a link to this help page. Your informed consent, or that of an alternate decision maker who can provide consent on your behalf, is required in order to participate; you can provide your consent by selecting the appropriate option at the bottom of the consent form. The contact information of the research investigators will also be provided; you can request additional information about the study and ask any questions prior to providing consent, as well as at any time after that.</p>
+
+<h4>Step 2: Demographic survey</h4>
+
+<p>Upon consenting to participate, you will be asked to complete a short demographic survey. The survey is mandatory for participation, since any linguistic analyses of the data need to control for variables such as age, level of education, pre-existing diagnosis of dementia, language proficiency, etc. All data collected here will only be analyzed and reported anonymously (i.e., your username and (optional) email address will not be disclosed, while demographic data will be reported in aggregate only).</p>
+
+<h4>Step 3: Language data acquisition</h4>
+
+<p>Sessions will either be completed over the website or over the phone.</p>
+
+<ul>
+<li><b>Website</b>
+<br>
+<p>Once you have completed the demographic survey, you will be taken to the data acquition dashboard. Through this page, you can start a new data collection "session". Each session constitutes one complete data sample (approx. 15 minutes in length), and consists of language tasks similar to those found in standard tests for cognitive ability and language impairment, such as object naming, picture description, and story recall. You provide your responses in one of the following modalities: (i) verbal (speech provided through a microphone), (ii) written (text provided through a keyboard), or (iii) selection out of a list of available answer options (provided through a mouse click). A session can be stopped and continued at any time, without loss of data.</p>
+
+<li><b>Phone</b><br>
+<p>Once you have completed the demographic survey, you will be able to call the number displayed on the website. When prompted, you will be asked to enter your user ID and your pin number. Each session constitutes one complete data sample (approx. 15 minutes in length), and consists of language tasks similar to those found in standard tests for cognitive ability and language impairment, such as story recall, and random item generation. You will provide your responses through verbal responses and keypresses. Whenever you are done answering, press on the star (*) button to save your answer. Use the pound (#) button to repeat a previous prompt. A session can be stopped and continued at any time, without loss of data.</p>
+<p>You will be able to use the website to view your progress.</p>
+</ul>
+
+<p>You can complete as many sessions as you want – the more, the better. You can opt in for scheduled reminder emails which will prompt you to complete a new session on a weekly or monthly basis. Your email will remain fully confidential: it will not be used for any other purpose, it will never be provided to third parties, and it will never be publicized.</p>
+
+<p>No training is needed to use the system, but if you experience any difficulties or have any questions, you can contact the research investigators at any time. You can also choose to withdraw from the study at any time, by selecting the option from your dashboard, or by contacting the researchers. If you choose to withdraw, all data collected from you will be deleted immediately and irreversibly, and you will receive confirmation.</p>
+
+<h4>Step 4: Usability survey (optional)</h4>
+
+<p>If you have completed at least one full session on the system, you will be given the option to complete a usability survey. The survey will help us determine if the website is easy to use, and if there are any issues such as unclear instructions, difficulty locating information on the site, or legibility issues. If you ever felt frustrated using the system, this is a great way to send us your feedback – we will take it into account and try to improve the interface.</p>
+
+<h4>Compensation and acknowledgement</h4>
+
+<p>If you have completed at least one full session on the system, you will receive a personalized Certificate of Participation (the name you provide for the certificate will not be stored anywhere; your data remains fully confidential, and all analyses and publications – anonymous).</p>
+
+
+<h4>Follow-up updates</h4>
+
+<p>If you are interested in the research conducted with the data collected during this study, you can optionally opt in to receive updates of publications via email. Updates will not be sent more frequently than once monthly. Your email will remain fully confidential: it will not be used for any other purpose, it will never be provided to third parties, and it will never be publicized. You can opt out of these updates at any time, by selecting the "unsubscribe" option in the emails you receive, or selecting the appropriate option from the dashboard.</p>
+
+
+<a class="anchor" name="risks"></a>
+<div class="anchor-title"><h3>Risks – Are there any bad things about the study?</h3> <a href="#top">[back to top]</a></div>
+
+<p>There are no known research risks associated with the study. If you choose to participate, one session may take a total of 15 minutes at a time. You will only need to use standard hardware peripherals (a keyboard, a mouse, a microphone, and a telephone).</p>
+
+<p>Participants with probable and/or diagnosed dementia may be exposed to psychological and emotional risks, such as feelings of confusion or anxiety as a result of participation. If you feel confused, frustrated, anxious, or stressed during any part of the study, you can stop at any time by exiting the active session, or by completely withdrawing from the study. If you withdraw, all of the collected data will be deleted immediately and irreversibly.</p>
+
+
+<a class="anchor" name="benefits"></a>
+<div class="anchor-title"><h3>Benefits – Are there any good things about the study?</h3> <a href="#top">[back to top]</a></div>
+
+<p>A recent recommendation of the <em>National Institute on Aging and Alzheimer's Association</em> emphasizes the importance of the early identification of preclinical asymptomatic stages of dementia. Early detection of pathophysiological processes leading to AD can make disease therapy more effective, leading to reduction or elimination of symptom progression.</p>
+
+<p>The dataset collected in this study will be a large step in the direction of preclinical assessment of cognitive decline, as it will enable research in the patterns of longitudinal progression of linguistic changes in large groups of symptomatic and asymptomatic adults. Analyses of differences in linguistic feature progression have the potential to form the basis for early detection of neurodegeneration.</p>
+
+
+<a class="anchor" name="confidentiality"></a>
+<div class="anchor-title"><h3>Confidentiality – Who will know what I did in the study?</h3> <a href="#top">[back to top]</a></div>
+
+<p>Data stored in the database will be identified with a unique randomly-generated but non-identifying numerical code (ID). General demographic data (e.g., age, gender, level of education), as well as linguistic data collected during the study, will be associated with each ID. Optionally collected data, such as email address, will be kept completely confidential and never reported.</p>
+
+<p>All data obtained in this study will remain as private as possible. Your username and optionally provided email address will remain fully confidential, and will not be used when reporting results. Analyses based on the collected data will report linguistic and demographic data only in aggregate. Linguistic and demographic data will not be shared with anyone, unless you explicitly consent to making it publically available for other researchers. It should be noted that linguistic data, such as audio recordings collected during the study, may be used to discover one’s identity.</p>
+
+<p>The data transfer from your computer to the secure web server takes place over a secure communication protocol. The server is located on university premises, behind locked doors. Only the three investigators listed on this page (Dr. Frank Rudzicz, Chloé Pou-Prom, and Maria Yancheva) have access to the data. The data is stored in a secure database with encryption. If and only if you provide explicit consent for doing so, we may share the data with other researchers in the future; your username and email address will never be shared with anyone.</p>
+
+
+<a class="anchor" name="rights"></a>
+<div class="anchor-title"><h3>Subject's Rights – What are the decisions that I can make about this study?</h3> <a href="#top">[back to top]</a></div>
+
+<p>You can ask any questions at any time and they will be answered by the investigators, whose contact information is listed on this page.</p>
+
+<p>Participation in this study is entirely voluntary, and it is your choice whether to participate or not. If you agree to participate, you have the right to withdraw at any time, without giving a reason. If you choose to withdraw, all of your data recorded as part of the study will be deleted immediately and irreversibly. There will be no consequences.</p>
+
+<p>You can optionally choose to:
+<ul>
+    <li>Provide your email address to receive scheduled reminders (e.g., weekly or monthly) to complete new sessions on the website (each session only takes approx. 15 minutes)</li>
+    <li>Provide your email address to receive updates regarding research conducted using the data collected in the study (updates will not be sent more frequently than once monthly)</li>
+    <li>Complete a usability survey, which increases your chances of winning monthly draws (if you have already opted in for them)</li>
+</ul>
+You can opt out of any of the above selections at any time. You can opt in and out any number of times, with no consequences. Your email will remain fully confidential: it will not be used for any other purpose, it will never be provided to third parties, and it will never be publicized.
+</p>
+
+<p>If you require any additional information, please contact the research investigators.</p>
+{% endblock %}

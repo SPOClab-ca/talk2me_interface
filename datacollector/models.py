@@ -397,7 +397,7 @@ class Task_Field(models.Model):
     embedded_response = models.IntegerField(default=0)
     keep_visible = models.IntegerField(default=1)
     generate_value = models.IntegerField(default=0)
-    assoc = models.ForeignKey("self",null=True, blank=True)
+    assoc = models.ForeignKey("self", null=True, blank=True)
     default_num_instances = models.IntegerField(null=True, blank=True)
     preserve_order = models.IntegerField(null=True, blank=True)
 
@@ -557,16 +557,43 @@ def generate_upload_filename(instance, filename):
                  str(instance.session_task_instance.session_task.session.session_id) + "_" + \
                  str(instance.session_task_instance.session_task_instance_id) + ".wav"
 
+def generate_image_upload_filename(instance, filename):
+    """Generate filename for image file.
+    Params:
+    instance :
+    filename :
+
+    Return: A Unix-style path (with forward slashes) to be passed along to the storage system.
+    """
+    return "datacollector/image/" + \
+           datetime.now().strftime('%Y%m%d_%H%M%S') + "_" + \
+           str(instance.session_task_instance.session_task.session.subject.user_id) + "_" + \
+           str(instance.session_task_instance.session_task.session.session_id) + "_" + \
+           str(instance.session_task_instance.session_task_instance_id) + ".png"
+
 class Session_Response(models.Model):
-    # represents every instance of a response for a task by a subject during a session
+    """
+    Represents every instance of a response for a task by a subject during a session
+        :param models.Model:
+    """
 
     def update_audio_file(self):
+        """
+        Add the new audio file to the session response instance
+            :param self:
+        """
         # Delete old file from the response instance, if it exists
         #if self.value_audio:
         #    self.value_audio.delete()
 
-        # Add the new file to the session response instance
         return self.value_audio.upload_to
+
+    def update_image_file(self):
+        """
+        Add the new png file to the session response instance
+            :param self:
+        """
+        return self.value_image.upload_to
 
     def __unicode__(self):
         response_value = "Blank"
@@ -574,6 +601,8 @@ class Session_Response(models.Model):
             response_value = self.value_text
         elif self.value_audio:
             response_value = "Audio"
+        elif self.value_image:
+            response_value = "Image"
         elif self.value_multiselect:
             response_value = self.value_multiselect
 
@@ -595,6 +624,62 @@ class Session_Response(models.Model):
     value_audio = models.FileField(null=True,
                                    blank=True,
                                    upload_to=generate_upload_filename)
+    value_image = models.FileField(null=True, blank=True, \
+                                   upload_to=generate_image_upload_filename)
     value_multiselect = models.CommaSeparatedIntegerField(max_length=100, null=True, blank=True)
     value_expected = models.TextField(null=True, blank=True)
     num_repeats = models.IntegerField(null=True, blank=True)
+
+class Demographics_Oise(models.Model):
+    """
+    Store the demographic information of OISE users
+        :param models.Model:
+    """
+    def __unicode__(self):
+        return "Subject " + str(self.subject.user_id) + \
+               ", Gender: " + str(self.gender) + \
+               ", Age: " + str(self.age) + \
+               ", Grade: " + str(self.grade) + \
+               " (" + str(self.id) + ")"
+
+    id = models.AutoField(primary_key=True)
+    subject = models.ForeignKey(Subject)
+    gender = models.ForeignKey(Gender, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
+    age = models.IntegerField(null=True, blank=True)
+    grade = models.IntegerField(null=True, blank=True)
+    identity = models.IntegerField(null=True, blank=True)
+    canada = models.IntegerField(null=True, blank=True)
+    english_ability = models.IntegerField(null=True, blank=True)
+    other_languages = models.IntegerField(null=True, blank=True)
+
+class Subject_Language_Oise(models.Model):
+    """
+    Additional languages (other than English) spoken by
+    participants of the OISE project
+        :param models.Model:
+    """
+    def __unicode__(self):
+        return "%s: %d (%d)" % (self.name, self.level, self.demographics_id)
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, null=True, blank=True)
+    level = models.IntegerField(null=True, blank=True)
+    demographics_id = models.IntegerField(null=False, blank=False)
+
+class Questionnaire_Oise(models.Model):
+    """
+    Post-session OISE questionnaire
+        :param models.Model:
+    """
+    def __unicode__(self):
+        return "Questionnaire for session %d" % self.session.session_id
+    id = models.AutoField(primary_key=True)
+    session = models.ForeignKey(Session)
+    enjoy_reading = models.IntegerField(null=True, blank=True)
+    fun_reading = models.IntegerField(null=True, blank=True)
+    good_reader = models.IntegerField(null=True, blank=True)
+    ease_reading = models.IntegerField(null=True, blank=True)
+    long_reading = models.IntegerField(null=True, blank=True)
+    challenging_reading = models.IntegerField(null=True, blank=True)
+    iep = models.IntegerField(null=True, blank=True)
+    esl = models.IntegerField(null=True, blank=True)

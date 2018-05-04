@@ -14,7 +14,7 @@ from datacollector.forms import *
 from datacollector.models import *
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
-from csc2518.settings import UHN_STUDY
+from csc2518.settings import UHN_STUDY, OISE_STUDY
 
 import copy
 import datetime
@@ -35,10 +35,11 @@ website_name = Settings.objects.get(setting_name="website_name").setting_value
 
 # Globals
 global global_passed_vars, date_format, age_limit, regex_email, regex_date, colour_lookup
-global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username, "uhn_study": 'uhn' }
+global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username, "uhn_study": 'uhn', "oise_study": 'oise' }
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 uhn_website_root = website_root + UHN_STUDY
+OISE_WEBSITE_ROOT = website_root + OISE_STUDY
 
 colour_lookup = {'red': 'e41a1c', 'green': '4daf4a', 'blue': '377eb8', 'brown': '6f370f', 'purple': '984ea3'}
 
@@ -47,9 +48,10 @@ age_limit = 18
 regex_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 regex_date = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 
-# UHN-specific variable
+# bundle-specific variable
 UHN_WEB_BUNDLE_ID = 3
 UHN_PHONE_BUNDLE_ID = 4
+OISE_BUNDLE_ID = 5
 
 # Task ID variables
 VOCABULARY_TASK_ID = 1
@@ -62,6 +64,8 @@ VOCABULARY_UHN_PHONE_BUNDLE_TASK_ID = 12
 PICTURE_DESCRIPTION_UHN_WEB_BUNDLE_TASK_ID = 6
 RIG_UHN_WEB_BUNDLE_TASK_ID = 9
 RIG_UHN_PHONE_BUNDLE_TASK_ID = 15
+FLUENCY_READING_OISE_BUNDLE_TASK_ID = 19
+WORD_RECALL_OISE_BUNDLE_TASK_ID = 24
 
 # Difficulty ID variables
 DIFFICULTY_LOW_ID = 1
@@ -205,6 +209,57 @@ def generate_session(subject, session_type):
         # For each display field, select random <num_instances> which the user hasn't seen before OR use the
         # specified task instances values for the bundle task.
         cumulative_field_instances = 0
+
+        # OISE Reading Fluency task needs to be:
+        # short story 1, MC question, short story 2, MC question, MC question,
+        #   short story 3, MC question, MC question, short story 4, \
+        #   MC question, MC question
+        if bundle_task.bundle_task_id == FLUENCY_READING_OISE_BUNDLE_TASK_ID:
+            task_field_values = Bundle_Task_Field_Value.objects.filter(bundle_task_id=bundle_task.bundle_task_id).order_by('bundle_task_field_value_id')
+            task_field_value_ids = [x.task_field_value_id for x \
+                                           in task_field_values]
+            short_story_task_field=Task_Field.objects \
+                                      .get(name='reading_fluency_story')
+            short_stories = Task_Field_Value.objects \
+                                .filter(task_field_value_id__in=task_field_value_ids,\
+                                        task_field_id=short_story_task_field.task_field_id)
+            mcq_task_field = Task_Field.objects.get(name='reading_fluency_question')
+            mc_questions = Task_Field_Value.objects \
+                           .filter(task_field_value_id__in=task_field_value_ids, \
+                                   task_field_id=mcq_task_field.task_field_id)
+            ordered_task_fields = [short_story_task_field, mcq_task_field, \
+                                   short_story_task_field, mcq_task_field, mcq_task_field, \
+                                   short_story_task_field, mcq_task_field, mcq_task_field, \
+                                   short_story_task_field, mcq_task_field, mcq_task_field,]
+            ordered_task_field_values = [short_stories[0], mc_questions[0], \
+                                         short_stories[1], mc_questions[1], \
+                                         mc_questions[2], short_stories[2], \
+                                         mc_questions[3], mc_questions[4], \
+                                         short_stories[3], mc_questions[5], \
+                                         mc_questions[6]]
+
+            total_num_instances_reading_fluency = 11
+            for index_instance in range(total_num_instances_reading_fluency):
+                instance_value = ordered_task_field_values[index_instance]
+                field = ordered_task_fields[index_instance]
+                new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
+
+                # Using the task field value ("instance_value"), update the expected session response
+                Session_Response.objects.filter(session_task_instance=new_task_instances[cumulative_field_instances+index_instance]).update(value_expected=instance_value.response_expected)
+
+                # If there are any associated fields (e.g., answer field instances associated with the currently selected question field instances), add them to the session as well.
+                # Note that for select options, all options must be added, not just the one that is the correct response.
+                linked_field_instances = list(Task_Field_Value.objects.filter(Q(assoc=instance_value) | Q(assoc=instance_value.assoc)).exclude(task_field=field).exclude(assoc__isnull=True))
+
+
+                for linked_instance in linked_field_instances:
+                    score = 0
+                    if linked_instance.assoc.task_field_value_id == instance_value.task_field_value_id:
+                        score = 1
+
+                    new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=linked_instance.task_field, value=linked_instance.value, value_display=linked_instance.value_display, difficulty=linked_instance.difficulty)
+
+            cumulative_field_instances += total_num_instances_reading_fluency
         for field in task_fields_display:
 
             # If the field doesn't have a specified number of instances, then use the task-level number of instances.
@@ -222,7 +277,6 @@ def generate_session(subject, session_type):
             specified_values_from_db = []
             if bundle_task is not None:
                 specified_values_from_db = Bundle_Task_Field_Value.objects.filter(bundle_task_id=bundle_task.bundle_task_id).order_by('bundle_task_field_value_id')
-
 
             if len(specified_values_from_db) > 0:
                 bundle_id = bundle_task.bundle.bundle_id
@@ -265,9 +319,21 @@ def generate_session(subject, session_type):
                             selected_values = [x.task_field_value for x in specified_values[:field_num_instances]]
                     else:
                         selected_values = [x.task_field_value for x in specified_values[:field_num_instances]]
+                elif bundle_id == OISE_BUNDLE_ID and \
+                        bundle_task.bundle_task_id == FLUENCY_READING_OISE_BUNDLE_TASK_ID:
+                    continue
+                    # specified_values = specified_values_from_db
+                    # task_field_values = [x.task_field_value_id for x in specified_values]
+                    # print(task_field_values)
+                    # selected_values = Task_Field_Value.objects.filter(task_field_value_id__in=task_field_values, task_field=field)
+
+                    # print(selected_values)
+
+
                 else:
                     specified_values = specified_values_from_db
                     selected_values = [x.task_field_value for x in specified_values[len(existing_instances):len(existing_instances)+field_num_instances]]
+
             # Otherwise, randomly select values that haven't been viewed yet.
             else:
                 # Add to selected values. Make sure not to add field values that are associated with each other, or are already selected, or have been seen by the subject before in previous sessions. NB: here we are assuming that the total number of values for each field in the db is at least as big as the default number of instances for the field.
@@ -850,7 +916,7 @@ def index(request):
                    'pending_sessions': pending_sessions, 'user_id': user_id, 'phone_pin': phone_pin,
                    'start_new_phone_session': start_new_phone_session }
     passed_vars.update(global_passed_vars)
-    return render_to_response('datacollector/index.html', passed_vars, context_instance=RequestContext(request))
+    return render_to_response('datacollector/main.html', passed_vars, context_instance=RequestContext(request))
 
 def login(request):
 
@@ -885,6 +951,8 @@ def login(request):
                     if subject_bundle:
                         if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
                             return HttpResponseRedirect(uhn_website_root)
+                        elif subject_bundle[0].bundle.name_id == 'oise':
+                            return HttpResponseRedirect(OISE_WEBSITE_ROOT)
 
                     # Success: redirect to the home page
                     return HttpResponseRedirect(website_root)
@@ -917,6 +985,9 @@ def logout(request):
 
 
 def register(request):
+    '''
+        Register new user on POST request or display registration page on GET request.
+    '''
 
     bundle_id = None
     bundle_token = None
@@ -980,14 +1051,25 @@ def register(request):
             new_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
             auth_login(request,new_user)
 
+            # OISE-specific registration gets re-directed to the OISE index
+            if bundle_exists and bundle_valid and bundle_id:
+                bundle = Bundle.objects.get(bundle_id=bundle_id)
+                if bundle.name_id == 'oise':
+                    return HttpResponseRedirect(OISE_WEBSITE_ROOT)
             return HttpResponseRedirect(website_root)
     else:
         form = UserCreationForm()
 
-    passed_vars = {'form': form, 'bundle_id': bundle_id, 'bundle_token': bundle_token}
+    passed_vars = {
+        'form': form, \
+        'bundle_id': bundle_id, \
+        'bundle_token': bundle_token
+    }
     passed_vars.update(global_passed_vars)
 
-    return render_to_response('datacollector/register.html', passed_vars, context_instance=RequestContext(request))
+    return render_to_response('datacollector/register.html', \
+                              passed_vars, \
+                              context_instance=RequestContext(request))
 
 def question(request, session_id, instance_id):
     passed_vars = {'session': session, 'subject': subject, 'task_instance': instance}
@@ -1003,17 +1085,22 @@ def startsession(request):
 
         subject = Subject.objects.get(user_id=request.user.id)
 
-        # Participants in the UHN study should not be able to create their own sessions
         today = datetime.datetime.now().date()
         subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
 
         if subject_bundle:
+            # Participants in the UHN study should not be able to create their own sessions
             if subject_bundle[0].bundle.bundle_id == UHN_WEB_BUNDLE_ID or subject_bundle[0].bundle.bundle_id == UHN_PHONE_BUNDLE_ID:
                 return HttpResponseRedirect(uhn_website_root)
 
         session_type = Session_Type.objects.get(name='website')
         new_session = generate_session(subject, session_type)
 
+        if subject_bundle and \
+            subject_bundle[0].bundle.bundle_id == OISE_BUNDLE_ID:
+            # Participants in the OISE study should be re-directed to the OISE-specific URL
+            return HttpResponseRedirect(website_root + 'oise/session/' + \
+                                        str(new_session.session_id))
         return HttpResponseRedirect(website_root + 'session/' + str(new_session.session_id))
     else:
         return HttpResponseRedirect(website_root)
@@ -2043,6 +2130,8 @@ def account(request):
                 subject_bundle = subject_bundle[0]
                 if subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone':
                     return render_to_response('datacollector/uhn/account.html', passed_vars, context_instance=RequestContext(request))
+                elif subject_bundle.bundle.name_id == 'oise':
+                    return render_to_response('datacollector/oise/account.html', passed_vars, context_instance=RequestContext(request))
             return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
         else:
             # If user is authenticated with as a User that doesn't exist as a Subject (i.e. for this study), then go to main page
@@ -2074,10 +2163,21 @@ def about(request):
             # Check if UHN user
             today = datetime.datetime.now().date()
             subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
+
+            # TODO: Create about.html page for UHN study and re-factor this section
             if subject_bundle:
                 subject_bundle = subject_bundle[0]
                 if subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone':
                     is_uhn_study = True
+                elif subject_bundle.bundle.name_id == 'oise':
+
+                    passed_vars = {
+                        'is_authenticated': is_authenticated, 'user': request.user,
+                        'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted,
+                        'active_notifications': active_notifications, 'is_uhn_study': is_uhn_study
+                    }
+                    passed_vars.update(global_passed_vars)
+                    return render_to_response('datacollector/oise/about.html', passed_vars, context_instance=RequestContext(request))
 
     passed_vars = {
         'is_authenticated': is_authenticated, 'user': request.user,

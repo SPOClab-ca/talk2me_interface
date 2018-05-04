@@ -1,0 +1,15 @@
+img.oise-picture-description {
+    width: 100%;
+}
+
+img.oise-recording-active {
+    height: 40px;
+}
+
+img.oise-recording-inactive {
+    height: 40px;
+}
+
+.oise-start-button {
+    text-align: center;
+}

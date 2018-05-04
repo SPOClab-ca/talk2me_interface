@@ -2,18 +2,18 @@
 
 Copyright Â© 2013 Matt Diamond
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated 
-documentation files (the "Software"), to deal in the Software without restriction, including without limitation 
-the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
 to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of 
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of
 the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
-THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
@@ -32,7 +32,7 @@ DEALINGS IN THE SOFTWARE.
     } else {
        this.node = this.context.createScriptProcessor(bufferLen, 2, 2);
     }
-   
+
     var worker = new Worker(config.workerPath || RECORDER_WORKER_PATH);
     worker.postMessage({
       command: 'init',
@@ -73,11 +73,11 @@ DEALINGS IN THE SOFTWARE.
     this.clear = function(){
       worker.postMessage({ command: 'clear' });
     }
-    
+
     this.setInstanceId = function(instance_id) {
         this.instanceid = instance_id;
     }
-    
+
     this.setCallback = function(fn_cb, type_cb) {
         if (type_cb == "success") {
             this.callbackSuccess = fn_cb;
@@ -85,7 +85,7 @@ DEALINGS IN THE SOFTWARE.
             this.callbackFailure = fn_cb;
         }
     }
-    
+
     this.setInitiatingElement = function(elem) {
         this.initiatingElement = elem;
     }
@@ -125,9 +125,9 @@ DEALINGS IN THE SOFTWARE.
   };
 
   Recorder.sendToServer = function(blob, audioRecordingInstance) {
-    
+
     var instanceid = audioRecordingInstance.instanceid;
-    
+
     if ($("#form_errors").length > 0) {
         $("#form_errors").addClass("invisible");
     }
@@ -136,11 +136,11 @@ DEALINGS IN THE SOFTWARE.
         $("#status_recording_" + instanceid + "_msg").html("Sending audio data to server, please be patient...");
         $("#status_recording_" + instanceid).removeClass("invisible");
     }
-    
+
     // NB: the wav name provided here doesn't matter because the server-side view automatically assigns a name based on the date/time
     // (see Django's "save" method on db audio fields)
     var fd = new FormData();
-    fd.append('fname', 'test.wav'); 
+    fd.append('fname', 'test.wav');
     fd.append('data', blob);
     fd.append('instanceid', instanceid);
     $.ajax({
@@ -148,25 +148,25 @@ DEALINGS IN THE SOFTWARE.
         url: '/talk2me/audiorecord',
         data: fd,
         processData: false,
-        contentType: false,        
+        contentType: false,
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) {
-            
+
             if ($("#status_recording_" + instanceid).length > 0) {
                 $("#status_recording_" + instanceid).addClass("invisible");
             }
-            
+
             // Re-enable recording button
             if ($("#btn_recording_" + instanceid).length > 0) {
                 $("#btn_recording_" + instanceid).prop("disabled", false);
             }
-            
+
             // Display error message
             if ($("#form_errors").length > 0) {
                 $("#form_errors").html("<strong>The audio data could not be submitted.</strong> Error 701: " + textStatus + " - " + errorThrown + ". Please contact the website administrators to report this error.").removeClass("invisible");
                 $("body").scrollTop(0);
             }
-            
+
             // If any callback provided, then call it
             if (audioRecordingInstance.callbackFailure != null) {
                 audioRecordingInstance.callbackFailure(audioRecordingInstance);
@@ -176,7 +176,7 @@ DEALINGS IN THE SOFTWARE.
             // Mark the response field as completed, and mark the field as changed
             $("#response_audio_" + instanceid).val("yes");
             $("#unsaved_changes").val("yes");
-            
+
             // Re-enable submit button only if ALL response audio fields have been submitted
             var incomplete_responses = [];
             $("[name^='response_audio_']").each(function() {
@@ -187,13 +187,13 @@ DEALINGS IN THE SOFTWARE.
             if (incomplete_responses.length == 0) {
                 $("#submit_btn").prop('disabled',false);
             }
-            
+
             if ($("#status_recording_" + instanceid).length > 0) {
                 // Disable the recording button to prevent redoing the task
                 $("#status_recording_" + instanceid).find("img").addClass("invisible");
                 $("#status_recording_" + instanceid + "_msg").html("Done!");
-            }            
-            
+            }
+
             // If any callback provided, then call it
             if (audioRecordingInstance.callbackSuccess != null) {
                 audioRecordingInstance.callbackSuccess(audioRecordingInstance);
@@ -203,7 +203,7 @@ DEALINGS IN THE SOFTWARE.
   }
 
   Recorder.setupDownload = function(blob, filename){
-    
+
     var url = (window.URL || window.webkitURL).createObjectURL(blob);
     var link = document.getElementById("save");
     link.href = url;
