@@ -1,0 +1,168 @@
+<h1>Demographic Data</h1>
+<hr />
+
+{% if form_errors %}
+<div class="bs-callout bs-callout-danger">
+    <strong>The form could not be submitted. Please correct the following error{{ form_errors|pluralize }}:</strong>
+    <ul>
+    {% for err in form_errors %}
+        <li>{{ err }}</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<p>Please provide the following anonymous demographic data, which will aid the analysis of your results.</p>
+
+<form action="" method="POST">
+{% csrf_token %}
+<input type='hidden' id='form_type' name='form_type' value='demographic' />
+<ol>
+    <li><strong>Gender:</strong><br />
+        {% for opt in gender_options %}
+        <div class="radio" {% if opt.requires_detail %}style="display:inline-block;"{% endif %}>
+            <label class="radio"><input type="radio" name="gender" value="{{ opt.gender_id }}"{% ifequal form_values.gender opt.gender_id %} checked="checked"{% endifequal %}> {{ opt.name }}</label>
+        </div>
+        {% if opt.requires_detail %}
+            {% with gen='gender_detail_'|str_concat:opt.gender_id %}: <input name="gender_detail_{{ opt.gender_id }}" type="text" value="{{ form_values|hash:gen }}" />
+            {% endwith %}
+        {% endif %}
+        {% endfor %}
+    </li>
+
+    <li><strong>Date of birth (YYYY-MM-DD):</strong><br />
+
+        <input id="dob" class="form-control datefield" name="dob" type='text' value="{{ form_values.dob }}" style="width: 150px; margin-top: 5px;" placeholder="YYYY-MM-DD" />
+
+    </li>
+
+    <li><strong>People in Canada come from many racial or cultural groups. You may belong to more than one group on the following list. Are you:</strong><br />
+        {% for opt in ethnicity_options %}
+        <div class="checkbox">
+            <label class="checkbox"><input type="checkbox" name="ethnicity" value="{{ opt.ethnicity_id }}"{% if opt.ethnicity_id in form_ethnicity %} checked="checked"{% endif %}> {{ opt.name }}</label>
+        </div>
+        {% endfor %}
+    </li>
+
+    <li><strong>Select all languages you can communicate in (speak, understand, read, and write), along with the level of fluency for each:</strong><br />
+        <table class="table" id="language_selection">
+        <thead><tr><th style="width: 40%;">Language</th><th style="width: 60%;">Fluency</th></tr></thead>
+        <tbody>
+        {% for opt in language_options %}
+        <tr>
+            <td><div class="checkbox">
+                <label><input type="checkbox" name="language" value="{{ opt.language_id }}"{% if opt.language_id in dict_language.keys %} checked="checked"{% endif %}> {{ opt.name }}</label>
+            </div></td>
+            <td>
+            {% for detail_opt in language_fluency_options %}
+                <div class="radio">
+                    <label><input type="radio" name="language_fluency_{{ opt.language_id }}" value="{{ detail_opt.language_level_id }}"{% ifequal dict_language|hash:opt.language_id|add:"0" detail_opt.language_level_id|add:"0" %} checked="checked"{% endifequal %} onClick="javascript: selectCorrespondingLanguage(this);"> {{ detail_opt.name }}</label>
+                </div>
+            {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+
+        {% for lang_id, level_id in dict_language_other.items %}
+        <tr>
+            <td>
+                <select name="language_other" class="form-control">
+                <option value="">Select another language...</option>
+                {% for other_opt in language_other %}
+                    <option value="{{ other_opt.language_id }}"{% ifequal lang_id|add:"0" other_opt.language_id|add:"0" %} selected="selected"{% endifequal %}>{{ other_opt.name }}</option>
+                {% endfor %}
+                </select>
+            </td>
+            <td>
+                {% for detail_opt in language_fluency_options %}
+                    <div class="radio">
+                        <label><input type="radio" name="other_fluency_{{ forloop.parentloop.counter }}" value="{{ detail_opt.language_level_id }}"{% ifequal level_id|add:"0" detail_opt.language_level_id|add:"0" %} checked="checked"{% endifequal %}> {{ detail_opt.name }}</label>
+                    </div>
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+
+        <tr>
+            <td>
+                <select name="language_other" class="form-control">
+                <option value="">Select another language...</option>
+                {% for other_opt in language_other %}
+                    <option value="{{ other_opt.language_id }}">{{ other_opt.name }}</option>
+                {% endfor %}
+                </select>
+            </td>
+            <td>
+            {% for detail_opt in language_fluency_options %}
+                <div class="radio">
+                    <label><input type="radio" name="other_fluency_{{ dict_language_other|length|add:'1' }}" value="{{ detail_opt.language_level_id }}"> {{ detail_opt.name }}</label>
+                </div>
+            {% endfor %}
+            </td>
+        </tr>
+        </tbody></table>
+        <a href="javascript: void(0);" onClick="javascript: demographicsAddLanguage(this);">Add Another Language</a>
+    </li>
+
+    <li><strong>Education level (highest completed, or currently being completed)</strong><br />
+        {% for opt in education_options %}
+        <div class="radio">
+            <label class="radio"><input type="radio" name="education_level" value="{{ opt.education_level_id }}"{% ifequal form_values.education_level|add:"0" opt.education_level_id|add:"0" %} checked="checked"{% endifequal %}> {{ opt.name }}</label>
+        </div>
+        {% endfor %}
+    </li>
+
+    <li><strong>Have you ever been diagnosed with dementia? Please select any type of dementia with which you’ve been diagnosed. If you’ve never been diagnosed, please leave this section blank:</strong><br />
+        {% for opt in dementia_options %}
+        <div class="checkbox">
+            <label class="checkbox"><input type="checkbox" name="dementia_type" value="{{ opt.dementia_type_id }}"{% if opt.dementia_type_id|to_int in form_values|getlist:'dementia_type'|to_int %} checked="checked"{% endif %}> {{ opt.name }}
+            {% if opt.requires_detail %}
+            {% with det='dementia_type_detail_'|str_concat:opt.dementia_type_id %}
+            : <input name="dementia_type_detail_{{ opt.dementia_type_id }}" type="text" value="{{ form_values|hash:det }}" />
+            {% endwith %}
+            {% endif %}
+            </label>
+        </div>
+        {% endfor %}
+    </li>
+
+    <li class="detail_dementia"><strong>Do you currently take any medications for dementia?</strong><br />
+        <div class="radio">
+            <label class="radio"><input type="radio" name="dementia_med" value="yes"{% ifequal form_values.dementia_med "yes" %} checked="checked"{% endifequal %}> Yes</label>
+        </div>
+        <div class="radio">
+            <label class="radio"><input type="radio" name="dementia_med" value="no"{% ifequal form_values.dementia_med "no" %} checked="checked"{% endifequal %}> No</label>
+        </div>
+    </li>
+
+    <li><strong>Have you been a regular smoker (of tobacco) within the last 3 years?</strong><br />
+        <div class="radio">
+            <label class="radio"><input type="radio" name="smoking" value="yes"{% ifequal form_values.smoking "yes" %} checked="checked"{% endifequal %}> Yes</label>
+        </div>
+        <div class="radio">
+            <label class="radio"><input type="radio" name="smoking" value="no"{% ifequal form_values.smoking "no" %} checked="checked"{% endifequal %}> No</label>
+        </div>
+    </li>
+
+    <li><strong>Country you were born in:</strong><br />
+        <select name="country_origin" class="form-control" style="width: 300px; margin-top: 5px;">
+            <option value="">Select country...</option>
+            {% for opt in country_res_options %}
+                <option value="{{ opt.country_id }}"{% ifequal form_values.country_origin|add:"0" opt.country_id|add:"0" %} selected="selected"{% endifequal %}>{{ opt.name }}</option>
+            {% endfor %}
+        </select>
+    </li>
+
+    <li><strong>Country you currently reside in:</strong><br />
+        <select name="country_res" class="form-control" style="width: 300px; margin-top: 5px;">
+            <option value="">Select country...</option>
+            {% for opt in country_res_options %}
+                <option value="{{ opt.country_id }}"{% ifequal form_values.country_res|add:"0" opt.country_id|add:"0" %} selected="selected"{% endifequal %}>{{ opt.name }}</option>
+            {% endfor %}
+        </select>
+    </li>
+
+</ol>
+
+<div><button class="btn btn-primary btn-lg" type="button" onClick="javascript: formSubmit(this, 'Submitting data, please wait...');">Submit</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
+</form>

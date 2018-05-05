@@ -15,6 +15,7 @@ from datacollector.views import global_passed_vars, notify, STATIC_URL
 from datacollector.constants import OISE_BUNDLE_ID
 from datacollector.oise.session_helper import display_session_task_instance, submit_response
 from datacollector.oise.demographics_helper import update_demographics
+from datacollector.oise.questionnaire_helper import save_questionnaire_responses
 
 WEBSITE_ROOT = '/talk2me/oise'
 

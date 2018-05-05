@@ -1,0 +1,122 @@
+<h1>Informed Consent</h1>
+<hr />
+{% if form_errors %}
+<div class="bs-callout bs-callout-danger">
+    <strong>The form could not be submitted. Please correct the following error{{ form_errors|pluralize }}:</strong>
+    <ul>
+    {% for err in form_errors %}
+        <li>{{ err }}</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form action="" method="POST">
+{% csrf_token %}
+<input type='hidden' id='form_type' name='form_type' value='consent' />
+
+{% if subject_bundle and subject_bundle.bundle and subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone' %}
+    {% include 'datacollector/uhn/consent.html' %}
+{% else %}
+    <h3>Research Project</h3>
+    <p>The <a href="http://www.cs.toronto.edu/compling/index.html">Computational Linguistics</a> group at the <a href="http://www.cs.toronto.edu/">Department of Computer Science</a> in the <a href="http://www.utoronto.ca/">University of Toronto</a> is conducting a study to analyze the differences in longitudinal progression of linguistic markers between healthy older adults and ones with dementia. We are interested in assessing the validity and usability of an automated web-based and phone-based system ({{ website_name }}) for linguistic data acquisition, as means for longitudinal monitoring of changes in language ability. To familiarize yourself with the purpose, procedures, and risks of the project, please <a target="_blank" href="/{{ website_id }}/about">click here</a>. When you have carefully read the linked document, you can proceed with the consent form below.</p>
+
+    <h3>Contact Information</h3>
+
+    <div class="row" style='margin-bottom: 10px;'>
+        <div class="col-md-12">
+            <address>
+            <strong>Chloé Pou-Prom, MSc Candidate</strong><br />
+            Principal Investigator<br />
+            Bahen Centre for Information Technology<br />
+            40 St George St, Toronto, Room BA4202<br />
+            Toronto, Ontario M5S 2E4<br />
+            514-710-9994<br />
+            <a href="mailto:yancheva@cs.toronto.edu">chloe@cs.toronto.edu</a><br />
+            </address>
+        </div>
+    </div>
+
+    <div class="row" style='margin-bottom: 10px;'>
+        <div class="col-md-12">
+            <address>
+            <strong>Maria Yancheva, MSc</strong><br />
+            Co-Investigator<br />
+            D. L. Pratt Bldg<br />
+            6 King's College Road, Room PT276 D3<br />
+            Toronto, Ontario M5S 3G8<br />
+            416-830-2434<br />
+            <a href="mailto:yancheva@cs.toronto.edu">yancheva@cs.toronto.edu</a><br />
+            </address>
+        </div>
+    </div>
+
+    <div class="row" style='margin-bottom: 10px;'>
+        <div class="col-md-12">
+            <address>
+            <strong>Frank Rudzicz, PhD</strong><br />
+            Faculty Supervisor<br />
+            Toronto Rehabilitation Institute - UHN<br />
+            550 University Avenue, Room 12-175<br />
+            Toronto, Ontario M5G 2A2<br />
+            416-597-3422 x7971<br />
+            <a href="mailto:frank@cs.toronto.edu">frank@cs.toronto.edu</a><br />
+            </address>
+        </div>
+    </div>
+
+    <p><u>If you have any questions regarding your rights as a research participant, you can contact the Office of Research Ethics (<a href="mailto:ethics.review@utoronto.ca">ethics.review@utoronto.ca</a> or +1 416-946-3273).</u></p>
+
+    <p>The purpose, procedures and risks of the project have been explained to me and I fully understand them. I have been given the chance to ask questions and these were answered to my satisfaction. I understand that I am free to ask questions about the study at any time.</p>
+
+    <p>I understand that I will be asked to complete a demographic questionnaire prior to participation in the study, participate in one or more sessions consisting of questions testing cognitive ability, and complete an optional post-study usability questionnaire. The data collected as part of this study will be used for research purposes only, and will be retained for an indefinite length of time to facilitate future research.</p>
+
+    <p>I understand that my participation is voluntary and that I may withdraw from the study at any time, either by contacting the investigators directly or through the website. I understand that all personal information and data recorded up to that point will be destroyed immediately. I also understand that in no way my acceptance to participate or my withdrawal from participation will affect my interests in any way.</p>
+
+    <div class="consent-main">
+        <div class="consent-container">
+            <div class="radio">
+                <label><input name='radio_consent' type='radio' value="participant"{% if form_values.radio_consent == 'participant' %} checked="checked"{% endif %} />&nbsp;<strong>I am the participant, I have read the entire consent form, and I consent to participate in this study</strong></label>
+            </div>
+            <div class="radio">
+                <label><input name='radio_consent' type='radio' value="alternate"{% if form_values.radio_consent == 'alternate' %} checked="checked"{% endif %} />&nbsp;<strong>I am an alternate decision maker who has read the entire consent form, and I provide consent on behalf of the participant. The participant has read the entire consent form and assents to participate in this study</strong></label>
+            </div>
+        </div>
+    </div>
+
+    <br />
+    <p>The following selections are optional, but would greatly benefit research outcomes:</p>
+    <div class="checkbox">
+        <label><input id='cb_preference_public_release' name='cb_preference_public_release' type='checkbox'{% if 'cb_preference_public_release' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>In the event that the data recorded in this study is made public for research purposes, I agree to include my data, provided that all data is presented anonymously (i.e., my username and email address are not disclosed).</strong> I understand that the nature of the language data I provide during the study (e.g., audio recordings) may itself be used to discover my identity.</label>
+    </div>
+
+    <div class="checkbox">
+        <label><input id='cb_preference_email_reminders' name='cb_preference_email_reminders' type='checkbox'{% if 'cb_preference_email_reminders' in form_values %} checked='checked'{% endif %} onClick="javascript: showCbDetails(this);">&nbsp;<strong>I wish to receive scheduled e-mail reminders (e.g., monthly) to complete new sessions on the website or on the telephone(each session takes approximately 15 minutes).</strong> I understand that I can easily unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to my e-mail address, which will <u>not</u> be shared with any third parties or used for commercial purposes.</label>
+    </div>
+    <div id="detail_preference_email_reminders"{% if 'cb_preference_email_reminders' not in form_values %} class="invisible"{% endif %} style="margin-left: 20px;">
+        Frequency:
+        <div class="radio" style="display: inline; margin-left: 10px; margin-bottom: 15px;">
+            <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="7"{% if form_values.radio_email_reminders_freq == '7' %} checked="checked"{% endif %} /> Weekly</label>
+            <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="30"{% if form_values.radio_email_reminders_freq == '30' %} checked="checked"{% endif %}{% if 'radio_email_reminders_freq' not in form_values %} checked="checked"{% endif %} /> Monthly</label>
+            <label class="radio-inline"><input type="radio" name="radio_email_reminders_freq" value="365"{% if form_values.radio_email_reminders_freq == '365' %} checked="checked"{% endif %} /> Annually</label>
+        </div>
+    </div>
+
+    <div class="checkbox">
+        <label><input id='cb_preference_email_updates' name='cb_preference_email_updates' type='checkbox'{% if 'cb_preference_email_updates' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>I wish to receive electronic communication regarding study outcomes, updates and research publications</strong> based on the data collected as part of this study. I understand that I can easily unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to my e-mail address, which will <u>not</u> be shared with any third parties or used for commercial purposes.</label>
+    </div>
+
+    <!--div class="checkbox">
+        <label><input id='cb_preference_prizes' name='cb_preference_prizes' type='checkbox'{% if 'cb_preference_prizes' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>I would like to participate in the {{ website_name }} prize draws.</strong> Prize draws of total value of $1,500 over the course of the study will be held monthly, each prize being approximately $20. Completing sessions during the month, and filling out the (optional) usability questionnaire both increase the chances of winning. The winners will be notified on the last day of the month. I understand that if I win, I will be contacted via my e-mail address, which will <u>not</u> be shared with any third parties or used for commercial purposes.</label>
+    </div>
+
+    <br /-->
+
+    <div>
+        E-mail address: <input class="form-control" id='email_address' name='email_address' style='width: 250px;' type='text' value="{{ form_values.email_address }}">
+    </div>
+    <br />
+
+    <div><button type="button" onClick="javascript: formSubmit(this, 'Submitting data, please wait...');" class="btn btn-primary btn-lg">Submit</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
+    </form>
+{% endif %}

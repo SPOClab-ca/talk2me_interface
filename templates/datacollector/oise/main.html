@@ -7,7 +7,7 @@
     {% if is_authenticated %}
         Logged in as {{ user.username }} (<a href="/{{ website_id }}/{{ oise_study }}/logout">logout</a>)
     {% else %}
-        <a href="/{{ website_id }}/{{ oise_study }}/login">Login</a> | 
+        <a href="/{{ website_id }}/{{ oise_study }}/login">Login</a> |
         <a href="/{{ website_id }}/{{ oise_study }}/register?bid=5&bt=paugiuq1qb97j0l2gn7ks1pqzx3xidw5nkdor0wkpgzwcp3h4zh76flqexy9w9iqc29w87o1hoosu7goxmcg5dw71bwmkh7xxnsf53zq58rgsddrmyr7xky16viibupc">New User</a>
     {% endif %}
 {% endblock %}
