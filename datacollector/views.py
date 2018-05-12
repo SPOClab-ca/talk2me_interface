@@ -1055,6 +1055,11 @@ def register(request):
             if bundle_exists and bundle_valid and bundle_id:
                 bundle = Bundle.objects.get(bundle_id=bundle_id)
                 if bundle.name_id == 'oise':
+
+                    # Set consent_submitted to today
+                    today = datetime.datetime.now().date()
+                    Subject.objects.filter(user_id=new_user.id).update(date_consent_submitted=today)
+
                     return HttpResponseRedirect(OISE_WEBSITE_ROOT)
             return HttpResponseRedirect(website_root)
     else:
