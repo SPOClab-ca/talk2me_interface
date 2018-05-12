@@ -64,8 +64,18 @@ VOCABULARY_UHN_PHONE_BUNDLE_TASK_ID = 12
 PICTURE_DESCRIPTION_UHN_WEB_BUNDLE_TASK_ID = 6
 RIG_UHN_WEB_BUNDLE_TASK_ID = 9
 RIG_UHN_PHONE_BUNDLE_TASK_ID = 15
-FLUENCY_READING_OISE_BUNDLE_TASK_ID = 19
-WORD_RECALL_OISE_BUNDLE_TASK_ID = 24
+
+OISE_BUNDLE = Bundle.objects.get(name_id='oise')
+FLUENCY_READING_OISE_TASK = Task.objects.get(name_id='reading_fluency')
+FLUENCY_READING_OISE_BUNDLE_TASK_ID = Bundle_Task.objects\
+                                                 .get(bundle=OISE_BUNDLE, \
+                                                      task=FLUENCY_READING_OISE_TASK)\
+                                                 .bundle_task_id
+WORD_RECALL_OISE_TASK = Task.objects.get(name_id='word_recall_oise')
+WORD_RECALL_OISE_BUNDLE_TASK_ID = Bundle_Task.objects\
+                                             .get(bundle=OISE_BUNDLE, \
+                                                  task=WORD_RECALL_OISE_TASK)\
+                                             .bundle_task_id
 
 # Difficulty ID variables
 DIFFICULTY_LOW_ID = 1
