@@ -463,7 +463,7 @@ def display_question(instance_value, field_data_type):
     return display_field
 
 def display_response(instance_value, field_data_type, \
-                     audio_instruction=None):
+                     audio_instruction=None, recording_button_text=None):
     requires_audio = False
     response_field = ""
     response_object = Session_Response.objects.filter(session_task_instance=instance_value.session_task_instance)[0]
@@ -493,9 +493,12 @@ def display_response(instance_value, field_data_type, \
             response_field += " class='invisible'"
         response_field += "><input id='btn_recording_" + instance_id + \
                           "' type='button' class='btn btn-success btn-med" + \
-                          " btn-fixedwidth' onClick='javascript: toggleRecording(this);'" + \
-                          " value='Start recording'>&nbsp;" + \
-                          "<span class='invisible' id='status_recording_" + \
+                          " btn-fixedwidth' onClick='javascript: toggleRecording(this);'"
+        if recording_button_text:
+            response_field += " value='" + recording_button_text + "'>&nbsp;"
+        else:
+            response_field += " value='Start recording'>&nbsp;"
+        response_field += "<span class='invisible' id='status_recording_" + \
                           instance_id + "'><img src='" + STATIC_URL + \
                           "img/ajax_loader.gif' /> <span id='status_recording_" + \
                           instance_id + "_msg'></span></span>" + \

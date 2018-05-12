@@ -45,6 +45,14 @@
                     {{ active_task_instruction_audio }}
                     {% endautoescape %}
                 {% endif %}
+
+                {% if active_task_instruction_video %}
+                    <br>
+                    <video width="640" height="385" controls controlsList="nodownload">
+                        <source src="{{STATIC_URL}}/{{ active_task_instruction_video }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
             </div>
 
             <div class="oise-task-start-button">

@@ -104,6 +104,7 @@ def session(request, session_id):
     active_task_instruction = None
     submit_button_message = None
     active_task_instruction_audio = None
+    active_task_instruction_video = None
 
     # Task instance
     active_session_task_instance = None
@@ -224,6 +225,7 @@ def session(request, session_id):
                 'active_session_task_instance': active_session_task_instance,
                 'active_task_instruction':  active_task_instruction,
                 'active_task_instruction_audio': active_task_instruction_audio,
+                'active_task_instruction_video': active_task_instruction_video,
                 'display_field': display_field,
                 'response_field': response_field,
                 'requires_audio': requires_audio,
@@ -231,7 +233,8 @@ def session(request, session_id):
                 'session_completed': session_completed,
                 'submit_button_message': submit_button_message,
                 'form_errors': form_errors,
-                'demographics_type': 'general'
+                'demographics_type': 'general',
+                'audio_instruction_file': audio_instruction_file
             }
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
@@ -260,13 +263,18 @@ def demographics(request):
                 'demographics_type': demographics_type
             }
             if demographics_submitted:
-                return HttpResponseRedirect(WEBSITE_ROOT)
+
+                # Redirect to the newly-created session
+                subject = Subject.objects.get(user_id=request.user.id)
+                latest_session = Session.objects.filter(subject=subject, end_date__isnull=True).order_by('start_date')[0]
+                return HttpResponseRedirect(WEBSITE_ROOT + '/session/' + str(latest_session.session_id))
 
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
         elif request.method == "GET":
             passed_vars = {
                 'demographics_type': 'general'
             }
+            passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/oise/session.html', \
                                       passed_vars, \
                                       context_instance=RequestContext(request))
@@ -295,5 +303,5 @@ def questionnaire(request):
                 'session_completed': True,
                 'questionnaire_submitted': questionnaire_submitted,
             }
-
+            passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
