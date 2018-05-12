@@ -980,6 +980,8 @@ def logout(request):
     if subject_bundle:
         if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
             return HttpResponseRedirect(uhn_website_root)
+        elif subject_bundle[0].bundle.name_id == 'oise':
+            return HttpResponseRedirect(OISE_WEBSITE_ROOT)
 
     return HttpResponseRedirect(website_root)
 
