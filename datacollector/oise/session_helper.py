@@ -33,6 +33,7 @@ def display_session_task_instance(session_task_id):
     """
 
     is_last_task_instance = False
+    audio_instruction_file = None
 
 
     # Retrieve active task instance values
@@ -54,17 +55,17 @@ def display_session_task_instance(session_task_id):
 
         # Only display one Session_Response object at a time
         if task_name == 'reading_fluency':
-            display_field, response_field, requires_audio = display_reading_fluency(active_session_task_instance.session_task_instance_id)
+            display_field, response_field, requires_audio, audio_instruction_file = display_reading_fluency(active_session_task_instance.session_task_instance_id)
         elif task_name == 'picture_description_oise':
-            display_field, response_field, requires_audio = display_picture_description(active_session_task_instance.session_task_instance_id)
+            display_field, response_field, requires_audio, audio_instruction_file = display_picture_description(active_session_task_instance.session_task_instance_id)
         elif task_name == 'story_retelling_oise':
-            display_field, response_field, requires_audio = display_story_retelling(active_session_task_instance.session_task_instance_id)
+            display_field, response_field, requires_audio, audio_instruction_file = display_story_retelling(active_session_task_instance.session_task_instance_id)
         elif task_name == WORD_MAP:
-            display_field, response_field, requires_audio = display_word_map(active_session_task_instance.session_task_instance_id)
+            display_field, response_field, requires_audio, audio_instruction_file = display_word_map(active_session_task_instance.session_task_instance_id)
         elif task_name == PUZZLE_SOLVING:
-            display_field, response_field, requires_audio = display_puzzle_solving(active_session_task_instance.session_task_instance_id)
+            display_field, response_field, requires_audio, audio_instruction_file = display_puzzle_solving(active_session_task_instance.session_task_instance_id)
         elif task_name == WORD_RECALL:
-            display_field, response_field, requires_audio = display_word_recall(active_session_task_instance.session_task_instance_id)
+            display_field, response_field, requires_audio, audio_instruction_file = display_word_recall(active_session_task_instance.session_task_instance_id)
         elif task_name == WORD_SOUNDS:
             display_field, response_field, \
                 requires_audio = display_task(active_session_task_instance.session_task_instance_id,\
@@ -73,7 +74,7 @@ def display_session_task_instance(session_task_id):
         if len(session_response_objects) == 1:
             is_last_task_instance = True
 
-        return active_session_task_instance, display_field, response_field, requires_audio, is_last_task_instance
+        return active_session_task_instance, display_field, response_field, requires_audio, is_last_task_instance, audio_instruction_file
     #else:
         # TODO: All tasks were complete???
 
@@ -186,6 +187,7 @@ def submit_response(request):
     ## SUBMITTING ANSWERS
     if form_errors:
         json_data['error'] = [dict(msg=x) for x in form_errors]
+        json_data['status'] = 'error'
 
     return json_data
 
@@ -230,9 +232,11 @@ def display_reading_fluency(session_task_instance_id):
 
         response = Task_Field.objects.get(assoc_id=task_field_id)
         response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+        audio_instruction_file = 'instructions/reading_fluency_story.mp3'
 
     # For multiple choice questions, we display one question field and multiple response fields
     elif task_field_id == task_field_question.task_field_id:
+        audio_instruction_file = 'instructions/reading_fluency_question.mp3'
         response = Task_Field.objects.get(assoc_id=task_field_id)
         response_instances = Session_Task_Instance_Value.objects \
                                 .filter(session_task_instance_id=session_task_instance_id, \
@@ -248,7 +252,7 @@ def display_reading_fluency(session_task_instance_id):
     question = Task_Field.objects.get(task_field_id=task_field_id)
     display_field = display_question(task_instance, str(question.field_data_type))
 
-    return display_field, response_field, requires_audio
+    return display_field, response_field, requires_audio, audio_instruction_file
 
 def display_picture_description(session_task_instance_id):
     """
@@ -264,9 +268,13 @@ def display_picture_description(session_task_instance_id):
 
     display_field = display_question(task_instance, str(question.field_data_type))
 
-    response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+    response_field, requires_audio = display_response(task_instance, \
+                                                      str(response.field_data_type), \
+                                                      recording_button_text="Start describing")
 
-    return display_field, response_field, requires_audio
+    audio_instruction_file = 'instructions/picture_description_picture.mp3'
+
+    return display_field, response_field, requires_audio, audio_instruction_file
 
 def display_story_retelling(session_task_instance_id):
     """
@@ -284,10 +292,16 @@ def display_story_retelling(session_task_instance_id):
     response = Task_Field.objects.get(assoc_id=task_field_id, field_data_type=2)
 
     display_field = display_question(task_instance, str(story_field.field_data_type))
+    audio_instruction_file = ''
+    if str(story_field.field_data_type) == "audio":
+        audio_instruction_file = 'instructions/story_retelling_listen.mp3'
+    elif str(story_field.field_data_type) == "text_well":
+        audio_instruction_file = 'instructions/story_retelling_read.mp3'
 
-    response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+    response_field, requires_audio = display_response(task_instance, str(response.field_data_type), \
+                                                      recording_button_text="Start retelling")
 
-    return display_field, response_field, requires_audio
+    return display_field, response_field, requires_audio, audio_instruction_file
 
 def display_word_completion(session_task_id):
     """
@@ -336,8 +350,9 @@ def display_word_map(session_task_instance_id):
                                  " id='imageurl'" + \
                                  " name='imageurl' type='hidden' value='%s' />" \
                                  % DEFAULT_MINDMAP_IMAGE
+    audio_instruction_file = 'instructions/word_map_click.mp3'
 
-    return display_field, response_field, False
+    return display_field, response_field, False, audio_instruction_file
 
 def display_puzzle_solving(session_task_instance_id):
     task_id = Task.objects.get(name_id=PUZZLE_SOLVING).task_id
@@ -361,7 +376,8 @@ def display_puzzle_solving(session_task_instance_id):
                                                        str(response.field_data_type))
     response_field += response_field_instance
 
-    return display_field, response_field, False
+    audio_instruction_file = 'instructions/puzzle_solving_click.mp3'
+    return display_field, response_field, False, audio_instruction_file
 
 def display_word_recall(session_task_instance_id):
     task_id = Task.objects.get(name_id=WORD_RECALL).task_id
@@ -392,7 +408,8 @@ def display_word_recall(session_task_instance_id):
                                          str(response.field_data_type), \
                                          audio_instruction="Say as many words as you can remember!")
 
-    return display_field, response_field, True
+    audio_instruction_file = 'instructions/word_recall_click.mp3'
+    return display_field, response_field, True, audio_instruction_file
 
 def display_question(instance_value, field_data_type):
     """

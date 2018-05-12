@@ -1,7 +1,13 @@
 {% if questionnaire_submitted %}
     <h1>You are finished!</h1>
+    <audio controls autoplay style="display:none;">
+        <source src="{{ STATIC_URL }}/audio/oise/instructions/finished.mp3" type="audio/ogg">
+    </audio>
 {% else %}
     <h1>Great work! Now, please tell us a little bit more about you.</h1>
+    <audio controls autoplay style="display:none;">
+        <source src="{{ STATIC_URL }}/audio/oise/instructions/conclusion.mp3" type="audio/ogg">
+    </audio>
     <form action="/talk2me/oise/questionnaire" method="POST">
     {% csrf_token %}
     <input type='hidden' id='form_type' name='form_type' value='questionnaire' />

@@ -17,11 +17,17 @@ from datacollector.oise.session_helper import display_session_task_instance, sub
 from datacollector.oise.demographics_helper import update_demographics
 from datacollector.oise.questionnaire_helper import save_questionnaire_responses
 
+import session_helper
+
 WEBSITE_ROOT = '/talk2me/oise'
 
 STORY_RETELLING_TASK_ID = Task.objects.get(name_id='story_retelling_oise').task_id
 READING_FLUENCY_TASK_ID = Task.objects.get(name_id='reading_fluency').task_id
 PICTURE_DESCRIPTION_TASK_ID = Task.objects.get(name_id='picture_description_oise').task_id
+WORD_SOUNDS_TASK_ID = Task.objects.get(name_id='word_sounds_oise').task_id
+WORD_RECALL_TASK_ID = Task.objects.get(name_id='word_recall_oise').task_id
+PUZZLE_SOLVING_TASK_ID = Task.objects.get(name_id='puzzle_solving_oise').task_id
+WORD_MAP_TASK_ID = Task.objects.get(name_id='word_map_oise').task_id
 
 def index(request):
     '''
@@ -106,6 +112,7 @@ def session(request, session_id):
     response_field = None
     requires_audio = False
     is_last_task_instance = False
+    audio_instruction_file = None
 
     form_errors = None
 
@@ -151,17 +158,26 @@ def session(request, session_id):
 
                     if active_task.task.task_id == READING_FLUENCY_TASK_ID:
                         submit_button_message = 'Continue story'
-                        active_task_instruction_audio = ('<audio controls autoplay style=' + \
-                                                         '"display:none;"><source src="%s/audio/oise/' + \
-                                                         'instructions/example_instruction.mp3" ' + \
-                                                         'type="audio/ogg">Your browser does not '+\
-                                                         'support the audio element.</audio>') % STATIC_URL
+                        audio_file = 'instructions/reading_fluency_instruction.mp3'
                     elif active_task.task.task_id == PICTURE_DESCRIPTION_TASK_ID:
+                        audio_file = 'instructions/picture_description_instruction.mp3'
+                    elif active_task.task.task_id == STORY_RETELLING_TASK_ID:
+                        audio_file = 'instructions/story_retelling_instruction.mp3'
+                    elif active_task.task.task_id == WORD_SOUNDS_TASK_ID:
+                        audio_file = 'instructions/word_sounds_instruction.mp3'
+                    elif active_task.task.task_id == WORD_MAP_TASK_ID:
+                        audio_file = 'instructions/word_map_instruction.mp3'
+                        active_task_instruction_video = 'video/oise_word_map.mp4'
+                    elif active_task.task.task_id == WORD_RECALL_TASK_ID:
+                        submit_button_message = "I'm ready for the words"
+                        audio_file = 'instructions/word_recall_instruction.mp3'
+                    elif active_task.task.task_id == PUZZLE_SOLVING_TASK_ID:
+                        audio_file = 'instructions/puzzle_solving_instruction.mp3'
+                    if audio_file:
                         active_task_instruction_audio = ('<audio controls autoplay style=' + \
-                                                         '"display:none;"><source src="%s/audio/oise/' + \
-                                                         'instructions/example_instruction_pd.mp3" ' + \
-                                                         'type="audio/ogg">Your browser does not ' + \
-                                                         'support the audio element.</audio>') % STATIC_URL
+                                                        '"display:none;"><source src="%s/audio/oise/%s" ' + \
+                                                        'type="audio/ogg">Your browser does not ' + \
+                                                        'support the audio element.</audio>') % (STATIC_URL,audio_file)
                 # If session responses are submitted, perform validation.
                 # If validation passes, write them to the database and return a
                 # 'success' response to the AJAX script. If validation fails,
@@ -179,12 +195,14 @@ def session(request, session_id):
                         session_task_in_progress = True
                         active_session_task_instance, display_field, \
                         response_field, requires_audio, \
-                        is_last_task_instance = display_session_task_instance(active_session_task_id)
-
+                        is_last_task_instance, audio_instruction_file = display_session_task_instance(active_session_task_id)
 
                     elif 'instanceid' in request.POST:
                         json_response = submit_response(request)
-                        return HttpResponse(json.dumps(json_response))
+                        if json_response['status'] == 'success':
+                            return HttpResponse(json.dumps(json_response))
+                        else:
+                            form_errors = json_response['error']
                     else:
                         json_response = submit_response(request)
                         if 'error' in json_response:

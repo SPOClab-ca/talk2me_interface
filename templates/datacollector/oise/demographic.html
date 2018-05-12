@@ -1,5 +1,8 @@
 {% if demographics_type == 'general'%}
     <h1>We would like to learn about you!</h1>
+    <audio controls autoplay style="display:none;">
+        <source src="{{ STATIC_URL }}/audio/oise/instructions/introduction.mp3" type="audio/ogg">
+    </audio>
 {% else %}
     <h1>Tell us about your language background!</h1>
 {% endif %}<!-- End title display -->

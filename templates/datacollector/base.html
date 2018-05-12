@@ -11,7 +11,7 @@
 
     <!-- Google Fonts -->
     <link href='//fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
-    
+
     <!-- Bootstrap -->
     <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">-->
     <link rel="stylesheet" href="{{ STATIC_URL }}css/jquery-ui.min.css">
@@ -38,7 +38,7 @@
           padding-right: 5px;
         }
       }
-    </style>    
+    </style>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -46,11 +46,11 @@
       <script src="{{ STATIC_URL }}js/html5shiv.min.js"></script>
       <script src="{{ STATIC_URL }}js/respond.min.js"></script>
     <![endif]-->
-    
+
 </head>
 
 <body id="top">
-    
+
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
@@ -65,21 +65,21 @@
           {% else %}
             <a class="navbar-brand" href="/{{ website_id }}">{{ website_name }}</a>
           {% endif %}
-          
+
 
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <div class="navbar-text pull-right">
-            
+
                 {% if is_authenticated and consent_submitted and demographic_submitted %}
                 <span class="dropdown" style="margin-right: 8px;">
                     <a id="dropdown_notifications" class="glyphicon glyphicon-bell dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"></a>
-                    
+
                     <span class="dropdown-label-new"{% if not active_notifications %} style="visibility: hidden;"{% endif %}>
                         &nbsp;{{ active_notifications|length }}&nbsp;
                     </span>
                     <!-- <img id="dropdown_notifications" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="height: 28px; margin: 0; padding: 0; vertical-align: middle;" src="{{ STATIC_URL }}img/icon_announce.png" /> -->
-                    
+
                     <table id="list-notifications" class="dropdown-menu dropdown-notifications" aria-labelledby="dropdown_notifications">
                         <tbody>
                             {% for notif in active_notifications %}
@@ -88,13 +88,13 @@
                                     <td>{{ notif.notification.notification_text }}</td>
                                 </tr>
                             {% endfor %}
-                            
+
                             {% if not active_notifications %}
                                 <tr class='no-notif'>
                                     <td colspan="2">Nothing new.</td>
                                 </tr>
                             {% endif %}
-                            
+
                             <!-- Link to the page with all historical notifications -->
                             <tr class='notifications-link clickable-row' data-href='/{{ website_id }}/notify/view'>
                                 <td colspan="2">View all notifications</td>
@@ -103,7 +103,7 @@
                     </table>
                 </span>
                 {% endif %}
-                
+
                 {% block auth_user %}{% endblock %}
           </div>
           <ul class="nav navbar-nav">
@@ -117,9 +117,9 @@
         </div><!--/.nav-collapse -->
       </div>
     </nav>
-    
+
     {% block header %}{% endblock %}
-    
+
     <div class="container">
         <div id="content">
             {% block content %}{% endblock %}
@@ -131,7 +131,7 @@
             <p>&copy; University of Toronto 2018</p>
           </footer>
     </div><!-- /.container -->
-    
+
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

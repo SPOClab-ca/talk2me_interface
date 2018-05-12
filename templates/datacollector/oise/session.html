@@ -69,6 +69,13 @@
                     {% autoescape off %}
                     {{ display_field }}
                     {% endautoescape %}
+
+                    {% if audio_instruction_file %}
+                    <audio controls autoplay style="display:none;">
+                        <source src="{{ STATIC_URL }}/audio/oise/{{ audio_instruction_file }}" type="audio/ogg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    {% endif %}
                 </div>
 
                 <form method="post">
