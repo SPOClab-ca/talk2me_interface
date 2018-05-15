@@ -17,9 +17,13 @@ from datacollector.oise.session_helper import display_session_task_instance, sub
 from datacollector.oise.demographics_helper import update_demographics
 from datacollector.oise.questionnaire_helper import save_questionnaire_responses
 
+from csc2518.settings import SUBSITE_ID, OISE_STUDY
+
 import session_helper
 
-WEBSITE_ROOT = '/talk2me/oise'
+WEBSITE_ROOT = '/'
+WEBSITE_ROOT += SUBSITE_ID
+WEBSITE_ROOT += OISE_STUDY
 
 STORY_RETELLING_TASK_ID = Task.objects.get(name_id='story_retelling_oise').task_id
 READING_FLUENCY_TASK_ID = Task.objects.get(name_id='reading_fluency').task_id
@@ -267,7 +271,7 @@ def demographics(request):
                 # Redirect to the newly-created session
                 subject = Subject.objects.get(user_id=request.user.id)
                 latest_session = Session.objects.filter(subject=subject, end_date__isnull=True).order_by('start_date')[0]
-                return HttpResponseRedirect(WEBSITE_ROOT + '/session/' + str(latest_session.session_id))
+                return HttpResponseRedirect(WEBSITE_ROOT + 'session/' + str(latest_session.session_id))
 
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
         elif request.method == "GET":
