@@ -2186,15 +2186,6 @@ def about(request):
                 subject_bundle = subject_bundle[0]
                 if subject_bundle.bundle.name_id == 'uhn_web' or subject_bundle.bundle.name_id == 'uhn_phone':
                     is_uhn_study = True
-                elif subject_bundle.bundle.name_id == 'oise':
-
-                    passed_vars = {
-                        'is_authenticated': is_authenticated, 'user': request.user,
-                        'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted,
-                        'active_notifications': active_notifications, 'is_uhn_study': is_uhn_study
-                    }
-                    passed_vars.update(global_passed_vars)
-                    return render_to_response('datacollector/oise/about.html', passed_vars, context_instance=RequestContext(request))
 
     passed_vars = {
         'is_authenticated': is_authenticated, 'user': request.user,

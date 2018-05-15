@@ -309,3 +309,31 @@ def questionnaire(request):
             }
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
+
+def about(request):
+    is_authenticated = False
+    active_notifications = None
+    consent_submitted = False
+    demographic_submitted = False
+
+    if request.user.is_authenticated():
+        is_authenticated = True
+        subject = Subject.objects.filter(user_id=request.user.id)
+        if subject:
+            subject = subject[0]
+            consent_submitted = subject.date_consent_submitted
+            demographic_submitted = subject.date_demographics_submitted
+
+            # Fetch all notifications that are active and have not been dismissed by the user
+            # (NB: Q objects must appear before keyword parameters in the filter)
+            active_notifications = notify.get_active_new(subject)
+
+    passed_vars = {
+        'is_authenticated': is_authenticated,
+        'user': request.user,
+        'consent_submitted': consent_submitted,
+        'demographic_submitted': demographic_submitted,
+        'active_notifications': active_notifications,
+        }
+    passed_vars.update(global_passed_vars)
+    return render_to_response('datacollector/oise/about.html', passed_vars, context_instance=RequestContext(request))
