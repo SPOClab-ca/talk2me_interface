@@ -1,0 +1,115 @@
+{% extends "datacollector/oise/base.html" %}
+
+
+
+{% block content %}
+
+
+
+
+{% if view_session_information %}
+    <h1> Talk2Me Jr - User  {{ subject_id }}</h1>
+    <hr/>
+
+    <h3><a href="/{{ website_id }}/{{ oise_study }}/admin">Go back to summary view</a></h3>
+
+    <h2>Demographic information</h2>
+    <ul>
+        <li>Age: {{ demographics.age }}</li>
+        <li>Gender: {{ demographics.gender }}</li>
+        <li>Grade: {{demographics.grade }}</li>
+        <li>English ability: {{ demographics.english_ability }} *</li>
+    </ul>
+    <small>* <i>English ability</i> values correspond to <i>Poor</i> (1), <i>Not that good</i> (2), <i>Okay</i> (3), <i>Good</i> (4), <i>Excellent</i> (5)</small>
+
+    <h2>Sessions</h2>
+
+    {% for session in sessions %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Session {{ session.session_id }} completed on {{ session.end_date }}</h3>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr style="font-weight: bold">
+                        <td>Task</td>
+                        <td>Date completed</td>
+                    </tr>
+                </thead>
+                {% for session_task in session.session_tasks %}
+                    <tr>
+                        <td>{{ session_task.name }}</td>
+                        <td>{{ session_task.date_completed}}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endfor %}
+
+
+{% else %}
+    <h1> Talk2Me Jr - Summary</h1>
+    <hr/>
+
+
+    <h2>Add new user</h2>
+
+    <form method="post" action="/{{ website_id }}/{{ oise_study }}/admin">
+    {% csrf_token %}
+        <ul>
+        <li>
+            <strong>Username</strong>
+            <input type="text" name="name" value="{{ form_values.username }}">
+        </li>
+
+        <li>
+            <strong>Password</strong>
+            <input type="text" name="age" value="{{ form_values.password }}">
+        </li>
+    </ul>
+        <input type="hidden" id="form_type" name="form_type" value="create_user">
+        <input type="hidden" id="bundle_name" name="bundle_name" value="{{ bundle.name_id }}">
+        {% for field in form %}
+            <b>{{ field.label }}</b>
+            {% if forloop.first %}
+                {{ field }} {{ field.errors }}<br>
+            {% else %}
+                {{ field }} {{ field.errors }}<br>
+            {% endif %}
+        {% endfor %}
+    <button type="submit" class="btn btn-lg btn-primary">Create a new user</button>
+    </form>
+
+    <h2>Current users</h2>
+    <ul>
+        <li>Total # of users: {{ oise_users|length }}</li>
+        <li><i>English ability</i> values correspond to <i>Poor</i> (1), <i>Not that good</i> (2), <i>Okay</i> (3), <i>Good</i> (4), <i>Excellent</i> (5)</li>
+    </ul>
+
+    <table class="table table-hover">
+    <thead>
+    <tr style="font-weight: bold">
+        <td>User ID</td>
+        <td>Age</td>
+        <td>Gender</td>
+        <td>Grade</td>
+        <td>English ability</td>
+        <td></td>
+
+    </tr></thead>
+    {% for oise_user in oise_users %}
+        <tr>
+            <td>{{ oise_user.subject_id }}</td>
+            <td>{{ oise_user.demographics.age }}</td>
+            <td>{{ oise_user.demographics.gender }}</td>
+            <td>{{ oise_user.demographics.grade }}</td>
+            <td>{{ oise_user.demographics.english_ability }}</td>
+            <td><a href="/{{ website_id }}/{{ oise_study }}/admin/{{ oise_user.subject_id }}">View sessions</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+
+{% endif %}
+
+
+{% endblock %}

@@ -108,6 +108,9 @@
             {% if is_authenticated and consent_submitted and demographic_submitted %}
             <li {% if request.path == "/{{ website_id }}/account" %}class="active"{% endif %}><a href="/{{ website_id }}/{{ oise_study }}/account">Account Settings</a></li>
             {% endif %}
+            {% if user.is_superuser %}
+            <li {% if request.path == "/{{ website_id }}/{{ oise_study }}/admin" %}class="active"{% endif %}><a href="/{{ website_id }}/{{ oise_study }}/admin">Admin</a></li>
+            {% endif %}
           </ul>
         </div><!--/.nav-collapse -->
       </div>

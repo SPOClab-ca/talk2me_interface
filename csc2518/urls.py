@@ -83,7 +83,9 @@ urlpatterns = patterns('',
                        url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'logout$', 'datacollector.views.logout'),
                        url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'about/$', 'datacollector.oise.views.about'),
                        url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'account/$', 'datacollector.views.account'),
-                       url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'admin$', 'datacollector.adminui.dashboard'),
+                       url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'admin$', 'datacollector.oise.views.admin'),
+                       url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + \
+                           'admin/(?P<subject_id>\d+)$', 'datacollector.oise.views.admin_view_user'),
                        url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'register$', 'datacollector.views.register'),
 
                        # Notifications

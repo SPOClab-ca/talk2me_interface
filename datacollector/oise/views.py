@@ -10,12 +10,13 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from datacollector.models import Session, Session_Task, Subject, Subject_Bundle, Task
+from datacollector.models import Session, Session_Task, Subject, Subject_Bundle, Task, Bundle
 from datacollector.views import global_passed_vars, notify, STATIC_URL
 from datacollector.constants import OISE_BUNDLE_ID
 from datacollector.oise.session_helper import display_session_task_instance, submit_response
 from datacollector.oise.demographics_helper import update_demographics
 from datacollector.oise.questionnaire_helper import save_questionnaire_responses
+from datacollector.oise.admin_helper import get_oise_users, get_session_information, get_demographic_information
 
 from csc2518.settings import SUBSITE_ID, OISE_STUDY
 
@@ -182,7 +183,7 @@ def session(request, session_id):
                         active_task_instruction_audio = ('<audio controls autoplay style=' + \
                                                         '"display:none;"><source src="%s/audio/oise/%s" ' + \
                                                         'type="audio/ogg">Your browser does not ' + \
-                                                        'support the audio element.</audio>') % (STATIC_URL,audio_file)
+                                                        'support the audio element.</audio>') % (STATIC_URL, audio_file)
                 # If session responses are submitted, perform validation.
                 # If validation passes, write them to the database and return a
                 # 'success' response to the AJAX script. If validation fails,
@@ -337,3 +338,41 @@ def about(request):
         }
     passed_vars.update(global_passed_vars)
     return render_to_response('datacollector/oise/about.html', passed_vars, context_instance=RequestContext(request))
+
+def admin(request):
+    """
+    Admin view.
+        :param request:
+    """
+    if request.user.is_authenticated() and request.user.is_superuser:
+        bundle = Bundle.objects.get(name_id='oise')
+        oise_users = get_oise_users()
+
+        passed_vars = {
+            'bundle': bundle,
+            'oise_users': oise_users
+            }
+        passed_vars.update(global_passed_vars)
+        return render_to_response('datacollector/oise/admin.html', passed_vars, context_instance=RequestContext(request))
+    else:
+        return HttpResponseRedirect(WEBSITE_ROOT)
+
+def admin_view_user(request, subject_id):
+    """
+    Admin view for given user
+        :param request:
+        :param subject_id:
+    """
+    if request.user.is_authenticated() and request.user.is_superuser:
+        sessions = get_session_information(subject_id)
+        demographics = get_demographic_information(subject_id)
+        passed_vars = {
+            'subject_id': subject_id,
+            'sessions': sessions,
+            'demographics': demographics,
+            'view_session_information': True
+        }
+        passed_vars.update(global_passed_vars)
+        return render_to_response('datacollector/oise/admin.html', passed_vars, context_instance=RequestContext(request))
+    else:
+        return HttpResponseRedirect(WEBSITE_ROOT)
