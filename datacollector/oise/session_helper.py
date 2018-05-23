@@ -36,6 +36,7 @@ def display_session_task_instance(session_task_id):
 
     is_last_task_instance = False
     audio_instruction_file = None
+    hide_submit_button = False
 
 
     # Retrieve active task instance values
@@ -68,13 +69,13 @@ def display_session_task_instance(session_task_id):
             display_field, response_field, requires_audio, audio_instruction_file = display_word_recall(active_session_task_instance.session_task_instance_id)
         elif task_name == WORD_SOUNDS:
             display_field, response_field, \
-                requires_audio = display_task(active_session_task_instance.session_task_instance_id,\
+                requires_audio, hide_submit_button = display_task(active_session_task_instance.session_task_instance_id,\
                                               task_id)
 
         if len(session_response_objects) == 1:
             is_last_task_instance = True
 
-        return active_session_task_instance, display_field, response_field, requires_audio, is_last_task_instance, audio_instruction_file
+        return active_session_task_instance, display_field, response_field, requires_audio, is_last_task_instance, audio_instruction_file, hide_submit_button
     #else:
         # TODO: All tasks were complete???
 
@@ -215,6 +216,8 @@ def display_task(session_task_instance_id, task_id):
         :param session_task_instance_id:
         :param task_id:
     """
+    hide_submit_button = False
+
     #Query task instances
     task_instance = Session_Task_Instance_Value.objects \
                     .get(session_task_instance_id=session_task_instance_id)
@@ -247,16 +250,19 @@ def display_task(session_task_instance_id, task_id):
         elif task_field.task_field_id in display_only_fields:
             if "You finished the task!" in task_instance.value:
                 reload_fn = "reloadPageOise"
+                text_display = "Next"
             else:
                 reload_fn = "reloadPage"
+                text_display = "Continue"
             response_field = "<p><input class='form-field'" + \
                              " name='instanceid' type='hidden' value='" \
                              + str(session_task_instance_id) + "' />" + \
                              "<input class='btn btn-primary oise-button" + \
-                             "btn-lg btn-fixedwidth' type='button'" + \
+                             " btn-lg btn-fixedwidth' type='button'" + \
                              " onClick='javascript: submitDummyResponse(this," + reload_fn + \
-                             ");' value='Continue'></p>"
+                             ");' value='" + text_display + "'></p>"
             requires_audio = False
+            hide_submit_button = True
         else:
             response_field = ''
             requires_audio = False
@@ -270,7 +276,7 @@ def display_task(session_task_instance_id, task_id):
         response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
 
 
-    return display_field, response_field, requires_audio
+    return display_field, response_field, requires_audio, hide_submit_button
 
 
 def display_reading_fluency(session_task_instance_id):

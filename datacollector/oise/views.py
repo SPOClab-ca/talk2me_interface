@@ -119,6 +119,7 @@ def session(request, session_id):
     requires_audio = False
     is_last_task_instance = False
     audio_instruction_file = None
+    hide_submit_button = False
 
     form_errors = None
 
@@ -201,7 +202,7 @@ def session(request, session_id):
                         session_task_in_progress = True
                         active_session_task_instance, display_field, \
                         response_field, requires_audio, \
-                        is_last_task_instance, audio_instruction_file = display_session_task_instance(active_session_task_id)
+                        is_last_task_instance, audio_instruction_file, hide_submit_button = display_session_task_instance(active_session_task_id)
 
                     elif 'instanceid' in request.POST:
                         json_response = submit_response(request)
@@ -239,7 +240,8 @@ def session(request, session_id):
                 'submit_button_message': submit_button_message,
                 'form_errors': form_errors,
                 'demographics_type': 'general',
-                'audio_instruction_file': audio_instruction_file
+                'audio_instruction_file': audio_instruction_file,
+                'hide_submit_button': hide_submit_button
             }
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))

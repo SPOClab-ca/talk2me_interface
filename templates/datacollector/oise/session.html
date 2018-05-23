@@ -101,9 +101,9 @@
                     {% endif %}
                 {% else %}
                     {% if is_last_task_instance or active_task.task.name_id == 'word_completion_oise' %}
-                        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPageOise);" value="Submit" />
+                        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPageOise);" value="Submit" {% if hide_submit_button %}style="display: none;"{% endif %}/>
                     {% else %}
-                        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" />
+                        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" {% if hide_submit_button %}style="display: none;"{% endif %}/>
                     {% endif %}
                 {% endif %}
                 </form>
