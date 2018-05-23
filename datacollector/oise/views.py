@@ -119,6 +119,7 @@ def session(request, session_id):
     requires_audio = False
     is_last_task_instance = False
     audio_instruction_file = None
+    allow_skipping = False
     hide_submit_button = False
 
     form_errors = None
@@ -166,10 +167,13 @@ def session(request, session_id):
                     if active_task.task.task_id == READING_FLUENCY_TASK_ID:
                         submit_button_message = 'Continue story'
                         audio_file = 'instructions/reading_fluency_instruction.mp3'
+                        allow_skipping = True
                     elif active_task.task.task_id == PICTURE_DESCRIPTION_TASK_ID:
                         audio_file = 'instructions/picture_description_instruction.mp3'
+                        allow_skipping = True
                     elif active_task.task.task_id == STORY_RETELLING_TASK_ID:
                         audio_file = 'instructions/story_retelling_instruction.mp3'
+                        allow_skipping = True
                     elif active_task.task.task_id == WORD_SOUNDS_TASK_ID:
                         audio_file = 'instructions/word_sounds_instruction.mp3'
                     elif active_task.task.task_id == WORD_MAP_TASK_ID:
@@ -241,6 +245,7 @@ def session(request, session_id):
                 'form_errors': form_errors,
                 'demographics_type': 'general',
                 'audio_instruction_file': audio_instruction_file,
+                'allow_skipping': allow_skipping,
                 'hide_submit_button': hide_submit_button
             }
             passed_vars.update(global_passed_vars)

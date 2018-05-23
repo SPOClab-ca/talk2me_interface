@@ -106,6 +106,17 @@
                         <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" {% if hide_submit_button %}style="display: none;"{% endif %}/>
                     {% endif %}
                 {% endif %}
+
+                {% if allow_skipping %}
+                    <div class="pull-right">
+                        <input class='form-field'name='instanceid' type='hidden' value='{{ active_session_task_id }}' />
+                    {% if is_last_task_instance %}
+                        <input class='btn btn-default btn-sm' type='button' onClick='javascript: submitDummyResponse(this, reloadPageOise);' value='Skip'></p>
+                    {% else %}
+                        <input class='btn btn-default btn-sm' type='button' onClick='javascript: submitDummyResponse(this, reloadPage);' value='Skip'></p>
+                    {% endif %}
+                    </div>
+                {% endif %}
                 </form>
             </div>
         {% endif %}
