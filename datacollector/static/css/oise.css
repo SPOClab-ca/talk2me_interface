@@ -1,5 +1,5 @@
 img.oise-picture-description {
-    width: 100%;
+    max-height: 400px;
 }
 
 img.oise-recording-active {
@@ -12,4 +12,25 @@ img.oise-recording-inactive {
 
 .oise-start-button {
     text-align: center;
+}
+
+.oise-task_instance {
+    font-size: 22px;
+}
+
+.oise-task-instance-prompt {
+    font-size: 22px;
+}
+
+.oise-task-instance-prompt .well {
+    font-size: 22px;
+}
+
+.oise-questionnaire {
+    font-size: 22px;
+}
+
+.oise-task-name {
+    font-weight: bold;
+    font-size: 36px;
 }

@@ -23,6 +23,8 @@ PUZZLE_SOLVING = 'puzzle_solving_oise'
 WORD_RECALL = 'word_recall_oise'
 WORD_SOUNDS = 'word_sounds_oise'
 
+WORD_SOUNDS_TASK = Task.objects.get(name_id=WORD_SOUNDS)
+
 FIELD_TYPE_INPUT_ID = Field_Type.objects.get(name='input')
 FIELD_TYPE_DISPLAY_ID = Field_Type.objects.get(name='display')
 
@@ -44,8 +46,6 @@ def display_session_task_instance(session_task_id):
                              (session_task_id=session_task_id)
     session_task_instance_ids = [session_task_instance.session_task_instance_id for \
                                  session_task_instance in session_task_instances]
-    # session_response_objects = [Session_Response.objects.get(session_task_instance=session_task_instance, \
-    #                             date_completed__isnull=True) for session_task_instance in session_task_instances]
     session_response_objects = Session_Response.objects \
                                .filter(session_task_instance_id__in=session_task_instance_ids, date_completed__isnull=True)
 
@@ -87,11 +87,12 @@ def submit_response(request):
     # Validate the form first
     # Determine the order of the questions associated with this task (e.g., non-select questions have 'response' fields, whereas
     # select questions have 'response_{instanceid}' fields).
-    # active_task_questions = Session_Task_Instance_Value.objects.filter(session_task_instance__session_task=active_task, task_field__field_type__name='display')
     form_responses = request.POST.getlist('response')
     form_instances = request.POST.getlist('instanceid')
     responses = copy.deepcopy(form_responses)
     instances = copy.deepcopy(form_instances)
+    
+
     if len(form_instances) > 1:
         active_task_instance_questions = Session_Task_Instance_Value.objects \
                                          .filter(session_task_instance_id__in=form_instances)
@@ -101,17 +102,34 @@ def submit_response(request):
                                         .filter(session_task_instance_id=instance_id)
     if active_task_instance_questions:
         active_task_instance_question = active_task_instance_questions[0]
+
+    # Need to check if the Session_Task is completed
+    associated_task_instances = Session_Task_Instance.objects \
+                                   .filter(session_task=active_task_instance_question \
+                                                        .session_task_instance \
+                                                        .session_task)
+    if 'isdummy' in request.POST:
+        for instance in instances:
+            Session_Response.objects.filter(session_task_instance=instance).update(value_text='', date_completed=datetime.datetime.now())
+        incomplete_session_responses = Session_Response.objects \
+                                      .filter(session_task_instance__in=associated_task_instances,
+                                              date_completed__isnull=True)
+        if not incomplete_session_responses:
+            active_task = active_task_instance_question.session_task_instance.session_task
+            Session_Task.objects.filter(session=active_task.session, task=active_task.task).update(date_completed=datetime.datetime.now())
+
+            # Update Session if necessary
+            session_tasks = Session_Task.objects.filter(session=active_task.session, date_completed__isnull=True)
+            if not session_tasks:
+                Session.objects.filter(session_id=active_task.session.session_id).update(end_date=datetime.datetime.now())
+        json_data['status'] = 'success'
+        return json_data
     question_field = Task_Field.objects \
                      .get(task_field_id=active_task_instance_question.task_field_id)
     response_field = Task_Field.objects.get(assoc_id=question_field.task_field_id)
     form_errors = []
     counter_question = 0
     # If audio, the Session_Response object will already be updated
-    # Need to check if the Session_Task is completed
-    associated_task_instances = Session_Task_Instance.objects \
-                                   .filter(session_task=active_task_instance_question \
-                                                        .session_task_instance \
-                                                        .session_task)
     for next_instance in instances:
         if response_field.field_data_type.name == 'select':
             audio_label = 'response_audio_' + str(next_instance)
@@ -201,13 +219,56 @@ def display_task(session_task_instance_id, task_id):
     task_instance = Session_Task_Instance_Value.objects \
                     .get(session_task_instance_id=session_task_instance_id)
 
-    # Get fields for question and response(s)
-    question = Task_Field.objects.get(task_id=task_id, field_type_id=1)
-    response = Task_Field.objects.get(task_id=task_id, field_type_id=2)
+    if task_id == WORD_SOUNDS_TASK.task_id:
+        audio_example_task_field = Task_Field.objects.get(name='word_sounds_example')
+        feedback_task_field = Task_Field.objects.get(name='word_sounds_feedback')
+        audio_task_field = Task_Field.objects.get(name='word_sounds_audio')
+        text_instruction_task_field = Task_Field.objects.get(name='word_sounds_text_instruction')
+        text_example_task_field = Task_Field.objects.get(name='word_sounds_text_example')
+        text_task_field = Task_Field.objects.get(name='word_sounds_text')
 
-    display_field = display_question(task_instance, str(question.field_data_type))
+        task_field = task_instance.task_field
+        display_field = display_question(task_instance, str(task_field.field_data_type))
+        display_only_fields = [audio_example_task_field.task_field_id, \
+                               feedback_task_field.task_field_id, \
+                               text_instruction_task_field.task_field_id, \
+                               text_example_task_field.task_field_id]
+        if task_field.task_field_id == audio_task_field.task_field_id:
+            response = Task_Field.objects.get(assoc_id=task_field.task_field_id)
+            response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+        if task_field.task_field_id == text_task_field.task_field_id:
+            display_field = "<h1>" + task_instance.value_display + "</h1>"
+            display_field += '<audio controls controlsList="nodownload" autoplay style="display:none;">>'
+            display_field += '<source src="%saudio/oise/%s" type="audio/mpeg">' \
+                                % (STATIC_URL, task_instance.value)
+            display_field += 'Your browser does not support the audio element.</audio>'
+            response = Task_Field.objects.get(assoc_id=task_field.task_field_id, field_type_id=2)
+            response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+        elif task_field.task_field_id in display_only_fields:
+            if "You finished the task!" in task_instance.value:
+                reload_fn = "reloadPageOise"
+            else:
+                reload_fn = "reloadPage"
+            response_field = "<p><input class='form-field'" + \
+                             " name='instanceid' type='hidden' value='" \
+                             + str(session_task_instance_id) + "' />" + \
+                             "<input class='btn btn-primary oise-button" + \
+                             "btn-lg btn-fixedwidth' type='button'" + \
+                             " onClick='javascript: submitDummyResponse(this," + reload_fn + \
+                             ");' value='Continue'></p>"
+            requires_audio = False
+        else:
+            response_field = ''
+            requires_audio = False
+    else:
+        # Get fields for question and response(s)
+        question = Task_Field.objects.get(task_id=task_id, field_type_id=1)
+        response = Task_Field.objects.get(task_id=task_id, field_type_id=2)
 
-    response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+        display_field = display_question(task_instance, str(question.field_data_type))
+
+        response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+
 
     return display_field, response_field, requires_audio
 
@@ -479,8 +540,8 @@ def display_response(instance_value, field_data_type, \
         keep_visible = instance_value.task_field.keep_visible
         response_field = ""
         if not keep_visible:
-            response_field += "<p><input class='btn btn-primary " + \
-                              "btn-med btn-fixedwidth' type='button'"
+            response_field += "<p><input class='btn btn-primary oise-button" + \
+                              "btn-lg btn-fixedwidth' type='button'"
             if audio_instruction:
                 response_field += " onClick='javascript: hideDisplayOise(this, \"" + \
                                   audio_instruction + \
@@ -492,7 +553,7 @@ def display_response(instance_value, field_data_type, \
         if not keep_visible:
             response_field += " class='invisible'"
         response_field += "><input id='btn_recording_" + instance_id + \
-                          "' type='button' class='btn btn-success btn-med" + \
+                          "' type='button' class='btn btn-success btn-lg" + \
                           " btn-fixedwidth' onClick='javascript: toggleRecording(this);'"
         if recording_button_text:
             response_field += " value='" + recording_button_text + "'>&nbsp;"

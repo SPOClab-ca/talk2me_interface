@@ -863,3 +863,71 @@ function demographicsAddLanguageOise(row) {
 
     document.getElementById('num_other_languages').value = rowIndex;
 }
+
+function submitDummyResponse(submit_btn, success_fn) {
+
+    var post_params = "response=''&isdummy=''";
+    var the_form = $(submit_btn).closest("form");
+    $(the_form).find(".form-field").each(function() {
+        // If the form element is a radio element, then only add it to params if it is the selected one
+        if ($(this).is("input[type='checkbox']")) {
+            if ($(this).is(":checked") == true) {
+                if (post_params) {
+                    post_params += "&";
+                }
+                post_params += $(this).attr('name') + "=on";
+            }
+        }
+        else if (!($(this).is("input[type='radio']")) || $(this).is(":checked") == true) {
+            if (post_params) {
+                post_params += "&";
+            }
+            post_params += $(this).attr('name') + "=" + encodeURIComponent($(this).val());
+        }
+    });
+
+    // console.log($(the_form));
+    $.ajax({
+        async: true,
+        type: 'POST',
+        url: $(the_form).attr("action"),
+        data: post_params,
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) {
+            // (1) Re-enable submit button, (2) hide the ajax indicator
+            $(submit_btn).prop("disabled", false);
+            $(submit_btn).siblings(".ajax_loader").addClass("invisible");
+
+            // (3) Display error message
+            $("#form_errors").html("<strong>The form could not be submitted.</strong> Error 601: " + textStatus + " - " + errorThrown + ". Please contact the website administrators to report this error.").removeClass("invisible");
+            $("body").scrollTop(0);
+        },
+        success: function(data, textStatus, jqXHR) {
+            // (1) Re-enable submit button, (2) hide the ajax indicator
+            $(submit_btn).prop("disabled", false);
+            $(submit_btn).siblings(".ajax_loader").addClass("invisible");
+
+            response_text = jqXHR.responseText;
+            page_response = JSON && JSON.parse(response_text) || $.parseJSON(response_text);
+            if (page_response['status'] == 'success') {
+                // Now that the data have been saved on the server, reset the "unsaved changes" flag (if it exists)
+                resetUnsavedChanges();
+
+                success_fn(page_response);
+            } else {
+                var errors = page_response['error'];
+                if (errors.length > 0) {
+                    var display_errors = "<strong>The form could not be submitted. Please correct the following error" + (errors.length > 1 ? "s" : "") + ":</strong><ul>";
+                    for (i = 0; i < errors.length; i++) {
+                        display_errors += "<li>" + errors[i].msg + "</li>";
+                    }
+                    display_errors += "</ul>";
+
+                    // (3) Display error message
+                    $("#form_errors").html(display_errors).removeClass("invisible");
+                    $("body").scrollTop(0);
+                }
+            }
+        }
+    });
+}

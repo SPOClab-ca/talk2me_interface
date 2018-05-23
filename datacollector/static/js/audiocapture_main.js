@@ -130,14 +130,6 @@ function toggleRecording( e ) {
             }
         }
 
-        // // Toggle recording symbols if present
-        // var oiseRecordingSymbols = document.getElementsByClassName('oise-recording-active');
-        // if (oiseRecordingSymbols.length > 0) {
-        //     var oiseRecordingSymbol = oiseRecordingSymbols[0];
-        //     oiseRecordingSymbol.className = 'oise-recording-active';
-        //     var oiseRecordingSymbolInactive = document.getElementsByClassName('oise-recording-inactive')[0];
-        //     oiseRecordingSymbolInactive += ' hidden';
-        // }
         $("#status_recording_" + instance_id).addClass("invisible");
         audioRecorder.getBuffers( gotBuffers );
     } else {
@@ -150,14 +142,6 @@ function toggleRecording( e ) {
         $("#status_recording_" + instance_id).find("img").addClass("invisible");
         $("#status_recording_" + instance_id).removeClass("invisible");
 
-        // // Toggle recording symbols if present
-        // var oiseRecordingSymbols = document.getElementsByClassName('oise-recording-active');
-        // if (oiseRecordingSymbols.length > 0){
-        //     var oiseRecordingSymbol = oiseRecordingSymbols[0];
-        //     oiseRecordingSymbol.className += ' hidden';
-        //     var oiseRecordingSymbolInactive = document.getElementsByClassName('oise-recording-inactive')[0];
-        //     oiseRecordingSymbolInactive = 'oise-recording-inactive';
-        // }
         audioRecorder.clear();
         audioRecorder.setInstanceId(instance_id);
         audioRecorder.record();

@@ -8,7 +8,7 @@
     <audio controls autoplay style="display:none;">
         <source src="{{ STATIC_URL }}/audio/oise/instructions/conclusion.mp3" type="audio/ogg">
     </audio>
-    <form action="/talk2me/oise/questionnaire" method="POST">
+    <form action="/talk2me/oise/questionnaire" method="POST" class="oise-questionnaire">
     {% csrf_token %}
     <input type='hidden' id='form_type' name='form_type' value='questionnaire' />
     <input type="hidden" id="session_id" name="session_id" value="{{ session.session_id }} " />

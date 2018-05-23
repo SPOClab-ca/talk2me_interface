@@ -71,11 +71,12 @@ FLUENCY_READING_OISE_BUNDLE_TASK_ID = Bundle_Task.objects\
                                                  .get(bundle=OISE_BUNDLE, \
                                                       task=FLUENCY_READING_OISE_TASK)\
                                                  .bundle_task_id
-WORD_RECALL_OISE_TASK = Task.objects.get(name_id='word_recall_oise')
-WORD_RECALL_OISE_BUNDLE_TASK_ID = Bundle_Task.objects\
+WORD_SOUNDS_OISE_TASK = Task.objects.get(name_id='word_sounds_oise')
+WORD_SOUNDS_OISE_BUNDLE_TASK_ID = Bundle_Task.objects\
                                              .get(bundle=OISE_BUNDLE, \
-                                                  task=WORD_RECALL_OISE_TASK)\
+                                                  task=WORD_SOUNDS_OISE_TASK)\
                                              .bundle_task_id
+OISE_BUNDLE_TASK_IDS = [FLUENCY_READING_OISE_BUNDLE_TASK_ID, WORD_SOUNDS_OISE_BUNDLE_TASK_ID]
 
 # Difficulty ID variables
 DIFFICULTY_LOW_ID = 1
@@ -113,6 +114,80 @@ def delete_session(session_id):
     Session.objects.get(session_id=session_id).delete()
 
     return True
+
+def get_ordered_task_fields_and_values(bundle_task_id):
+    task_field_values = Bundle_Task_Field_Value.objects\
+                                               .filter(bundle_task_id=bundle_task_id)\
+                                               .order_by('bundle_task_field_value_id')
+    task_field_value_ids = [x.task_field_value_id for x in task_field_values]
+
+    # OISE Reading Fluency task needs to be:
+    # short story 1, MC question, short story 2, MC question, MC question,
+    #   short story 3, MC question, MC question, short story 4, \
+    #   MC question, MC question
+    if bundle_task_id == FLUENCY_READING_OISE_BUNDLE_TASK_ID:
+        short_story_task_field=Task_Field.objects \
+                                    .get(name='reading_fluency_story')
+        short_stories = Task_Field_Value.objects \
+                            .filter(task_field_value_id__in=task_field_value_ids,\
+                                    task_field_id=short_story_task_field.task_field_id)
+        mcq_task_field = Task_Field.objects.get(name='reading_fluency_question')
+        mc_questions = Task_Field_Value.objects \
+                        .filter(task_field_value_id__in=task_field_value_ids, \
+                                task_field_id=mcq_task_field.task_field_id)
+        ordered_task_fields = [short_story_task_field, mcq_task_field, \
+                                short_story_task_field, mcq_task_field, mcq_task_field, \
+                                short_story_task_field, mcq_task_field, mcq_task_field, \
+                                short_story_task_field, mcq_task_field, mcq_task_field,]
+        ordered_task_field_values = [short_stories[0], mc_questions[0], \
+                                        short_stories[1], mc_questions[1], \
+                                        mc_questions[2], short_stories[2], \
+                                        mc_questions[3], mc_questions[4], \
+                                        short_stories[3], mc_questions[5], \
+                                        mc_questions[6]]
+    elif bundle_task_id == WORD_SOUNDS_OISE_BUNDLE_TASK_ID:
+        audio_example_task_field = Task_Field.objects.get(name='word_sounds_example')
+        audio_examples = Task_Field_Value.objects\
+                                         .filter(task_field_value_id__in=task_field_value_ids, \
+                                                 task_field_id=audio_example_task_field)
+        feedback_task_field = Task_Field.objects.get(name='word_sounds_feedback')
+        feedback = Task_Field_Value.objects\
+                                   .filter(task_field_value_id__in=task_field_value_ids, \
+                                           task_field_id=feedback_task_field)
+
+        audio_task_field = Task_Field.objects.get(name='word_sounds_audio')
+        audio_tasks = Task_Field_Value.objects\
+                                      .filter(task_field_value_id__in=task_field_value_ids, \
+                                              task_field_id=audio_task_field)
+
+        text_instruction_task_field = Task_Field.objects.get(name='word_sounds_text_instruction')
+        text_instructions = Task_Field_Value.objects\
+                                            .filter(task_field_value_id__in=task_field_value_ids, \
+                                                    task_field_id=text_instruction_task_field)
+
+        text_example_task_field = Task_Field.objects.get(name='word_sounds_text_example')
+        text_examples = Task_Field_Value.objects\
+                                        .filter(task_field_value_id__in=task_field_value_ids, \
+                                                task_field_id=text_example_task_field)
+
+        text_task_field = Task_Field.objects.get(name='word_sounds_text')
+        text_tasks = Task_Field_Value.objects\
+                                     .filter(task_field_value_id__in=task_field_value_ids, \
+                                             task_field_id=text_task_field)
+
+        ordered_task_fields = [audio_example_task_field] + \
+                              [audio_task_field]*2 + [feedback_task_field] + \
+                              [audio_task_field]*10 + \
+                              [text_instruction_task_field, text_example_task_field] + \
+                              [text_task_field]*2 + [feedback_task_field] + \
+                              [text_task_field]*10 + [text_instruction_task_field]
+        ordered_task_field_values = [audio_examples[0], audio_tasks[0], audio_tasks[1], feedback[0]] + \
+                                    list(audio_tasks[2:]) + \
+                                    [text_instructions[0], text_examples[0]] + \
+                                    [text_tasks[0], text_tasks[1], feedback[1]] + \
+                                    list(text_tasks[2:]) + [text_instructions[1]]
+
+    return ordered_task_fields, ordered_task_field_values
 
 def generate_session(subject, session_type):
     '''
@@ -220,37 +295,17 @@ def generate_session(subject, session_type):
         # specified task instances values for the bundle task.
         cumulative_field_instances = 0
 
-        # OISE Reading Fluency task needs to be:
-        # short story 1, MC question, short story 2, MC question, MC question,
-        #   short story 3, MC question, MC question, short story 4, \
-        #   MC question, MC question
-        if bundle_task.bundle_task_id == FLUENCY_READING_OISE_BUNDLE_TASK_ID:
-            task_field_values = Bundle_Task_Field_Value.objects.filter(bundle_task_id=bundle_task.bundle_task_id).order_by('bundle_task_field_value_id')
-            task_field_value_ids = [x.task_field_value_id for x \
-                                           in task_field_values]
-            short_story_task_field=Task_Field.objects \
-                                      .get(name='reading_fluency_story')
-            short_stories = Task_Field_Value.objects \
-                                .filter(task_field_value_id__in=task_field_value_ids,\
-                                        task_field_id=short_story_task_field.task_field_id)
-            mcq_task_field = Task_Field.objects.get(name='reading_fluency_question')
-            mc_questions = Task_Field_Value.objects \
-                           .filter(task_field_value_id__in=task_field_value_ids, \
-                                   task_field_id=mcq_task_field.task_field_id)
-            ordered_task_fields = [short_story_task_field, mcq_task_field, \
-                                   short_story_task_field, mcq_task_field, mcq_task_field, \
-                                   short_story_task_field, mcq_task_field, mcq_task_field, \
-                                   short_story_task_field, mcq_task_field, mcq_task_field,]
-            ordered_task_field_values = [short_stories[0], mc_questions[0], \
-                                         short_stories[1], mc_questions[1], \
-                                         mc_questions[2], short_stories[2], \
-                                         mc_questions[3], mc_questions[4], \
-                                         short_stories[3], mc_questions[5], \
-                                         mc_questions[6]]
+        # For OISE-specific tasks that follow a weird ordering
+        if bundle_task and bundle_task.bundle_task_id in OISE_BUNDLE_TASK_IDS:
+            print(bundle_task)
 
-            total_num_instances_reading_fluency = 11
-            for index_instance in range(total_num_instances_reading_fluency):
+            ordered_task_fields, ordered_task_field_values = get_ordered_task_fields_and_values(bundle_task.bundle_task_id)
+            print(ordered_task_fields)
+            for index_instance in range(len(ordered_task_fields)):
                 instance_value = ordered_task_field_values[index_instance]
+
+                if bundle_task.bundle_task_id == WORD_SOUNDS_OISE_BUNDLE_TASK_ID:
+                    print(instance_value)
                 field = ordered_task_fields[index_instance]
                 new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
 
@@ -269,7 +324,7 @@ def generate_session(subject, session_type):
 
                     new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=linked_instance.task_field, value=linked_instance.value, value_display=linked_instance.value_display, difficulty=linked_instance.difficulty)
 
-            cumulative_field_instances += total_num_instances_reading_fluency
+            cumulative_field_instances += len(ordered_task_fields)
         for field in task_fields_display:
 
             # If the field doesn't have a specified number of instances, then use the task-level number of instances.
@@ -329,16 +384,7 @@ def generate_session(subject, session_type):
                             selected_values = [x.task_field_value for x in specified_values[:field_num_instances]]
                     else:
                         selected_values = [x.task_field_value for x in specified_values[:field_num_instances]]
-                elif bundle_id == OISE_BUNDLE_ID and \
-                        bundle_task.bundle_task_id == FLUENCY_READING_OISE_BUNDLE_TASK_ID:
                     continue
-                    # specified_values = specified_values_from_db
-                    # task_field_values = [x.task_field_value_id for x in specified_values]
-                    # print(task_field_values)
-                    # selected_values = Task_Field_Value.objects.filter(task_field_value_id__in=task_field_values, task_field=field)
-
-                    # print(selected_values)
-
 
                 else:
                     specified_values = specified_values_from_db
