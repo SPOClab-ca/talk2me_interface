@@ -236,7 +236,7 @@ def display_task(session_task_instance_id, task_id):
         if task_field.task_field_id == audio_task_field.task_field_id:
             response = Task_Field.objects.get(assoc_id=task_field.task_field_id)
             response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
-        if task_field.task_field_id == text_task_field.task_field_id:
+        elif task_field.task_field_id == text_task_field.task_field_id:
             display_field = "<h1>" + task_instance.value_display + "</h1>"
             display_field += '<audio controls controlsList="nodownload" autoplay style="display:none;">>'
             display_field += '<source src="%saudio/oise/%s" type="audio/mpeg">' \
@@ -445,23 +445,11 @@ def display_word_recall(session_task_instance_id):
 
     question = Task_Field.objects.get(task_id=task_id, \
                                       field_type_id=FIELD_TYPE_DISPLAY_ID, \
-                                      field_data_type=1)
+                                      name='word_recall_instruction')
     task_instance = Session_Task_Instance_Value.objects \
                     .get(session_task_instance_id=session_task_instance_id, \
                          task_field_id=question.task_field_id)
     display_field = display_question(task_instance, str(question.field_data_type))
-    display_field += '<br>'
-
-    words_field = Task_Field.objects.get(task_id=task_id, \
-                                         field_type_id=FIELD_TYPE_DISPLAY_ID, \
-                                         field_data_type=2)
-    words = Session_Task_Instance_Value.objects \
-                    .filter(session_task_instance_id=session_task_instance_id, \
-                         task_field_id=words_field.task_field_id)
-
-    for word in words:
-        display_field += display_question(word, str(words_field.field_data_type))
-        display_field += '<br>'
 
     response = Task_Field.objects.get(assoc_id=question.task_field_id, \
                                       field_type_id=FIELD_TYPE_INPUT_ID)
@@ -532,7 +520,6 @@ def display_response(instance_value, field_data_type, \
     # Construct style attributes string from the specified field data attributes
     field_data_attributes = Task_Field_Data_Attribute.objects.filter(task_field=instance_value.task_field)
     style_attributes = ";".join([str(attr.name) + ": " + str(attr.value) for attr in field_data_attributes])
-
     if field_data_type == "audio":
         requires_audio = True
 
@@ -567,7 +554,6 @@ def display_response(instance_value, field_data_type, \
                           instance_id + "' name='response_audio_" + instance_id + \
                           "' value='' /><input class='form-field' name='instanceid' " + \
                           "type='hidden' value='" + instance_id + "' /></p>"
-
     elif field_data_type == "select":
         existing_value = ""
         if response_object.value_text:

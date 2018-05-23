@@ -297,15 +297,10 @@ def generate_session(subject, session_type):
 
         # For OISE-specific tasks that follow a weird ordering
         if bundle_task and bundle_task.bundle_task_id in OISE_BUNDLE_TASK_IDS:
-            print(bundle_task)
 
             ordered_task_fields, ordered_task_field_values = get_ordered_task_fields_and_values(bundle_task.bundle_task_id)
-            print(ordered_task_fields)
             for index_instance in range(len(ordered_task_fields)):
                 instance_value = ordered_task_field_values[index_instance]
-
-                if bundle_task.bundle_task_id == WORD_SOUNDS_OISE_BUNDLE_TASK_ID:
-                    print(instance_value)
                 field = ordered_task_fields[index_instance]
                 new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
 
@@ -384,6 +379,7 @@ def generate_session(subject, session_type):
                             selected_values = [x.task_field_value for x in specified_values[:field_num_instances]]
                     else:
                         selected_values = [x.task_field_value for x in specified_values[:field_num_instances]]
+                elif bundle_id == OISE_BUNDLE_ID and bundle_task.bundle_task_id in OISE_BUNDLE_TASK_IDS:
                     continue
 
                 else:
@@ -434,6 +430,7 @@ def generate_session(subject, session_type):
                                     ~Q(value_display = selected_values[-1].value_display) ]
 
             for index_instance in range(field_num_instances):
+                print(task.name_id)
                 instance_value = selected_values[index_instance]
                 new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
 
