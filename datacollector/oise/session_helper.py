@@ -458,7 +458,7 @@ def display_word_recall(session_task_instance_id):
 
     question = Task_Field.objects.get(task_id=task_id, \
                                       field_type_id=FIELD_TYPE_DISPLAY_ID, \
-                                      name='word_recall_instruction')
+                                      generate_value=1)
     task_instance = Session_Task_Instance_Value.objects \
                     .get(session_task_instance_id=session_task_instance_id, \
                          task_field_id=question.task_field_id)
