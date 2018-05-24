@@ -87,6 +87,7 @@ urlpatterns = patterns('',
                        url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + \
                            'admin/(?P<subject_id>\d+)$', 'datacollector.oise.views.admin_view_user'),
                        url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'register$', 'datacollector.views.register'),
+                       url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY +  'error$', 'datacollector.oise.views.error'),
 
                        # Notifications
                        url(r'^' + settings.SUBSITE_ID + 'notify/dismiss/$', 'datacollector.notify.dismiss'),

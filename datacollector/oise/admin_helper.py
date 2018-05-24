@@ -3,13 +3,18 @@
 """
 
 from datacollector.models import Bundle, Demographics_Oise, Session, Session_Task, \
-                                 Subject_Bundle, Task
+                                 Subject, Subject_Bundle, Task, User
+from django.contrib.auth.forms import UserCreationForm
+
+import datetime
+
+bundle = Bundle.objects.get(name_id='oise')
+
 
 def get_oise_users():
     """
     Retrieve all OISE users.
     """
-    bundle = Bundle.objects.get(name_id='oise')
     subject_bundles = Subject_Bundle.objects.filter(bundle_id=bundle.bundle_id)
 
     subjects_object = []
@@ -59,3 +64,25 @@ def get_session_information(subject_id):
             'session_tasks': session_tasks_object
         }]
     return sessions_object
+
+def create_new_user(request):
+    form = UserCreationForm(request.POST)
+    print(form)
+    if form.is_valid():
+
+        today = datetime.datetime.now().date()
+
+        # Save user
+        cd = form.cleaned_data
+        new_user = form.save()
+
+        # Create a corresponding subject in the app
+        new_subject = Subject.objects.create(user_id=new_user.id, date_created=today)
+
+        # Create subject bundle
+        Subject_Bundle.objects.create(subject=new_subject,
+                                      bundle=bundle,
+                                      active_startdate=today)
+        print("User created")
+        return True
+    return False

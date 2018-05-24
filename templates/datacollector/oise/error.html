@@ -1,0 +1,13 @@
+{% extends "datacollector/oise/base.html" %}
+
+{% block content %}
+
+<div class="jumbotron">
+        <h1>Error</h1>
+
+        <h2>Please check back at a later time.</h2>
+</div>
+
+<button class="btn btn-primary btn-lg" onClick="javascript: location.href='/{{ website_id }}/oise';">Go to index page</button>
+
+{% endblock %}
