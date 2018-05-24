@@ -298,7 +298,8 @@ def display_reading_fluency(session_task_instance_id):
     if task_field_id == task_field_story.task_field_id:
 
         response = Task_Field.objects.get(assoc_id=task_field_id)
-        response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+        response_field, requires_audio = display_response(task_instance, str(response.field_data_type), \
+        recording_button_text="Start reading out loud")
         audio_instruction_file = 'instructions/reading_fluency_story.mp3'
 
     # For multiple choice questions, we display one question field and multiple response fields
@@ -360,10 +361,10 @@ def display_story_retelling(session_task_instance_id):
 
     display_field = display_question(task_instance, str(story_field.field_data_type))
     audio_instruction_file = ''
-    if str(story_field.field_data_type) == "audio":
-        audio_instruction_file = 'instructions/story_retelling_listen.mp3'
-    elif str(story_field.field_data_type) == "text_well":
-        audio_instruction_file = 'instructions/story_retelling_read.mp3'
+    # if str(story_field.field_data_type) == "audio":
+    #     audio_instruction_file = 'instructions/story_retelling_listen.mp3'
+    # elif str(story_field.field_data_type) == "text_well":
+    #     audio_instruction_file = 'instructions/story_retelling_read.mp3'
 
     response_field, requires_audio = display_response(task_instance, str(response.field_data_type), \
                                                       recording_button_text="Start retelling")
@@ -469,8 +470,8 @@ def display_word_recall(session_task_instance_id):
                                          str(response.field_data_type), \
                                          audio_instruction="Say as many words as you can remember!")
 
-    audio_instruction_file = 'instructions/word_recall_click.mp3'
-    return display_field, response_field, True, audio_instruction_file
+    # audio_instruction_file = 'instructions/word_recall_click.mp3'
+    return display_field, response_field, True, None
 
 def display_question(instance_value, field_data_type):
     """
@@ -490,7 +491,7 @@ def display_question(instance_value, field_data_type):
     if field_data_type == "text":
         display_field = instance_value.value.replace('\n', '<br>')
     elif field_data_type == "text_well":
-        display_field = "<div class='well well-lg space-bottom-small'>" + instance_value.value.replace('\n', '<br>') + "</div>"
+        display_field = "<div class='well well-lg space-bottom-small'><h3>" + instance_value.value.replace('\n', '<br>') + "</h3></div>"
     elif field_data_type == "image":
         display_field = "<img class=\"oise-picture-description\" src='" + \
                         STATIC_URL + "img/" + instance_value.value + \
@@ -540,7 +541,7 @@ def display_response(instance_value, field_data_type, \
         response_field = ""
         if not keep_visible:
             response_field += "<p><input class='btn btn-primary oise-button" + \
-                              "btn-lg btn-fixedwidth' type='button'"
+                              " btn-lg btn-fixedwidth' type='button'"
             if audio_instruction:
                 response_field += " onClick='javascript: hideDisplayOise(this, \"" + \
                                   audio_instruction + \
@@ -581,13 +582,13 @@ def display_response(instance_value, field_data_type, \
 
         for sel_option in sel_options:
             response_field += "<div class='radio'>"
-            response_field += "<label><input type='radio' class='form-field' name='response_" + instance_id + "' value='" + sel_option.value + "'"
+            response_field += "<label><h3><input type='radio' class='form-field' name='response_" + instance_id + "' value='" + sel_option.value + "'"
 
             # Mark any previously-submitted responses as selected
             if existing_value == sel_option.value:
                 response_field += " selected='selected'"
 
-            response_field += "> " + sel_option.value_display + "</label>"
+            response_field += "> " + sel_option.value_display + "</h3></label>"
             response_field += "</div>"
 
         response_field += "<input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"

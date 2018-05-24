@@ -1,5 +1,4 @@
 {% extends "datacollector/oise/base.html" %}
-{% load dict_extras %}
 
 {% block title %}{{ website_name }}{% endblock%}
 
@@ -63,7 +62,7 @@
 
     <!-- Start session -->
     {% else %}
-
+    <div class="jumbotron">
         <h1>Talk2Me Junior</h1>
         <p>
 
@@ -74,9 +73,11 @@
             <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank"><img src="{{ STATIC_URL }}img/firefox.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
         </div>
 
-        <p>Welcome to Talk To Me Junior!</p>
-        <p>It’s time for some fun activities. Are you ready?</p>
-        <p>Click "Next" to get started.</p>
+        <h2>
+            Welcome to Talk To Me Junior!<br><BR>
+            It’s time for some fun activities. Are you ready?<br><BR>
+            Click "Next" to get started.
+        </h2>
         <audio controls autoplay style="display:none;">
             <source src="{{ STATIC_URL }}/audio/oise/instructions/welcome.mp3" type="audio/ogg">
             Your browser does not support the audio element.
@@ -84,11 +85,12 @@
 
         <div class="oise-start-button">
         {% if has_active_session %}
-            <a href="/{{ website_id }}/{{ oise_study }}/session/{{ active_session_id }}"><button type="button" class="btn btn-success">Next</button></a>
+            <a href="/{{ website_id }}/{{ oise_study }}/session/{{ active_session_id }}"><button type="button" class="btn-lg btn-success">Next</button></a>
         {% else %}
-            <a href="/{{ website_id }}/startsession"><button type="button" class="btn btn-success">Next</button></a>
+            <a href="/{{ website_id }}/startsession"><button type="button" class="btn-lg btn-success">Next</button></a>
         {% endif %}
         </div>
+    </div>
     {% endif %} <!-- ends consent if -->
 {% else %}
     <div class="support_html5 bs-callout bs-callout-danger invisible">

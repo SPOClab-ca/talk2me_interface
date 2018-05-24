@@ -1,5 +1,4 @@
 {% extends "datacollector/oise/base.html" %}
-{% load dict_extras %}
 
 {% block title %}{{ website_name }}{% endblock%}
 
@@ -21,16 +20,16 @@
     {% include 'datacollector/oise/post_session_questionnaire.html' %}
 {% else %}
     {% if demographic_submitted %}
-        <h1>Session in progress</h1>
+        <h3>Session in progress</h3>
         <div class="progress">
             <div class="progress-bar" role="progressbar" aria-valuenow="{{ num_current_task }}" aria-valuemin="0" aria-valuemax="{{ num_tasks }}" style="font-size: 16px; width: {{ percentage_completion }}%;">
             {{ percentage_completion }}%
             </div>
         </div>
 
-        <div class="oise-task">
+        <div class="oise-task jumbotron">
             <div class="oise-task-name">
-                <h2>{{ active_task.task.name }}</h2>
+                <h1><b>{{ active_task.task.name }}</b></h1>
             </div>
         <!-- Session task instruction -->
         {% if not session_task_in_progress %}
@@ -39,7 +38,7 @@
                 {% autoescape off %}
                 {{ active_task.task.instruction }}
                 {% endautoescape %}
-
+                <br><br>
                 {% if active_task_instruction_audio %}
                     {% autoescape off %}
                     {{ active_task_instruction_audio }}
@@ -74,10 +73,11 @@
         {% else %}
             <div class="oise-task-instance">
                 <div class="oise-task-instance-prompt">
-                    {% autoescape off %}
-                    {{ display_field }}
-                    {% endautoescape %}
-
+                    <h2>
+                        {% autoescape off %}
+                        {{ display_field }}
+                        {% endautoescape %}
+                    </h2>
                     {% if audio_instruction_file %}
                     <audio controls autoplay style="display:none;">
                         <source src="{{ STATIC_URL }}/audio/oise/{{ audio_instruction_file }}" type="audio/ogg">
@@ -90,7 +90,7 @@
                 <form method="post">
                 {% csrf_token %}
                     <input type="hidden" id="form_type" name="form_type" value="submit_response" />
-                    {% autoescape off %}{{ response_field }}{% endautoescape %}
+                        {% autoescape off %}{{ response_field }}{% endautoescape %}
                     <input type="hidden" id="session_task_id" name="session_task_id" value="{{ active_session_task_id }}" />
 
                 {% if requires_audio %}
@@ -109,7 +109,6 @@
 
                 {% if allow_skipping %}
                     <div class="pull-right">
-                        <input class='form-field'name='instanceid' type='hidden' value='{{ active_session_task_id }}' />
                     {% if is_last_task_instance %}
                         <input class='btn btn-default btn-sm' type='button' onClick='javascript: submitDummyResponse(this, reloadPageOise);' value='Skip'></p>
                     {% else %}

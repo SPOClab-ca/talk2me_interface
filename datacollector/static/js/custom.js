@@ -886,7 +886,6 @@ function submitDummyResponse(submit_btn, success_fn) {
         }
     });
 
-    // console.log($(the_form));
     $.ajax({
         async: true,
         type: 'POST',

@@ -165,7 +165,7 @@ def session(request, session_id):
                     active_task_instruction = Task.objects.get(task_id=active_task.task_id).instruction
 
                     if active_task.task.task_id == READING_FLUENCY_TASK_ID:
-                        submit_button_message = 'Continue story'
+                        submit_button_message = 'Show me the story!'
                         audio_file = 'instructions/reading_fluency_instruction.mp3'
                         allow_skipping = True
                     elif active_task.task.task_id == PICTURE_DESCRIPTION_TASK_ID:
@@ -177,12 +177,14 @@ def session(request, session_id):
                     elif active_task.task.task_id == WORD_SOUNDS_TASK_ID:
                         audio_file = 'instructions/word_sounds_instruction.mp3'
                     elif active_task.task.task_id == WORD_MAP_TASK_ID:
+                        submit_button_message = "Start"
                         audio_file = 'instructions/word_map_instruction.mp3'
                         active_task_instruction_video = 'video/oise_word_map.mp4'
                     elif active_task.task.task_id == WORD_RECALL_TASK_ID:
                         submit_button_message = "I'm ready for the words"
                         audio_file = 'instructions/word_recall_instruction.mp3'
                     elif active_task.task.task_id == PUZZLE_SOLVING_TASK_ID:
+                        submit_button_message = "I'm ready to solve the puzzles"
                         audio_file = 'instructions/puzzle_solving_instruction.mp3'
                     if audio_file:
                         active_task_instruction_audio = ('<audio controls autoplay style=' + \

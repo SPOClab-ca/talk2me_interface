@@ -32,5 +32,13 @@ img.oise-recording-inactive {
 
 .oise-task-name {
     font-weight: bold;
-    font-size: 36px;
+}
+
+.oise-task-instruction {
+    font-size: 22px;
+    line-height: 150%;
+}
+
+.jumbotron {
+    background-color: #fff;
 }
