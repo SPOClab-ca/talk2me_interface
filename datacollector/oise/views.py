@@ -12,7 +12,7 @@ from django.template import RequestContext
 from django.contrib.auth.forms import UserCreationForm
 
 from datacollector.models import Session, Session_Task, Subject, Subject_Bundle, Task, Bundle
-from datacollector.views import global_passed_vars, notify, STATIC_URL
+from datacollector.views import global_passed_vars, notify, STATIC_URL, delete_session
 from datacollector.constants import OISE_BUNDLE_ID
 from datacollector.oise.session_helper import display_session_task_instance, submit_response
 from datacollector.oise.demographics_helper import update_demographics
@@ -383,6 +383,16 @@ def admin_view_user(request, subject_id):
         :param subject_id:
     """
     if request.user.is_authenticated() and request.user.is_superuser:
+
+        if request.method == "POST":
+            form_type = request.POST['form_type']
+
+            if form_type == 'delete_session':
+                session_id = request.POST['session_id']
+                session_id_check = request.POST['session_id_check']
+                if session_id_check == session_id:
+                    delete_session(session_id)
+
         sessions = get_session_information(subject_id)
         demographics = get_demographic_information(subject_id)
         passed_vars = {

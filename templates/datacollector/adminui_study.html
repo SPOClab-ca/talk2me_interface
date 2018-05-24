@@ -34,7 +34,7 @@
 </tr></thead>
 {% for subject in subjects %}
     <tr>
-        <td>{{ subject.user_id }}</td>
+        <td><a href="/{{ website_id}}/admin/{{ bundle.name_id }}/{{ subject.user_id }}">{{ subject.user_id }}</a></td>
     </tr>
 {% endfor %}
 </table>
