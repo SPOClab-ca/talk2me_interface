@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.contrib.auth.forms import UserCreationForm
 
 from datacollector.models import Session, Session_Task, Subject, Subject_Bundle, Task, Bundle
 from datacollector.views import global_passed_vars, notify, STATIC_URL
@@ -16,7 +17,7 @@ from datacollector.constants import OISE_BUNDLE_ID
 from datacollector.oise.session_helper import display_session_task_instance, submit_response
 from datacollector.oise.demographics_helper import update_demographics
 from datacollector.oise.questionnaire_helper import save_questionnaire_responses
-from datacollector.oise.admin_helper import get_oise_users, get_session_information, get_demographic_information
+from datacollector.oise.admin_helper import get_oise_users, get_session_information, get_demographic_information, create_new_user
 
 from csc2518.settings import SUBSITE_ID, OISE_STUDY
 
@@ -354,12 +355,21 @@ def admin(request):
         :param request:
     """
     if request.user.is_authenticated() and request.user.is_superuser:
+
+        if request.method == 'POST':
+            form_type = request.POST['form_type']
+            if form_type == 'create_user_oise':
+                user_created = create_new_user(request)
+
+                if not user_created:
+                    return HttpResponseRedirect(WEBSITE_ROOT + 'error')
         bundle = Bundle.objects.get(name_id='oise')
         oise_users = get_oise_users()
 
         passed_vars = {
             'bundle': bundle,
-            'oise_users': oise_users
+            'oise_users': oise_users,
+            'form': UserCreationForm()
             }
         passed_vars.update(global_passed_vars)
         return render_to_response('datacollector/oise/admin.html', passed_vars, context_instance=RequestContext(request))
@@ -385,3 +395,10 @@ def admin_view_user(request, subject_id):
         return render_to_response('datacollector/oise/admin.html', passed_vars, context_instance=RequestContext(request))
     else:
         return HttpResponseRedirect(WEBSITE_ROOT)
+
+def error(request):
+    """
+    Redirect to generic error page
+        :param request:
+    """
+    return render_to_response('datacollector/oise/error.html', global_passed_vars, context_instance=RequestContext(request))
