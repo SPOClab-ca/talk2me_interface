@@ -13,7 +13,8 @@ from datacollector.models import Bundle, Bundle_Task, Bundle_Task_Field_Value, F
                                  Session_Task, Session_Task_Instance, \
                                  Session_Task_Instance_Value, Task, Task_Field, Task_Field_Data_Attribute, Task_Field_Value
 
-from constants import MINDMAP_HTML, DEFAULT_MINDMAP_IMAGE
+from constants import MINDMAP_HTML, DEFAULT_MINDMAP_IMAGE, MINDMAP_IMAGE_LIGHT, \
+                      MINDMAP_IMAGE_MINOR
 
 WORD_COMPLETION = 'word_completion_oise'
 PICTURE_DESCRIPTION = 'picture_description_oise'
@@ -92,7 +93,6 @@ def submit_response(request):
     form_instances = request.POST.getlist('instanceid')
     responses = copy.deepcopy(form_responses)
     instances = copy.deepcopy(form_instances)
-    
 
     if len(form_instances) > 1:
         active_task_instance_questions = Session_Task_Instance_Value.objects \
@@ -409,14 +409,20 @@ def display_word_map(session_task_instance_id):
     display_field += display_question(task_instance, str(question.field_data_type))
     display_field += '</h2>'
 
-    response_field = MINDMAP_HTML % (session_task_instance_id, DEFAULT_MINDMAP_IMAGE)
+    if str(task_instance.value) == 'minor':
+        mindmap_image_url = MINDMAP_IMAGE_MINOR
+    elif str(task_instance.value) == 'light':
+        mindmap_image_url =  MINDMAP_IMAGE_LIGHT
+    else:
+        mindmap_image_url = DEFAULT_MINDMAP_IMAGE
+    response_field = MINDMAP_HTML % (session_task_instance_id, mindmap_image_url)
     response_field += "<input class='form-field'" + \
                                  " name='instanceid' type='hidden' value='" \
                                  + str(session_task_instance_id) + "' />"
     response_field += "<input class='form-field'" + \
-                                 " id='imageurl'" + \
-                                 " name='imageurl' type='hidden' value='%s' />" \
-                                 % DEFAULT_MINDMAP_IMAGE
+                                 " id='imageurl'"
+    response_field += " name='imageurl' type='hidden' value='%s' />" \
+                                 % mindmap_image_url
     audio_instruction_file = 'instructions/word_map_click.mp3'
 
     return display_field, response_field, False, audio_instruction_file

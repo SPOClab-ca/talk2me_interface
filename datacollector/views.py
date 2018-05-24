@@ -430,7 +430,6 @@ def generate_session(subject, session_type):
                                     ~Q(value_display = selected_values[-1].value_display) ]
 
             for index_instance in range(field_num_instances):
-                print(task.name_id)
                 instance_value = selected_values[index_instance]
                 new_session_value = Session_Task_Instance_Value.objects.create(session_task_instance=new_task_instances[cumulative_field_instances+index_instance], task_field=field, value=instance_value.value, value_display=instance_value.value_display, difficulty=instance_value.difficulty)
 
