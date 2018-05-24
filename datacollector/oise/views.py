@@ -165,6 +165,7 @@ def session(request, session_id):
                     active_session_task_id = active_task.session_task_id
                     active_task_instruction = Task.objects.get(task_id=active_task.task_id).instruction
 
+                    audio_file = None
                     if active_task.task.task_id == READING_FLUENCY_TASK_ID:
                         submit_button_message = 'Show me the story!'
                         audio_file = 'instructions/reading_fluency_instruction.mp3'
