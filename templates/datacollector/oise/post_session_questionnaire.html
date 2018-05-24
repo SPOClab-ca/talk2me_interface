@@ -1,5 +1,9 @@
 {% if questionnaire_submitted %}
-    <h1>You are finished!</h1>
+
+    <div class="jumbotron">
+        <h1><b>You are finished!</b></h1>
+        <h2>Thank you for participating.</h2>
+    </div>
     <audio controls autoplay style="display:none;">
         <source src="{{ STATIC_URL }}/audio/oise/instructions/finished.mp3" type="audio/ogg">
     </audio>
