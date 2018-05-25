@@ -20,16 +20,18 @@
     {% include 'datacollector/oise/post_session_questionnaire.html' %}
 {% else %}
     {% if demographic_submitted %}
-        <h3>Session in progress</h3>
+        <h3>Session in progress: You are completing Task {{ task_counter }} of {{ total_num_tasks }}.</h3>
         <div class="progress">
-            <div class="progress-bar" role="progressbar" aria-valuenow="{{ num_current_task }}" aria-valuemin="0" aria-valuemax="{{ num_tasks }}" style="font-size: 16px; width: {{ percentage_completion }}%;">
-            {{ percentage_completion }}%
+            <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuenow="{{ num_current_task }}" aria-valuemin="0" aria-valuemax="{{ num_tasks }}" style="font-size: 16px; width: {{ percentage_completion }}%;">
+            </div>
+            <div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 14.2857142857%">
+                <span class="sr-only"></span>
             </div>
         </div>
 
         <div class="oise-task jumbotron">
             <div class="oise-task-name">
-                <h1><b>{{ active_task.task.name }}</b></h1>
+                <h1><b>Task # {{task_counter}}: {{ active_task.task.name }}</b></h1>
             </div>
         <!-- Session task instruction -->
         {% if not session_task_in_progress %}

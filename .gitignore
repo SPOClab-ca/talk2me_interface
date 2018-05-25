@@ -30,3 +30,4 @@ docker/logs/
 settings.prod.py
 *.sql
 /venv/*
+local-filename.jpg

@@ -156,6 +156,7 @@ def session(request, session_id):
             # Initialize global vars for session page
             num_current_task = Session_Task.objects.filter(session=session, date_completed__isnull=False).count() + 1
             num_tasks = Session_Task.objects.filter(session=session).count()
+            num_tasks_completed = Session_Task.objects.filter(session=session, date_completed__isnull=False).count()
 
             if not session.end_date:
 
@@ -234,7 +235,6 @@ def session(request, session_id):
                 'session': session,
                 'active_task': active_task,
                 'active_session_task_id': active_session_task_id,
-                'percentage_completion': min(100, round(num_current_task*100.0/num_tasks)),
                 'session_task_in_progress': session_task_in_progress,
                 'active_session_task_instance': active_session_task_instance,
                 'active_task_instruction':  active_task_instruction,
@@ -250,7 +250,11 @@ def session(request, session_id):
                 'demographics_type': 'general',
                 'audio_instruction_file': audio_instruction_file,
                 'allow_skipping': allow_skipping,
-                'hide_submit_button': hide_submit_button
+                'hide_submit_button': hide_submit_button,
+                'total_num_tasks': num_tasks,
+                'num_tasks_completed': num_tasks_completed,
+                'percentage_completion': float(num_tasks_completed) / num_tasks * 100.0,
+                'task_counter': num_current_task
             }
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
