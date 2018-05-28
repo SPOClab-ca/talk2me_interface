@@ -122,7 +122,7 @@ def get_ordered_task_fields_and_values(bundle_task_id):
     task_field_value_ids = [x.task_field_value_id for x in task_field_values]
 
     # OISE Reading Fluency task needs to be:
-    # short story 1, MC question, short story 2, MC question, MC question,
+    # short story 1, short story 2, MC question, MC question,
     #   short story 3, MC question, MC question, short story 4, \
     #   MC question, MC question
     if bundle_task_id == FLUENCY_READING_OISE_BUNDLE_TASK_ID:
@@ -135,11 +135,11 @@ def get_ordered_task_fields_and_values(bundle_task_id):
         mc_questions = Task_Field_Value.objects \
                         .filter(task_field_value_id__in=task_field_value_ids, \
                                 task_field_id=mcq_task_field.task_field_id)
-        ordered_task_fields = [short_story_task_field, mcq_task_field, \
+        ordered_task_fields = [short_story_task_field, \
                                 short_story_task_field, mcq_task_field, mcq_task_field, \
                                 short_story_task_field, mcq_task_field, mcq_task_field, \
                                 short_story_task_field, mcq_task_field, mcq_task_field,]
-        ordered_task_field_values = [short_stories[0], mc_questions[0], \
+        ordered_task_field_values = [short_stories[0], \
                                         short_stories[1], mc_questions[1], \
                                         mc_questions[2], short_stories[2], \
                                         mc_questions[3], mc_questions[4], \
