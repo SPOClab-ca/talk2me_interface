@@ -252,7 +252,7 @@ def display_task(session_task_instance_id, task_id):
         elif task_field.task_field_id in display_only_fields:
             if "You finished the task!" in task_instance.value:
                 display_field += '<audio audio id="audioEl" controls controlsList="nodownload" autoplay style="display:none;">'
-                display_field += '<source src="%saudio/oise/instructions/word_sounds_finished.MP3" type="audio/mpeg">' % (STATIC_URL)
+                display_field += '<source src="%saudio/oise/instructions/word_sounds_finished.mp3" type="audio/mpeg">' % (STATIC_URL)
                 display_field += 'Your browser does not support the audio element.</audio>'
                 display_field += '<span onclick="playAudio();"> <i class="fas fa-volume-up"></i> </span>'
                 reload_fn = "reloadPageOise"
