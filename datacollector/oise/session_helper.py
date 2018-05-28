@@ -482,7 +482,7 @@ def display_word_recall(session_task_instance_id):
     task_instance = Session_Task_Instance_Value.objects \
                     .get(session_task_instance_id=session_task_instance_id, \
                          task_field_id=question.task_field_id)
-    display_field = display_question(task_instance, str(question.field_data_type))
+    display_field = display_question(task_instance, str(question.field_data_type), autoplay=True)
 
     response = Task_Field.objects.get(assoc_id=question.task_field_id, \
                                       field_type_id=FIELD_TYPE_INPUT_ID)
