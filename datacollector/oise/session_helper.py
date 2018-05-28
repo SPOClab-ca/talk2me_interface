@@ -14,7 +14,7 @@ from datacollector.models import Bundle, Bundle_Task, Bundle_Task_Field_Value, F
                                  Session_Task_Instance_Value, Task, Task_Field, Task_Field_Data_Attribute, Task_Field_Value
 
 from constants import MINDMAP_HTML, DEFAULT_MINDMAP_IMAGE, MINDMAP_IMAGE_LIGHT, \
-                      MINDMAP_IMAGE_MINOR
+                      MINDMAP_IMAGE_TIP
 
 WORD_COMPLETION = 'word_completion_oise'
 PICTURE_DESCRIPTION = 'picture_description_oise'
@@ -425,12 +425,12 @@ def display_word_map(session_task_instance_id):
                     .get(session_task_instance_id=session_task_instance_id)
     question = Task_Field.objects.get(task_id=task_id, field_type_id=FIELD_TYPE_DISPLAY_ID)
 
-    display_field = '<h2>'
-    display_field += display_question(task_instance, str(question.field_data_type))
-    display_field += '</h2>'
+    display_field = '<h2>Your target word is: <b>'
+    display_field += task_instance.value
+    display_field += '</b></h2>'
 
-    if str(task_instance.value) == 'minor':
-        mindmap_image_url = MINDMAP_IMAGE_MINOR
+    if str(task_instance.value) == 'tip':
+        mindmap_image_url = MINDMAP_IMAGE_TIP
     elif str(task_instance.value) == 'light':
         mindmap_image_url =  MINDMAP_IMAGE_LIGHT
     else:
@@ -443,6 +443,7 @@ def display_word_map(session_task_instance_id):
                                  " id='imageurl'"
     response_field += " name='imageurl' type='hidden' value='%s' />" \
                                  % mindmap_image_url
+    response_field += "<br><br><br>"
     audio_instruction_file = 'instructions/word_map_click.mp3'
 
     return display_field, response_field, False, audio_instruction_file
