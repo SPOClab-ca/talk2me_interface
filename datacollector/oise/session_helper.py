@@ -515,10 +515,11 @@ def display_question(instance_value, field_data_type):
         display_field = '<h2>' + instance_value.value + '</h2>'
         display_field += "<input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
     elif field_data_type == "audio":
-        display_field = '<audio controls controlsList="nodownload">'
+        display_field = '<audio id="audioEl" controls controlsList="nodownload" style="display:none;">'
         display_field += '<source src="%saudio/oise/%s" type="audio/mpeg">' \
                             % (STATIC_URL, instance_value.value)
         display_field += 'Your browser does not support the audio element.</audio>'
+        display_field += '<div onclick="playAudio();" class="btn btn-success oise-button btn-lg btn-fixedwidth" id="audioButton"><i class="fas fa-volume-up"></i> Start listening</div>'
     else:
         display_field = instance_value.value.replace('\n', '<br>')
 

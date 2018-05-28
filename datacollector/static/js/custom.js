@@ -930,3 +930,10 @@ function submitDummyResponse(submit_btn, success_fn) {
         }
     });
 }
+
+function playAudio() {
+    var audioElement = document.getElementById("audioEl");
+    audioElement.play();
+    var audioButton = document.getElementById("audioButton");
+    $(audioButton).attr("disabled", "disabled");
+}
