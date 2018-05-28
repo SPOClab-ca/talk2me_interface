@@ -111,6 +111,7 @@ def session(request, session_id):
     submit_button_message = None
     active_task_instruction_audio = None
     active_task_instruction_video = None
+    active_task_instruction_audio_button = None
 
     # Task instance
     active_session_task_instance = None
@@ -191,9 +192,10 @@ def session(request, session_id):
                         audio_file = 'instructions/puzzle_solving_instruction.mp3'
                     if audio_file:
                         active_task_instruction_audio = ('<audio controls autoplay style=' + \
-                                                        '"display:none;"><source src="%s/audio/oise/%s" ' + \
+                                                        '"display:none;" id="instructionAudio"><source src="%s/audio/oise/%s" ' + \
                                                         'type="audio/ogg">Your browser does not ' + \
                                                         'support the audio element.</audio>') % (STATIC_URL, audio_file)
+                        active_task_instruction_audio_button = '<span onclick="document.getElementById(\'instructionAudio\').play();"><i class="fas fa-volume-up"></i></span>'
                 # If session responses are submitted, perform validation.
                 # If validation passes, write them to the database and return a
                 # 'success' response to the AJAX script. If validation fails,
@@ -254,7 +256,8 @@ def session(request, session_id):
                 'total_num_tasks': num_tasks,
                 'num_tasks_completed': num_tasks_completed,
                 'percentage_completion': float(num_tasks_completed) / num_tasks * 100.0,
-                'task_counter': num_current_task
+                'task_counter': num_current_task,
+                'active_task_instruction_audio_button': active_task_instruction_audio_button
             }
             passed_vars.update(global_passed_vars)
             return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))

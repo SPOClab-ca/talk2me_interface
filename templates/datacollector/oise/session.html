@@ -38,7 +38,7 @@
 
             <div class="oise-task-instruction">
                 {% autoescape off %}
-                {{ active_task.task.instruction }}
+                {{ active_task.task.instruction }}  &nbsp; &nbsp; {{ active_task_instruction_audio_button }}
                 {% endautoescape %}
                 <br><br>
                 {% if active_task_instruction_audio %}

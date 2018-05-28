@@ -237,23 +237,46 @@ def display_task(session_task_instance_id, task_id):
                                text_instruction_task_field.task_field_id, \
                                text_example_task_field.task_field_id]
         if task_field.task_field_id == audio_task_field.task_field_id:
+            display_field = display_question(task_instance, str(task_field.field_data_type), autoplay=True)
             response = Task_Field.objects.get(assoc_id=task_field.task_field_id)
             response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
         elif task_field.task_field_id == text_task_field.task_field_id:
             display_field = "<h1>" + task_instance.value_display + "</h1>"
-            display_field += '<audio controls controlsList="nodownload" autoplay style="display:none;">>'
+            display_field += '<audio audio id="audioEl" controls controlsList="nodownload" autoplay style="display:none;">>'
             display_field += '<source src="%saudio/oise/%s" type="audio/mpeg">' \
                                 % (STATIC_URL, task_instance.value)
             display_field += 'Your browser does not support the audio element.</audio>'
+            display_field += '<span onclick="playAudio();"> <i class="fas fa-volume-up"></i> </span>'
             response = Task_Field.objects.get(assoc_id=task_field.task_field_id, field_type_id=2)
             response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
         elif task_field.task_field_id in display_only_fields:
             if "You finished the task!" in task_instance.value:
+                display_field += '<audio audio id="audioEl" controls controlsList="nodownload" autoplay style="display:none;">'
+                display_field += '<source src="%saudio/oise/instructions/word_sounds_finished.MP3" type="audio/mpeg">' % (STATIC_URL)
+                display_field += 'Your browser does not support the audio element.</audio>'
+                display_field += '<span onclick="playAudio();"> <i class="fas fa-volume-up"></i> </span>'
                 reload_fn = "reloadPageOise"
                 text_display = "Next"
             else:
+                if task_field.task_field_id == text_instruction_task_field.task_field_id:
+                    display_field += '<audio audio id="audioEl" controls controlsList="nodownload" autoplay style="display:none;">'
+                    display_field += '<source src="%saudio/oise/instructions/word_sounds_text_instruction.mp3" type="audio/mpeg">' % (STATIC_URL)
+                    display_field += 'Your browser does not support the audio element.</audio>'
+                    display_field += '<span onclick="playAudio();"> <i class="fas fa-volume-up"></i> </span>'
+                elif task_field.task_field_id == text_example_task_field.task_field_id:
+                    display_field = "<h2>Let's look at an example!</h2>"
+                    display_field += "<h1>" + task_instance.value_display + "</h1>"
+                    display_field += display_question(task_instance, str(task_field.field_data_type), autoplay=True)
+                elif task_field.task_field_id == feedback_task_field.task_field_id:
+                    display_field = "<h2>Let's check the answer!</h2>"
+                    display_field += display_question(task_instance, str(task_field.field_data_type), autoplay=True)
+                elif task_field.task_field_id == audio_example_task_field.task_field_id:
+                    display_field = "<h2>Let's look at an example!</h2>"
+                    display_field += display_question(task_instance, str(task_field.field_data_type), autoplay=True)
+                else:
+                    display_field = display_question(task_instance, str(task_field.field_data_type), autoplay=True)
                 reload_fn = "reloadPage"
-                text_display = "Continue"
+                text_display = "Next"
             response_field = "<p><input class='form-field'" + \
                              " name='instanceid' type='hidden' value='" \
                              + str(session_task_instance_id) + "' />" + \
@@ -361,10 +384,6 @@ def display_story_retelling(session_task_instance_id):
 
     display_field = display_question(task_instance, str(story_field.field_data_type))
     audio_instruction_file = ''
-    # if str(story_field.field_data_type) == "audio":
-    #     audio_instruction_file = 'instructions/story_retelling_listen.mp3'
-    # elif str(story_field.field_data_type) == "text_well":
-    #     audio_instruction_file = 'instructions/story_retelling_read.mp3'
 
     response_field, requires_audio = display_response(task_instance, str(response.field_data_type), \
                                                       recording_button_text="Start retelling")
@@ -473,7 +492,7 @@ def display_word_recall(session_task_instance_id):
     # audio_instruction_file = 'instructions/word_recall_click.mp3'
     return display_field, response_field, True, None
 
-def display_question(instance_value, field_data_type):
+def display_question(instance_value, field_data_type, autoplay=False):
     """
     Determine how to display the value based on the field type and construct style attributes string from the specified field
     data attributes
@@ -515,11 +534,18 @@ def display_question(instance_value, field_data_type):
         display_field = '<h2>' + instance_value.value + '</h2>'
         display_field += "<input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
     elif field_data_type == "audio":
-        display_field = '<audio id="audioEl" controls controlsList="nodownload" style="display:none;">'
-        display_field += '<source src="%saudio/oise/%s" type="audio/mpeg">' \
-                            % (STATIC_URL, instance_value.value)
-        display_field += 'Your browser does not support the audio element.</audio>'
-        display_field += '<div onclick="playAudio();" class="btn btn-success oise-button btn-lg btn-fixedwidth" id="audioButton"><i class="fas fa-volume-up"></i> Start listening</div>'
+        if autoplay:
+            display_field = '<audio id="audioEl" controls controlsList="nodownload" autoplay style="display:none;">'
+            display_field += '<source src="%saudio/oise/%s" type="audio/mpeg">' \
+                                % (STATIC_URL, instance_value.value)
+            display_field += 'Your browser does not support the audio element.</audio>'
+            display_field += '<span onclick="playAudio();" id="audioButton"><i class="fas fa-volume-up"></i> </span>'
+        else:
+            display_field = '<audio id="audioEl" controls controlsList="nodownload" style="display:none;">'
+            display_field += '<source src="%saudio/oise/%s" type="audio/mpeg">' \
+                                % (STATIC_URL, instance_value.value)
+            display_field += 'Your browser does not support the audio element.</audio>'
+            display_field += '<div onclick="playAudio();" class="btn btn-success oise-button btn-lg btn-fixedwidth" id="audioButton">Start listening <i class="fas fa-volume-up"></i> </div>'
     else:
         display_field = instance_value.value.replace('\n', '<br>')
 
