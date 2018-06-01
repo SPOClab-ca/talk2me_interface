@@ -5,7 +5,7 @@
 import datetime
 
 from datacollector.models import Demographics_Oise, Gender, Subject, Subject_Language_Oise
-from constants import yes_no_map 
+from constants import yes_no_map
 
 def update_demographics(request):
     """
@@ -180,3 +180,11 @@ def update_demographics_other_languages(request):
     if form_errors:
         demographics_submitted = False
     return demographics_submitted, form_errors
+
+def skip_demographics(request):
+    """
+        Set demographics submitted date to today
+    """
+    today = datetime.datetime.now()
+    Subject.objects.filter(user_id=request.user.id)\
+           .update(date_demographics_submitted=today)

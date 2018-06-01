@@ -78,7 +78,7 @@
         <td>
         {% if subject.sessions_created %}
             <button type="btn" class="btn btn-sm btn-primary" disabled>Generate sessions</button>
-            <a href="/{{ website_id }}/uhn/admin/{{ bundle.name_id }}/{{ subject.user_id }} "><button type="btn" class="btn btn-sm btn-default">View sessions</button></a>
+            <a href="/{{ website_id }}/uhn/admin/{{ bundle.name_id }}/{{ subject.user_id }} "><button type="btn" class="btn btn-sm btn-default"></button></a>
         {% else %}
             <form method="post" action="{{ bundle.name_id }}">
             {% csrf_token %}

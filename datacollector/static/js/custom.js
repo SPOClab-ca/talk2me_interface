@@ -937,3 +937,22 @@ function playAudio() {
     var audioButton = document.getElementById("audioButton");
     $(audioButton).attr("disabled", "disabled");
 }
+
+function skipDemographic(submit_btn, success_fn) {
+
+    var post_params = "skip_demographics=''";
+    var the_form = $(submit_btn).closest("form");
+    $.ajax({
+        async: true,
+        type: 'POST',
+        url: $(the_form).attr("action"),
+        data: post_params,
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) {
+
+        },
+        success: function(data, textStatus, jqXHR) {
+            success_fn();
+        }
+    });
+}

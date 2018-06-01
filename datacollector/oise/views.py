@@ -15,7 +15,7 @@ from datacollector.models import Session, Session_Task, Subject, Subject_Bundle,
 from datacollector.views import global_passed_vars, notify, STATIC_URL, delete_session
 from datacollector.constants import OISE_BUNDLE_ID
 from datacollector.oise.session_helper import display_session_task_instance, submit_response
-from datacollector.oise.demographics_helper import update_demographics
+from datacollector.oise.demographics_helper import update_demographics, skip_demographics
 from datacollector.oise.questionnaire_helper import save_questionnaire_responses
 from datacollector.oise.admin_helper import get_oise_users, get_session_information, get_demographic_information, create_new_user
 
@@ -273,12 +273,17 @@ def demographics(request):
     form_errors = []
     form_values = None
     demographics_type = 'general'
+    demographics_submitted = False
 
     if request.user.is_authenticated():
         if request.method == "POST":
-            form_errors, _, \
-                form_values, demographics_type, \
-                demographics_submitted = update_demographics(request)
+            if 'skip_demographics' in request.POST:
+                skip_demographics(request)
+                return HttpResponse(json.dumps({'status': 'success'}))
+            else:
+                form_errors, _, \
+                    form_values, demographics_type, \
+                    demographics_submitted = update_demographics(request)
             passed_vars = {
                 'form_errors': form_errors,
                 'demographic_submitted': demographics_submitted,
@@ -286,7 +291,6 @@ def demographics(request):
                 'demographics_type': demographics_type
             }
             if demographics_submitted:
-
                 # Redirect to the newly-created session
                 subject = Subject.objects.get(user_id=request.user.id)
                 latest_session = Session.objects.filter(subject=subject, end_date__isnull=True).order_by('start_date')[0]

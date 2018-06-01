@@ -27,7 +27,7 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h3 class="panel-title">Session {{ session.session_id }} completed on {{ session.end_date }}
-                <div class="pull-right"> 
+                <div class="pull-right">
                     <form method="post">
                     {% csrf_token %}
                         <input type="hidden" id="form_type" name="form_type" value="delete_session" />
