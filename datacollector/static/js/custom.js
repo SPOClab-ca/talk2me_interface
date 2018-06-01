@@ -450,7 +450,7 @@ function hideDisplay(btn) {
  * is responding (e.g., hiding the story while the user attempts to
  * re-tell it in their own words)
  */
-function hideDisplayOise(btn, instruction) {
+function hideDisplayOise(btn, instruction, audio_instruction_file) {
     var container = $(btn).closest("li");
     if ($(btn).closest("li").length == 0) {
         container = $(btn).closest("div");
@@ -459,6 +459,14 @@ function hideDisplayOise(btn, instruction) {
     var record_btn = $(container).find("#record-btn_" + instance_id);
     var task_container = document.getElementsByClassName('oise-task-instance-prompt')[0];
     if (instruction) {
+        if (audio_instruction_file) {
+            var audio_instruction_el = "<audio audio id='audioElInstruction' controls controlsList='nodownload' autoplay style='display:none;'><source src='";
+            audio_instruction_el += audio_instruction_file;
+            audio_instruction_el += "' type='audio/mpeg'>";
+            audio_instruction_el += "Your browser does not support the audio element.</audio>";
+            audio_instruction_el += "<span onclick='playAudio(\"audioElInstruction\");'> <i class='fas fa-volume-up'></i> </span>&nbsp;";
+            instruction = instruction + audio_instruction_el;
+        }
         $(task_container).html(instruction + "<p class='space-top-small space-bottom-small'></p>");
     } else {
         $(task_container).html("Click the \"Start recording\" button below to begin recording. Tell the story in your own words, as you remember it. Try to speak for at least a minute. When done, click the \"Stop recording\" button.<p class='space-top-small space-bottom-small'></p>");
@@ -931,11 +939,18 @@ function submitDummyResponse(submit_btn, success_fn) {
     });
 }
 
-function playAudio() {
-    var audioElement = document.getElementById("audioEl");
+function playAudio(element_id, disable_button) {
+    if (element_id) {
+        var audioElement = document.getElementById(element_id);
+    } else {
+        var audioElement = document.getElementById("audioEl");
+    }
     audioElement.play();
-    var audioButton = document.getElementById("audioButton");
-    $(audioButton).attr("disabled", "disabled");
+
+    if (disable_button){
+        var audioButton = document.getElementById(disable_button);
+        $(audioButton).attr("disabled", "disabled");
+    }
 }
 
 function skipDemographic(submit_btn, success_fn) {

@@ -75,17 +75,18 @@
         {% else %}
             <div class="oise-task-instance">
                 <div class="oise-task-instance-prompt">
+                    {% if audio_instruction_file %}
+                        <audio audio id="audioElInstruction" controls controlsList="nodownload" autoplay style="display:none;">
+                            <source src="{{ STATIC_URL }}/audio/oise/{{ audio_instruction_file }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                        <span onclick="playAudio('audioElInstruction');"> <i class="fas fa-volume-up"></i> </span>
+                    {% endif %}
                     <h2>
                         {% autoescape off %}
                         {{ display_field }}
                         {% endautoescape %}
                     </h2>
-                    {% if audio_instruction_file %}
-                    <audio controls autoplay style="display:none;">
-                        <source src="{{ STATIC_URL }}/audio/oise/{{ audio_instruction_file }}" type="audio/ogg">
-                        Your browser does not support the audio element.
-                    </audio>
-                    {% endif %}
                 </div>
                 <br>
 
