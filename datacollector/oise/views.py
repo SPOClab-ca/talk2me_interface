@@ -181,7 +181,7 @@ def session(request, session_id):
                     elif active_task.task.task_id == WORD_SOUNDS_TASK_ID:
                         audio_file = 'instructions/word_sounds_instruction.mp3'
                     elif active_task.task.task_id == WORD_MAP_TASK_ID:
-                        submit_button_message = "Start"
+                        submit_button_message = "I'm ready to create my word map"
                         audio_file = 'instructions/word_map_instruction.mp3'
                         active_task_instruction_video = 'video/oise_word_map.mp4'
                     elif active_task.task.task_id == WORD_RECALL_TASK_ID:
