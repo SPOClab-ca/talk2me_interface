@@ -11,7 +11,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth.forms import UserCreationForm
 
-from datacollector.models import Session, Session_Task, Subject, Subject_Bundle, Task, Bundle
+from datacollector.models import Session, Session_Task, Subject, Subject_Bundle, Task, User, Bundle
 from datacollector.views import global_passed_vars, notify, STATIC_URL, delete_session
 from datacollector.constants import OISE_BUNDLE_ID
 from datacollector.oise.session_helper import display_session_task_instance, submit_response
@@ -406,9 +406,11 @@ def admin_view_user(request, subject_id):
                     delete_session(session_id)
 
         sessions = get_session_information(subject_id)
+        username = User.objects.get(id=subject_id).username
         demographics = get_demographic_information(subject_id)
         passed_vars = {
             'subject_id': subject_id,
+            'username': username,
             'sessions': sessions,
             'demographics': demographics,
             'view_session_information': True

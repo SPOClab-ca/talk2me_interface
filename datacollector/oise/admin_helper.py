@@ -20,8 +20,10 @@ def get_oise_users():
     subjects_object = []
     for subject_bundle in subject_bundles:
         subject_id = subject_bundle.subject_id
+        username = User.objects.get(id=subject_id).username
         subjects_object += [{
             'subject_id': subject_id,
+            'username': username,
             'demographics': get_demographic_information(subject_id)
         }]
     return subjects_object
@@ -38,7 +40,8 @@ def get_demographic_information(subject_id):
             'gender': demographics_object.gender_id,
             'age': demographics_object.age,
             'grade': demographics_object.grade,
-            'english_ability': demographics_object.english_ability
+            'english_ability': demographics_object.english_ability,
+            'name': demographics_object.name
             }
     return {}
 

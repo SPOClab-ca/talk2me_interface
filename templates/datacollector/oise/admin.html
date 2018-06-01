@@ -14,6 +14,7 @@
 
     <h2>Demographic information</h2>
     <ul>
+        <li>Userame: {{ username }}</li>
         <li>Age: {{ demographics.age }}</li>
         <li>Gender: {{ demographics.gender }}</li>
         <li>Grade: {{demographics.grade }}</li>
@@ -89,6 +90,7 @@
     <thead>
     <tr style="font-weight: bold">
         <td>User ID</td>
+        <td>Userame</td>
         <td>Age</td>
         <td>Gender</td>
         <td>Grade</td>
@@ -99,6 +101,7 @@
     {% for oise_user in oise_users %}
         <tr>
             <td>{{ oise_user.subject_id }}</td>
+            <td>{{ oise_user.username}}</td>
             <td>{{ oise_user.demographics.age }}</td>
             <td>{{ oise_user.demographics.gender }}</td>
             <td>{{ oise_user.demographics.grade }}</td>
