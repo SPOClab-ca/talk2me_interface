@@ -478,7 +478,8 @@ def display_puzzle_solving(session_task_instance_id):
                                 task_field_id=response.task_field_id)
     for response_field_task_instance in response_field_instances:
         response_field_instance, _ = display_response(response_field_task_instance, \
-                                                       str(response.field_data_type))
+                                                       str(response.field_data_type), \
+                                                       is_image=True)
     response_field += response_field_instance
 
     audio_instruction_file = 'instructions/puzzle_solving_click.mp3'
@@ -565,7 +566,7 @@ def display_question(instance_value, field_data_type, autoplay=False):
 
 def display_response(instance_value, field_data_type, \
                      audio_instruction=None, recording_button_text=None, \
-                     show_audio_instruction_file=None):
+                     show_audio_instruction_file=None, is_image=False):
     requires_audio = False
     response_field = ""
     response_object = Session_Response.objects.filter(session_task_instance=instance_value.session_task_instance)[0]
@@ -583,9 +584,10 @@ def display_response(instance_value, field_data_type, \
                               " btn-lg btn-fixedwidth' type='button'"
             if audio_instruction:
                 response_field += " onClick='javascript: hideDisplayOise(this, \"" + \
-                                  audio_instruction + \
-                                  "\", \"" + show_audio_instruction_file + \
-                                  "\");'"
+                                    audio_instruction
+                if show_audio_instruction_file:
+                    response_field += "\", \"" + show_audio_instruction_file
+                response_field += "\");'"
             else:
                 response_field += " onClick='javascript: hideDisplayOise(this);'"
             response_field += " value='Continue'></p>"
@@ -621,16 +623,21 @@ def display_response(instance_value, field_data_type, \
                       .order_by('session_task_instance_value_id')
 
         for sel_option in sel_options:
-            response_field += "<div class='radio'>"
-            response_field += "<label><h3><input type='radio' class='form-field' name='response_" + instance_id + "' value='" + sel_option.value + "'"
 
-            # Mark any previously-submitted responses as selected
-            if existing_value == sel_option.value:
-                response_field += " selected='selected'"
-
-            response_field += "> " + sel_option.value_display + "</h3></label>"
+            if is_image:
+                response_field += "<div class='radio-inline'>"
+                response_field += "<label><input type='radio' class='form-field' name='response_" + instance_id + "' value='" + sel_option.value + "'>"
+                response_field += "<img src='%simg/" % STATIC_URL
+                response_field += sel_option.value_display + "' style='width:100px;'></label>&nbsp;"
+            else:
+                response_field += "<div class='radio'>"
+                response_field += "<label><h3><input type='radio' class='form-field' name='response_" + instance_id + "' value='" + sel_option.value + "'"
+                # Mark any previously-submitted responses as selected
+                if existing_value == sel_option.value:
+                    response_field += " selected='selected'"
+                response_field += "> " + sel_option.value_display + "</h3></label>"
             response_field += "</div>"
 
-        response_field += "<input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
+        response_field += "<br><input class='form-field' name='instanceid' type='hidden' value='" + instance_id + "' />"
 
     return response_field, requires_audio
