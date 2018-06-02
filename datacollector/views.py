@@ -390,6 +390,11 @@ def generate_session(subject, session_type):
             else:
                 # Add to selected values. Make sure not to add field values that are associated with each other, or are already selected, or have been seen by the subject before in previous sessions. NB: here we are assuming that the total number of values for each field in the db is at least as big as the default number of instances for the field.
                 limits = []
+                bundle_id = None
+                if bundle_task:
+                    bundle_id = bundle_task.bundle.bundle_id
+                    if bundle_id == OISE_BUNDLE_ID:
+                        selected_values = Task_Field_Value.objects.filter(task_field=field)
                 while len(selected_values) < field_num_instances:
 
                     field_values = Task_Field_Value.objects.filter(task_field=field,*limits).exclude(value__in=existing_values)
