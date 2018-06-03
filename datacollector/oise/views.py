@@ -276,6 +276,10 @@ def demographics(request):
     demographics_submitted = False
 
     if request.user.is_authenticated():
+
+        # Check if demographics has already been submitted
+        demographics_submitted = Subject.objects.get(user_id=request.user.id).date_demographics_submitted
+        print(request)
         if request.method == "POST":
             if 'skip_demographics' in request.POST:
                 skip_demographics(request)
@@ -290,21 +294,19 @@ def demographics(request):
                 'form_values': form_values,
                 'demographics_type': demographics_type
             }
-            if demographics_submitted:
-                # Redirect to the newly-created session
-                subject = Subject.objects.get(user_id=request.user.id)
-                latest_session = Session.objects.filter(subject=subject, end_date__isnull=True).order_by('start_date')[0]
-                return HttpResponseRedirect(WEBSITE_ROOT + 'session/' + str(latest_session.session_id))
-
-            return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
         elif request.method == "GET":
             passed_vars = {
                 'demographics_type': 'general'
             }
             passed_vars.update(global_passed_vars)
-            return render_to_response('datacollector/oise/session.html', \
-                                      passed_vars, \
-                                      context_instance=RequestContext(request))
+
+        if demographics_submitted:
+            # Redirect to the newly-created session
+            subject = Subject.objects.get(user_id=request.user.id)
+            latest_session = Session.objects.filter(subject=subject, end_date__isnull=True).order_by('start_date')[0]
+            return HttpResponseRedirect(WEBSITE_ROOT + 'session/' + str(latest_session.session_id))
+
+        return render_to_response('datacollector/oise/session.html', passed_vars, context_instance=RequestContext(request))
     return HttpResponseRedirect(WEBSITE_ROOT)
 
 def questionnaire(request):
