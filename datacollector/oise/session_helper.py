@@ -239,7 +239,7 @@ def display_task(session_task_instance_id, task_id):
         if task_field.task_field_id == audio_task_field.task_field_id:
             display_field = display_question(task_instance, str(task_field.field_data_type), autoplay=True)
             response = Task_Field.objects.get(assoc_id=task_field.task_field_id)
-            response_field, requires_audio = display_response(task_instance, str(response.field_data_type))
+            response_field, requires_audio = display_response(task_instance, str(response.field_data_type), recording_button_text="Record")
         elif task_field.task_field_id == text_task_field.task_field_id:
             display_field = "<h1>" + task_instance.value_display + "</h1>"
             display_field += '<audio audio id="audioEl" controls controlsList="nodownload" autoplay style="display:none;">'
