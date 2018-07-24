@@ -23,7 +23,9 @@
 <ul>
 {% for bundle in bundles %}
     {% if 'uhn' in bundle.name_id %}
-        <li><a href="/{{ website_id }}/uhn/admin/{{ bundle.name_id }}">{{ bundle.name_id }}</a></li>
+        <li><a href="/{{ website_id }}/{{ uhn_study }}/admin/{{ bundle.name_id }}">{{ bundle.name_id }}</a></li>
+    {% elif 'wch' in bundle.name_id %}
+        <li><a href="/{{ website_id }}/{{ wch_study }}/admin/{{ bundle.name_id }}">{{ bundle.name_id }}</a></li>
     {% else %}
         <li><a href="/{{ website_id }}/admin/{{ bundle.name_id }}">{{ bundle.name_id }}</a></li>
     {% endif %}

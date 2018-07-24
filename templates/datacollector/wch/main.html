@@ -1,0 +1,97 @@
+{% extends "datacollector/wch/base.html" %}
+
+{% block title %}{{ website_name }}{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ user.username }} (<a href="/{{ website_id }}/{{ wch_study }}/logout">logout</a>)
+    {% else %}
+        <a href="/{{ website_id }}/{{ wch_study }}/login">Login</a>
+    {% endif %}
+{% endblock %}
+
+{% block header %}
+<!-- Login page -->
+{% if not is_authenticated %}
+    <header class="image-bg-fluid-height">
+        <div class="container">
+        <div class="row">
+            <div class="header-panel">
+                <h1>{{ website_name }}</h1>
+                <p class="lead">Online language assessment for longitudinal monitoring of changes in cognition</p>
+                <hr />
+                <!-- Login form directly on home page to minimize login time -->
+                <form method='post' action='login'>
+                    <table class="table table-condensed table-noborder">
+                        <tbody>
+                            <tr><td class="table-label">Username</td></tr>
+                            <tr><td><input name="username" id="username" class="form-control" type="text" value="" placeholder="Username" autofocus="autofocus" /></td></tr>
+                            <tr><td class="table-label">Password</td></tr>
+                            <tr><td><input name="password" id="password" class="form-control" type="password" value="" placeholder="Password" /></td></tr>
+                        </tbody>
+                    </table>
+
+                    {% csrf_token %}
+                    <div class="login-container text-right">
+                        <button type="submit" class="btn btn-primary btn-lg">Login</button><br />
+                    </div>
+                </form>
+
+            </div>
+            </div>
+        </div>
+        </div>
+    </header>
+{% endif %}
+{% endblock %}
+{% block content %}
+
+<!-- Index page -->
+{% if is_authenticated %}
+
+    <!-- Admin link -->
+    {% if user.is_superuser %}
+    <ul>
+        <h2><li><a href="/{{ website_id }}/{{ wch_study }}/admin/wch_web">WCH (web study) - Admin dashboard</a></li></h2>
+        <h2><li><a href="/{{ website_id }}/{{ wch_study }}/admin/wch_phone">WCH (phone study) - Admin dashboard</a></li></h2>
+    </ul>
+    {% endif %}
+
+    <!-- Post-registration page -->
+    {% if not consent_submitted %}
+        <div class="wch-consent">
+            {% include 'datacollector/wch/consent.html' %}
+        </div>
+    <!-- end Post-registration page -->
+
+
+    <!-- Start session -->
+    {% else %}
+        {% if not demographic_submitted %}
+            {% include 'datacollector/demographic.html' %}
+        {% else %}
+            <h1></h1>
+            <hr>
+            {% if subject_bundle and subject_bundle.bundle and subject_bundle.bundle.name_id == 'wch_web' %}
+                {% include 'datacollector/wch/sessions_web.html' %}
+            {% elif subject_bundle and subject_bundle.bundle and subject_bundle.bundle.name_id == 'wch_phone' %}
+                {% include 'datacollector/wch/sessions_phone.html' %}
+            {% endif %}
+        {% endif %}
+    {% endif %} <!-- ends consent if -->
+{% else %}
+    <div class="support_html5 bs-callout bs-callout-danger invisible">
+        {{ website_name }} requires a modern browser which supports HTML5. You are using a browser which does not support this technology. <strong>To use {{ website_name }}, please download the latest version of <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank">Chrome</a> or <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank">Firefox</a></strong>.<br />
+        <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank"><img src="{{ STATIC_URL }}img/chrome.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
+        <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank"><img src="{{ STATIC_URL }}img/firefox.png" style="height: 40px; margin: 5px; border-bottom: 1px dotted #333" /></a>
+    </div>
+
+    <div>
+        <a href="http://www.utoronto.ca/"><img class="logo logo-first" src="{{ STATIC_URL }}img/uoft_logo_web.jpg" /></a> <a href="http://www.nserc-crsng.gc.ca/"><img class="logo" src="{{ STATIC_URL }}img/nserc_logo_web.jpg" /></a>
+    </div>
+{% endif %}
+
+<!-- Dialog messages -->
+<div id="dialog-message"></div>
+
+{% endblock %}

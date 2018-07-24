@@ -1,0 +1,147 @@
+{% extends "datacollector/base.html" %}
+
+{% block title %}{{ website_name }} - Admin Dashboard{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ user.username }} (<a href="/{{ website_id }}/logout">logout</a>)
+    {% else %}
+        <a href="/{{ website_id }}/login">Login</a> | <a href="/{{ website_id }}/register">New User</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h1>Admin Dashboard</h1>
+
+<ol class="breadcrumb">
+  <li><a href="/{{ website_id }}">Index</a></li>
+  <li><a href="/{{ website_id }}/admin">Admin Dashboard</a></li>
+  <li><a href="/{{ website_id }}/{{ wch_study }}/admin/{{ bundle.name_id }}">{{ bundle.name_id }}</a></li>
+  <li class="active">User {{ subject.user_id }}</li>
+</ol>
+
+<hr/>
+
+<h2>Information for User {{ subject.user_id }}</h2>
+
+<ul class="list-group">
+    <li class="list-group-item">
+        <b>Username:</b> {{ username }}
+    </li>
+    <li class="list-group-item">
+        <b>Date consent submitted:</b> {{ subject.date_consent_submitted }}
+    </li>
+    <li class="list-group-item">
+        <b>Last session accessed:</b> {{ subject.date_last_session_access }}
+    </li>
+    {% if bundle.name_id == 'wch_phone' %}
+    <li class="list-group-item">
+        <form class="form-inline" method="post">
+        {% csrf_token %}
+            <div class="form-group">
+                <label for="phonePin"><b>Phone PIN: </b></label>
+            </div>
+        {% if subject.phone_pin %}
+            <div class="form-group">{{ subject.phone_pin }} </div>
+        {% else %}
+            <div class="form-group">
+                <input type="hidden" id="form_type" name="form_type" value="update_phone_pin">
+                <input type="text" class="form-control" id="phone_pin" name="phone_pin" placeholder="####">
+                <button class="btn btn-secondary btn-success" type="submit">Enter phone pin</button>
+            </div>
+        </form>
+        {% endif %}
+    </li>
+    {% endif %}
+</ul>
+<hr/>
+
+<h3>Sessions</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Session ID</th>
+            <th>Start date</th>
+            <th>Date of completion</th>
+            <th> </th>
+        </tr>
+    </thead>
+
+{% for session in sessions %}
+    <tr {% if session.end_date %} class="success" {% endif %}>
+        <td>
+            <span data-toggle="modal" data-target="#sessionModal{{ session.session_id }}">{{ session.session_id }}</span>
+             <div id="sessionModal{{ session.session_id }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-body">
+                       {% for session_task in session.session_tasks %}
+                        <div {% if session_task.date_completed %} class="panel  panel-success" {% else %} class="panel panel-default" {% endif %}>
+                            <div class="panel-heading">{{ session_task.task }}</div>
+                            <ul class="list-group">
+                                {% for task_instance in session_task.task_instances %}
+                                <li class="list-group-item">
+                                    {{ task_instance.value }} ({{ task_instance.difficulty }})
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                           {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </td>
+        <td>{{ session.start_date }}</td>
+        <td>{{ session.end_date }}</td>
+        <td>
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteSession{{ session.session_id }}">Delete</button>
+            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#sessionModal{{ session.session_id }}">View session</button>
+
+            <div id="deleteSession{{ session.session_id }}" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Delete session {{ session.session_id }}</h4>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete session {{ session.session_id }}? This can't be reversed. To confirm the deletion, enter the session #. Note that the content displayed below will be deleted permanently.
+
+                            <form method="post">
+                            {% csrf_token %}
+                                <input type="hidden" id="form_type" name="form_type" value="delete_session" />
+                                <input type="hidden" id="session_id" name="session_id" value="{{ session.session_id }}" /><br>
+                                <input type="text" id="session_id_check" name="session_id_check" value="" placeholder="Session #"/>
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+
+                            {% for session_task in session.session_tasks %}
+                            <div class="panel panel-default">
+                                <div class="panel-heading">{{ session_task.task }}</div>
+                                <ul class="list-group">
+                                    {% for task_instance in session_task.task_instances %}
+                                    <li class="list-group-item">
+                                        {{ task_instance.value }} ({{ task_instance.difficulty }})
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                           {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+
+
+
+{% endblock %}

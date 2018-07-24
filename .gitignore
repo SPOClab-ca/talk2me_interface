@@ -31,3 +31,8 @@ settings.prod.py
 *.sql
 /venv/*
 local-filename.jpg
+
+# Ignore testing and coveragegiles
+.coverage
+htmlcov/*
+htmlcov/*/*

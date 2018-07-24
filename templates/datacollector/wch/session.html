@@ -1,0 +1,106 @@
+{% extends "datacollector/wch/base.html" %}
+
+{% block title %}{{ website_name }} - Session {{ session.session_id }}{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ user.username }} (<a href="/{{ website_id }}/{{ wch_study }}/logout">logout</a>)
+    {% else %}
+        <a href="/{{ website_id }}/{{ wch_study }}/login">Login</a></a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+{% if session %}
+    <!-- If the session is active (still has unanswered questions),display the next pending question -->
+    {% if active_task %}
+        <h1>Session in progress</h1>
+
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="{{ num_current_task }}" aria-valuemin="0" aria-valuemax="{{ num_tasks }}" style="font-size: 16px; width: {{ percentage_completion }}%;">
+            {{ percentage_completion }}%
+          </div>
+        </div>
+
+        <div id="form_errors" class="invisible bs-callout bs-callout-danger">
+        </div>
+
+        <form id='session_form' method="post" action="" autocomplete="off">
+        {% csrf_token %}
+        <input type='hidden' id='session_task_id' value='{{ active_session_task_id }}' />
+        <h2>{{ active_task.task.name }}</h2>
+        <p>{{ active_task.task.instruction }}</p>
+
+
+        {% if active_instances|length > 1 %}
+            <ol>
+            {% for instance in active_instances %}
+                <li class='task-instance'>
+                    {% autoescape off %}{{ instance }}{% endautoescape %}
+                </li>
+            {% endfor %}
+            </ol>
+        {% else %}
+            {% for instance in active_instances %}
+                <div class='task-instance'>
+                    {% autoescape off %}{{ instance }}{% endautoescape %}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% if requires_audio or serial_instances %}
+        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" disabled />
+        {% else %}
+        <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" />
+        {% endif %}
+
+        <!-- Display ajax indicator while the audio/other data is being uploaded to server -->
+        <span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span>
+        </form>
+
+        <input type="hidden" id="unsaved_changes" value="" />
+
+    <!-- Otherwise, show results -->
+    {% else %}
+        <h1>Session completed on {{ completed_date }}</h1>
+            {% if display_thankyou %}
+            <div class="bs-callout bs-callout-info">
+                <strong>
+                    Thank you for completing this session!
+
+                    {% if is_wch_study %}
+                        <br>We’ll see you at your next session currently scheduled for {{ next_session_date }}.
+
+                    {% endif %}
+                </strong>
+            </div>
+            {% endif %}
+
+        {% if session_summary %}
+            <h3>Summary</h3>
+            <table class='table table-striped'>
+                <thead><tr><th>No.</th><th>Task</th><th>Number of responses</th></tr></thead>
+                <tbody>
+                {% autoescape off %}{{ session_summary|safe }}{% endautoescape %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endif %}
+{% else %}
+    <h1>Invalid page</h1>
+    <p><a href="/{{ website_id }}/">Go back to the Index page</a></p>
+{% endif %}
+
+<!-- Dialog messages -->
+<div id="dialog-message"></div>
+
+{% endblock %}
+
+{% block page_js %}
+    {% if requires_audio %}
+        <!-- Audio libraries for wav recording -->
+        <script src="{{ STATIC_URL }}js/recorder.js"></script>
+        <script src="{{ STATIC_URL }}js/audiocapture_main.js"></script>
+        <script src="{{ STATIC_URL }}js/audiodisplay.js"></script>
+    {% endif %}
+{% endblock %}

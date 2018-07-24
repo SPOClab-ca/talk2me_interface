@@ -1,0 +1,96 @@
+{% extends "datacollector/wch/base.html" %}
+
+{% block title %}{{ website_name }} - Account Settings{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ user.username }} (<a href="/{{ website_id }}/{{ wch_study }}/logout">logout</a>)
+    {% else %}
+        <a href="/{{ website_id }}/{{ wch_study }}/login">Login</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h1>Account Settings</h1>
+<hr />
+
+<div id="form_errors" class="bs-callout bs-callout-danger invisible"></div>
+<div id="save_msg_container" class="bs-callout bs-callout-info font-bold invisible"></div>
+
+
+<h3 style="margin-top: 40px;">E-mail Settings</h3>
+
+<form action="" method="POST">
+    {% csrf_token %}
+    
+    <div class="row">
+    <div class="col-md-12">
+        <table class="table table-condensed table-noborder">
+            <tbody>
+                <tr><td class="table-label" style="width: 50%;">E-mail address</td><td style="width: 50%;"></td></tr>
+                <tr><td><input class="form-control form-field" id='email_address' name='email_address' type='text' value="{{ form_values.email_address }}"></td>
+                <td id="email_validation">
+                    {% if is_email_validated %}
+                        <div class="alert alert-success">
+                            <span class="glyphicon glyphicon-ok"></span>
+                            Verified
+                        </div>
+                    {% else %}
+                        {% if form_values.email_address %}
+                        <button type="button" class="btn btn-default btn-lg btn-red" onClick="javascript: resendConfirmationEmail(this);">
+                          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Not verified. Click to resend confirmation email.
+                        </button>
+                        {% endif %}
+                    {% endif %}
+                </td></tr>
+            </tbody>
+        </table>
+    </div>
+    </div>
+    
+    <div class="checkbox">
+        <label><input id='cb_preference_email_reminders' class="form-field" name='cb_preference_email_reminders' type='checkbox'{% if 'cb_preference_email_reminders' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>I wish to receive scheduled e-mail reminders (e.g., monthly) to complete new sessions on the website (each session takes approximately 15 minutes).</strong> I understand that I can unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to my e-mail address, which will not be shared with any third parties or used for commercial purposes.</label>
+    </div>
+    <div id="detail_preference_email_reminders" style="margin-left: 20px;">
+        Frequency: 
+        <div class="radio" style="display: inline; margin-left: 10px; margin-bottom: 15px;">
+            <label class="radio-inline"><input type="radio" class="form-field" name="radio_email_reminders_freq" value="7"{% if form_values.radio_email_reminders_freq|add:"0" == 7 %} checked="checked"{% endif %} /> Weekly</label>
+            <label class="radio-inline"><input type="radio" class="form-field" name="radio_email_reminders_freq" value="30"{% if form_values.radio_email_reminders_freq|add:"0" == 30 %} checked="checked"{% endif %}{% if 'radio_email_reminders_freq' not in form_values %} checked="checked"{% endif %} /> Monthly</label>
+            <label class="radio-inline"><input type="radio" class="form-field" name="radio_email_reminders_freq" value="365"{% if form_values.radio_email_reminders_freq|add:"0" == 365 %} checked="checked"{% endif %} /> Annually</label>
+        </div>
+    </div>
+    <br />
+    
+    <div class="checkbox">
+        <label><input id='cb_preference_email_updates' class="form-field" name='cb_preference_email_updates' type='checkbox'{% if 'cb_preference_email_updates' in form_values %} checked='checked'{% endif %} />&nbsp;<strong>I wish to receive electronic communication regarding study outcomes, updates and research publications</strong> based on the data collected as part of this study. I understand that I can unsubscribe from such communications at any time, either through the "Unsubscribe" link located in each e-mail, or through the website. Requested communications will be sent to my e-mail address, which will not be shared with any third parties or used for commercial purposes.</label>
+    </div>
+    <br />
+    
+    <div><button name="btn-save" type="button" class="btn btn-primary btn-lg form-field" onClick="javascript: formSubmitAjax(this, '', displayConfirmMsg);">Save changes</button> <button type="button" class="btn btn-default btn-lg" onClick="javascript: location.href='/{{ website_id }}/';">Cancel</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
+    <br />
+</form>
+    
+<hr />
+<h3 style="margin-top: 40px;">Withdrawal</h3>
+
+<form action="" method="POST">
+    
+    <p>
+    <div class="bs-callout bs-callout-default">
+    Please note that withdrawal is an <strong>irreversible</strong> action. If you choose to withdraw, all data collected from you (i.e., sessions, demographics, account information) will be deleted immediately and irreversibly. Your account will cease to exist. Your username will be available for registration to anyone else.
+    </div>
+    
+    <div class="checkbox">
+        <label><input type="checkbox" id="withdraw_confirm" name="withdraw_confirm" class="form-field" /><strong>I fully understand the effects of this action and want to proceed.</strong> When I press the "Withdraw" button below, my account will be deleted, and I will be logged out of the system.</label>
+    </div>
+    <br />
+    
+    <div><button name="btn-withdraw" type="button" class="btn btn-danger btn-lg form-field" onClick="javascript: formSubmitAjax(this, '', redirectToHome);">Withdraw from study</button> <button type="button" class="btn btn-default btn-lg" onClick="javascript: location.href='/{{ website_id }}/';">Cancel</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
+    </p>
+</form>
+
+<!-- Dialog messages -->
+<div id="dialog-message"></div>
+
+{% endblock %}

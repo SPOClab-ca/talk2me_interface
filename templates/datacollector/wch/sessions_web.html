@@ -1,0 +1,85 @@
+<div class="unsupported_html5">
+    <p>You will find all of your sessions on this page. <span class="label label-success">Active</span> sessions are ready to be completed. If there are no available active sessions, check back at a later date. Once you begin a session, you can stop at any time and continue at a later date.</p>
+
+    <p>Before you begin, make sure your computer has a microphone. The sessions will consist of six language tasks. You will provide responses to these tasks either through text (using your keyboard) or through speech (using your microphone).</p>
+
+    <p>After having completed seven sessions, you will be asked to complete a usability survey.</p>
+
+    <p>If you encounter any problems or have questions, do not hesitate to contact us <a href="/{{ website_id }}/{{ wch_study }}/about/#contactinfo">here</a>.
+
+    <hr/>
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3 class="panel-title">Sessions</h3></div>
+        <ul class="list-group">
+
+        {% if completed_sessions %}
+            {% for session, session_counter in completed_sessions %}
+            <a href="/{{ website_id }}/{{ wch_study }}/session/{{ session.session_id }}" class="list-group-item">
+                <h4 class="list-group-item-heading">
+                    Session {{session_counter}} <span class="label label-primary">Completed</span> {% if session_counter == 1 or session_counter == 4 or session_counter == 7 %}<span class="label label-default">WCH</span>{% endif %}
+                </h4>
+                <p class="list-group-item-text">Session completed on {{ session.end_date }} Click to view a summary of your results.</p>
+            </a>
+            {% endfor %}
+        {% endif %}
+
+        {% if active_sessions %}
+            {% for session, percentage_completed, session_counter in active_sessions %}
+            <a href="/{{ website_id }}/{{ wch_study }}/session/{{ session.session_id }}"  class="list-group-item">
+                <h4 class="list-group-item-heading">Session {{session_counter}} <span class="label label-success">Active</span> {% if session_counter == 1 or session_counter == 4 or session_counter == 7 %}<span class="label label-default">WCH</span>{% endif %}</h4>
+                {% if percentage_completed > 0 %}
+                    <p class="list-group-item-text">This is an active session. Click to continue.</p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ percentage_completed }}" aria-valuemin="0" aria-valuemax="100" style="font-size: 16px; width: {{ percentage_completed }}%;">
+                            {{ percentage_completed }}%
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="list-group-item-text">This session is active. Click to get started.</p>
+                {% endif %}
+            </a>
+            {% endfor %}
+        {% endif %}
+
+        {% if pending_sessions %}
+            {% for session, session_counter in pending_sessions %}
+            <li class="list-group-item disabled">
+                <h4 class="list-group-item-heading">Session {{session_counter}} {% if session_counter == 1 or session_counter == 4 or session_counter == 7 %}<span class="label label-default">WCH</span>{% endif %}</h4>
+                <p class="list-group-item-text">This session will be made available on {{session.start_date}}</p>
+            </li>
+            {% endfor %}
+        {% endif %}
+        </ul>
+    </div>
+
+    <!-- Activate usability survey if all sessions were completed -->
+
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3 class="panel-title">Usability surveys</h3></div>
+        <ul class="list-group">
+            {% if not pending_sessions and not active_sessions %}
+                <li class="list-group-item">
+                    <h4 class="list-group-item-heading">
+                        {% if subject_bundle.bundle.name_id == 'wch_web' %}
+                        <a href="/{{ website_id }}/{{ wch_study }}/survey/usability_web">Complete a usability survey.</a>
+                        {% elif subject_bundle.bundle.name_id == 'wch_phone' %}
+                        <a href="/{{ website_id}}/{{ wch_study }}/survey/usability_phone">Complete a usability survey.</a>
+                        {% endif %}
+                    </h4>
+
+                </li>
+            {% else %}
+                <li class="list-group-item disabled">
+                    <h4 class="list-group-item-heading">
+                        Complete a usability survey.
+                    </h4>
+                    <p class="list-group-item-text">
+                        This will be available once all sessions are completed.
+                    </p>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+
+
+</div>

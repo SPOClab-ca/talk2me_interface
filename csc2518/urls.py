@@ -89,6 +89,21 @@ urlpatterns = patterns('',
                        url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY + 'register$', 'datacollector.views.register'),
                        url(r'^' + settings.SUBSITE_ID + settings.OISE_STUDY +  'error$', 'datacollector.oise.views.error'),
 
+                       # WCH-specific
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY + 'startsession_web$', 'datacollector.session.startsession_web'),
+                       url(r'^' + settings.SUBSITE_ID +settings.WCH_STUDY + 'startsession_phone$', 'datacollector.session.startsession_phone'),
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY + '$', 'datacollector.wch.views.index'),
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY + 'session/(?P<session_id>\d+)$', 'datacollector.wch.views.session'),
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY + 'login$', 'datacollector.wch.views.login'),
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY + 'logout$', 'datacollector.views.logout'),
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY + 'about/$', 'datacollector.wch.views.about'),
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY + 'account/$', 'datacollector.views.account'),
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY +  'survey/usability_web$', 'datacollector.views.survey_usability_web'),
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY + \
+                           'admin/wch_(?P<bundle_wch>[a-z]+)$', 'datacollector.adminui.wch_dashboard'),
+                       url(r'^' + settings.SUBSITE_ID + settings.WCH_STUDY + \
+                           'admin/wch_(?P<bundle_wch>[a-z]+)/(?P<user_id>\d+)$', 'datacollector.adminui.wch_session'),
+
                        # Notifications
                        url(r'^' + settings.SUBSITE_ID + 'notify/dismiss/$', 'datacollector.notify.dismiss'),
                        url(r'^' + settings.SUBSITE_ID + 'notify/view/$', 'datacollector.notify.view'),
