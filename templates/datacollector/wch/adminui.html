@@ -15,8 +15,8 @@
 <h1>Admin Dashboard</h1>
 
 <ol class="breadcrumb">
-  <li><a href="/{{ website_id }}/uhn">Index</a></li>
-  <li><a href="/{{ website_id }}/uhn/admin">Admin Dashboard</a></li>
+  <li><a href="/{{ website_id }}">Index</a></li>
+  <li><a href="/{{ website_id }}/admin">Admin Dashboard</a></li>
   <li class="active">{{ bundle.name_id }}</li>
 </ol>
 <hr/>
@@ -78,7 +78,7 @@
         <td>
         {% if subject.sessions_created %}
             <button type="btn" class="btn btn-sm btn-primary" disabled>Generate sessions</button>
-            <a href="/{{ website_id }}/uhn/admin/{{ bundle.name_id }}/{{ subject.user_id }} "><button type="btn" class="btn btn-sm btn-default">View sessions</button></a>
+            <a href="/{{ website_id }}/{{ wch_study }}/admin/{{ bundle.name_id }}/{{ subject.user_id }} "><button type="btn" class="btn btn-sm btn-default">View sessions</button></a>
         {% else %}
             <form method="post" action="{{ bundle.name_id }}">
             {% csrf_token %}
@@ -87,7 +87,6 @@
                 <button type="submit" class="btn btn-sm btn-primary">Generate sessions</button>
                 <button type="btn" class="btn btn-sm btn-default" disabled>View sessions</button>
             </form>
-            
         {% endif %}
         </td>
     </tr>

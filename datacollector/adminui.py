@@ -16,8 +16,9 @@ from datacollector.models import (Bundle, Gender, Session, Session_Task, Session
                                   Session_Task_Instance_Value, Session_Type, Settings, Subject, Subject_Bundle,
                                   Task, User)
 from datacollector.views import generate_session, delete_session
+from datacollector.session import generate_session_wch
 
-from csc2518.settings import SUBSITE_ID
+from csc2518.settings import SUBSITE_ID, WCH_STUDY, UHN_STUDY
 
 # Set up mail authentication
 EMAIL_USERNAME = Settings.objects.get(setting_name="system_email").setting_value
@@ -29,11 +30,16 @@ WEBSITE_NAME = Settings.objects.get(setting_name="website_name").setting_value
 GLOBAL_PASSED_VARS = {
     "website_id": "talk2me",
     "website_name": WEBSITE_NAME,
-    "website_email": EMAIL_USERNAME
+    "website_email": EMAIL_USERNAME,
+    "wch_study": "wch",
+    "uhn_study": "uhn"
 }
 WEBSITE_ROOT = '/'
 if SUBSITE_ID:
     WEBSITE_ROOT += SUBSITE_ID
+
+WCH_WEBSITE_ROOT = WEBSITE_ROOT + WCH_STUDY
+UHN_WEBSITE_ROOT = WEBSITE_ROOT + UHN_STUDY
 
 DATA_ROW_SEP = "#"
 DATA_COL_SEP = "|"
@@ -43,6 +49,50 @@ DAYS_PER_YEAR = 365.2425 # average length of year taking into account leap years
 
 UHN_NUM_SESSIONS = 7
 DURATION_BETWEEN_SESSIONS = datetime.timedelta(days=31)
+
+BUNDLE_TO_SESSION_TYPE = {
+    'uhn_web': Session_Type.objects.get(name='website'),
+    'uhn_phone': Session_Type.objects.get(name='phone'),
+    'wch_web': Session_Type.objects.get(name='website'),
+    'wch_phone': Session_Type.objects.get(name='phone')
+}
+BUNDLE_TO_NUM_SESSIONS = {
+    'uhn_web': 7,
+    'uhn_phone': 7,
+    'wch_web': 7,
+    'wch_phone': 7
+}
+
+def bundle_create_sessions(subject_id, bundle):
+    '''
+        Generate 7 sessions and specify start dates (spaced one month apart).
+    '''
+
+    today = datetime.datetime.now().date()
+    subject = Subject.objects.get(user_id=subject_id)
+
+
+    session_type = BUNDLE_TO_SESSION_TYPE[bundle.name_id]
+    total_num_sessions = BUNDLE_TO_NUM_SESSIONS[bundle.name_id]
+
+    for _ in range(total_num_sessions):
+        if 'wch' in bundle.name_id:
+            generate_session_wch(subject, session_type)
+        else:
+            generate_session(subject, session_type)
+
+    start_dates = [today] * total_num_sessions
+
+    for idx in range(total_num_sessions):
+        if idx == 0:
+            continue
+        start_dates[idx] = start_dates[idx-1] + DURATION_BETWEEN_SESSIONS
+
+    sessions = Session.objects.filter(subject_id=subject_id)
+
+    for idx, session in enumerate(sessions):
+        session_id = session.session_id
+        Session.objects.filter(session_id=session_id).update(start_date=start_dates[idx])
 
 def uhn_create_sessions(subject_id, bundle):
     '''
@@ -82,6 +132,20 @@ def uhn_delete_session(session_id):
     return delete_session(session_id)
 
 def uhn_consent_submitted(subject_id, alternate_decision_maker):
+    '''
+        Update user from admin dashboard when consent is given.
+    '''
+
+    today = datetime.datetime.now().date()
+
+    # Assign a date to consent submitted
+    Subject.objects.filter(user_id=subject_id).update(date_consent_submitted=today)
+
+    # Update alternate decision maker flag if necessary
+    if alternate_decision_maker:
+        Subject.objects.filter(user_id=subject_id).update(consent_alternate=1)
+
+def update_consent(subject_id, alternate_decision_maker):
     '''
         Update user from admin dashboard when consent is given.
     '''
@@ -194,7 +258,7 @@ def uhn_dashboard(request, bundle_uhn):
         Function for admin dashboard specific to UHN studies.
     '''
 
-    is_authenticated = False
+    is_authenticated = True
     bundle = None
     subject_bundle_users = []
     subjects = []
@@ -272,6 +336,99 @@ def uhn_dashboard(request, bundle_uhn):
 
         passed_vars.update(GLOBAL_PASSED_VARS)
         return render_to_response('datacollector/uhn/adminui.html', passed_vars, context_instance=RequestContext(request))
+    else:
+        return HttpResponseRedirect(WEBSITE_ROOT)
+
+def get_admin_information_for_bundle(request, bundle_name_id):
+    """
+    Return information for bundle.
+        :param request:
+        :param bundle_name_id:
+    """
+    is_authenticated = True
+    subject_bundle_users = []
+    subjects = []
+    bundle = Bundle.objects.get(name_id=bundle_name_id)
+
+    if request.method == 'POST':
+        form_type = request.POST['form_type']
+
+        # Set consent to submitted
+        if form_type == 'consent':
+            consent_submitted = True if 'consent_submitted' in request.POST else False
+            alternate_decision_maker = True if 'is_alternate_decision_maker' in request.POST else False
+            if consent_submitted:
+                subject_id = request.POST['subject_id']
+                update_consent(subject_id, alternate_decision_maker)
+
+        # Generate sessions for bundle
+        elif form_type == 'sessions':
+            subject_id = request.POST['subject_id']
+            bundle_create_sessions(subject_id, bundle)
+
+        # Create user with specified bundle
+        elif form_type == 'create_user':
+            form = UserCreationForm(request.POST)
+
+            if form.is_valid():
+                # Save user
+                cd = form.cleaned_data
+                new_user = form.save()
+
+                # Generate a new PIN for the phone interface
+                pin_length = 4
+                random_pin = random.randint(0, 10**pin_length-1)
+                phone_pin = str(random_pin).zfill(pin_length) # zero pad where necessary
+
+                # Create a corresponding subject in the app
+                new_subject = Subject.objects.create(user_id=new_user.id, date_created=datetime.datetime.now(), phone_pin=phone_pin)
+
+                # Create subject bundle
+                today = datetime.datetime.now().date()
+                Subject_Bundle.objects.create(subject=new_subject, \
+                                              bundle=bundle, \
+                                              active_startdate=today)
+
+
+    is_authenticated = True
+    subject_bundle_users = Subject_Bundle.objects.filter(bundle=bundle)
+    bundle_subjects = [subject_bundle_user.subject for subject_bundle_user in subject_bundle_users]
+
+    is_sessions_created = []
+    for bundle_subject in bundle_subjects:
+        sessions_per_subject = Session.objects.filter(subject_id=bundle_subject.user_id)
+        if sessions_per_subject:
+            is_sessions_created += [True]
+        else:
+            is_sessions_created += [False]
+
+
+    for bundle_subject, sessions_created in zip(bundle_subjects, is_sessions_created):
+        subjects.append({
+            'sessions_created': sessions_created,
+            'user_id': bundle_subject.user_id,
+            'date_consent_submitted': bundle_subject.date_consent_submitted,
+            'consent_alternate': bundle_subject.consent_alternate
+            })
+
+    passed_vars = {
+        'is_authenticated': is_authenticated,
+        'bundle': bundle,
+        'subject_bundle_users': subject_bundle_users,
+        'subjects': subjects,
+        'form': UserCreationForm()
+    }
+
+    passed_vars.update(GLOBAL_PASSED_VARS)
+    return passed_vars
+
+def wch_dashboard(request, bundle_wch):
+    '''
+        Admin view of WCH study. Lists all users in WCH study. Can create new users and generate sessions from this view.
+    '''
+    if request.user.is_authenticated() and request.user.is_superuser:
+        passed_vars = get_admin_information_for_bundle(request, 'wch_' + bundle_wch)
+        return render_to_response('datacollector/wch/adminui.html', passed_vars, context_instance=RequestContext(request))
     else:
         return HttpResponseRedirect(WEBSITE_ROOT)
 
@@ -427,5 +584,106 @@ def dashboard(request):
         }
         passed_vars.update(GLOBAL_PASSED_VARS)
         return render_to_response('datacollector/adminui.html', passed_vars, context_instance=RequestContext(request))
+    else:
+        return HttpResponseRedirect(WEBSITE_ROOT)
+
+def get_admin_information_for_bundle_user(request, bundle_name_id, user_id):
+    """
+    Return user information.
+        :param request:
+        :param bundle_name_id:
+        :param user_id:
+    """
+    is_authenticated = False
+    bundle = None
+    subject = None
+    sessions = []
+    session_deleted = False
+    phone_pin_updated = False
+
+    if request.user.is_authenticated() and request.user.is_superuser:
+
+        is_authenticated = True
+        bundle = Bundle.objects.get(name_id=bundle_name_id)
+        subject = Subject.objects.get(user_id=user_id)
+
+        if request.method == 'POST':
+            form_type = request.POST['form_type']
+
+            if form_type == 'delete_session':
+                session_id = request.POST['session_id']
+                session_id_check = request.POST['session_id_check']
+                if session_id_check == session_id:
+                    session_deleted = uhn_delete_session(session_id)
+                else:
+                    session_deleted = False
+
+            elif form_type == 'update_phone_pin':
+                phone_pin = request.POST['phone_pin']
+                if phone_pin:
+                    phone_pin_updated = uhn_update_phone_pin(subject.user_id, phone_pin)
+                else:
+                    phone_pin_updated = False
+
+        sessions_from_db = Session.objects.filter(subject_id=user_id)
+
+        for session in sessions_from_db:
+            session_tasks = []
+            session_tasks_from_db = Session_Task.objects.filter(session_id=session.session_id)
+
+            for session_task in session_tasks_from_db:
+                session_task_values = []
+                session_task_instances = Session_Task_Instance.objects.filter(session_task_id=session_task.session_task_id)
+
+                for session_task_instance in session_task_instances:
+                    session_task_instance_values = Session_Task_Instance_Value.objects.filter(session_task_instance_id=session_task_instance.session_task_instance_id)
+                    for session_task_instance_value in session_task_instance_values:
+                        session_task_values.append({
+                            'value': session_task_instance_value.value,
+                            'difficulty': session_task_instance_value.difficulty_id
+                        })
+
+                session_tasks.append({
+                    'task': session_task.task.name,
+                    'date_completed': session_task.date_completed,
+                    'total_time': session_task.total_time,
+                    'task_instances': session_task_values
+                    })
+
+            sessions.append({
+                'session_id': session.session_id,
+                'start_date': session.start_date,
+                'end_date': session.end_date,
+                'session_tasks': session_tasks
+                })
+
+
+        passed_vars = {
+            'is_authenticated': is_authenticated,
+            'bundle': bundle,
+            'subject': subject,
+            'sessions': sessions,
+            'session_deleted': session_deleted,
+            'phone_pin_updated': phone_pin_updated,
+            'username': User.objects.get(id=subject.user_id).username
+        }
+        passed_vars.update(GLOBAL_PASSED_VARS)
+
+        # return render_to_response('datacollector/uhn/adminui_sessions.html', passed_vars, context_instance=RequestContext(request))
+        return passed_vars
+    return HttpResponseRedirect(WEBSITE_ROOT)
+
+def wch_session(request, bundle_wch, user_id):
+    """
+    Return session-specific information for WCH user.
+        :param request:
+        :param bundle_wch:
+        :param user_id:
+    """
+    bundle_name_id = 'wch_' + str(bundle_wch)
+
+    if request.user.is_authenticated() and request.user.is_superuser:
+        passed_vars = get_admin_information_for_bundle_user(request, bundle_name_id, user_id)
+        return render_to_response('datacollector/wch/adminui_sessions.html', passed_vars, context_instance=RequestContext(request))
     else:
         return HttpResponseRedirect(WEBSITE_ROOT)

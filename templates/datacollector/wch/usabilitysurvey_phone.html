@@ -1,0 +1,317 @@
+{% extends "datacollector/wch/base.html" %}
+
+{% block title %}{{ website_name }} - Usability Survey{% endblock%}
+
+{% block auth_user %}
+    {% if is_authenticated %}
+        Logged in as {{ user.username }} (<a href="/{{ website_id }}/{{ wch_study }}/logout">logout</a>)
+    {% else %}
+        <a href="/{{ website_id }}/{{ wch_study }}/login">Login</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h1>Usability Survey <span class="glyphicon glyphicon-earphone"></span></h1>
+
+
+{% if survey_date_completed %}
+    <div class="bs-callout bs-callout-info">Thank you, your survey has been submitted on {{ survey_date_completed }}</div>
+{% else %}
+
+    {% if form_errors %}
+    <div class="bs-callout bs-callout-danger">
+        <strong>The form could not be submitted. Please correct the following error{{ form_errors|pluralize }}:</strong>
+        <ul>
+        {% for err in form_errors %}
+            <li>{{ err }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form action="" method="POST">
+        {% csrf_token %}
+        <ol>
+            <!-- General Usability Questionnaire -->
+            <li>On a scale from 1 (very poor) to 5 (very good), please rank the telephone interface's performance against the following usability criteria:
+
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th style="width: 50%;">Heuristic</th>
+                    <th style="width: 10%;">Very poor</th>
+                    <th style="width: 10%;">Poor</th>
+                    <th style="width: 10%;">Moderate</th>
+                    <th style="width: 10%;">Good</th>
+                    <th style="width: 10%;">Very good</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Content and instructions are easy to understand.</strong><br />If specialized terminology is used, it is explained in terms you can understand.<input type="hidden" name="h1_phone_question" value="Content and instructions are easy to understand. If specialized terminology is used, it is explained in terms you can understand." /></td>
+                    <td><input name="h1_phone" type="radio" value="1"{% if form_values.h1_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="h1_phone_1_response" value="Very poor" /></td>
+                    <td><input name="h1_phone" type="radio" value="2"{% if form_values.h1_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="h1_phone_2_response" value="Poor" /></td>
+                    <td><input name="h1_phone" type="radio" value="3"{% if form_values.h1_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="h1_phone_3_response" value="Moderate" /></td>
+                    <td><input name="h1_phone" type="radio" value="4"{% if form_values.h1_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="h1_phone_4_response" value="Good" /></td>
+                    <td><input name="h1_phone" type="radio" value="5"{% if form_values.h1_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="h1_phone_5_response" value="Very good" /></td>
+                    </tr>
+                    <tr><td><strong>Telephone interface use does not require use of memory to locate information</strong><br />Content is easy to find.<input type="hidden" name="h2_phone_question" value="Telephone interface use does not require use of memory to locate information. Content is easy to find." /></td>
+                    <td><input name="h2_phone" type="radio" value="1"{% if form_values.h2_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="h2_phone_1_response" value="Very poor" /></td>
+                    <td><input name="h2_phone" type="radio" value="2"{% if form_values.h2_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="h2_phone_2_response" value="Poor" /></td>
+                    <td><input name="h2_phone" type="radio" value="3"{% if form_values.h2_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="h2_phone_3_response" value="Moderate" /></td>
+                    <td><input name="h2_phone" type="radio" value="4"{% if form_values.h2_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="h2_phone_4_response" value="Good" /></td>
+                    <td><input name="h2_phone" type="radio" value="5"{% if form_values.h2_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="h2_phone_5_response" value="Very good" /></td>
+                    </tr>
+                    <tr><td><strong>Consistency</strong><br />Telephone interface uses consistent navigation and terminology.<input type="hidden" name="h3_phone_question" value="Consistency. Telephone interface uses consistent navigation and terminology." /></td>
+                    <td><input name="h3_phone" type="radio" value="1"{% if form_values.h3_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="h3_phone_1_response" value="Very poor" /></td>
+                    <td><input name="h3_phone" type="radio" value="2"{% if form_values.h3_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="h3_phone_2_response" value="Poor" /></td>
+                    <td><input name="h3_phone" type="radio" value="3"{% if form_values.h3_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="h3_phone_3_response" value="Moderate" /></td>
+                    <td><input name="h3_phone" type="radio" value="4"{% if form_values.h3_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="h3_phone_4_response" value="Good" /></td>
+                    <td><input name="h3_phone" type="radio" value="5"{% if form_values.h3_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="h3_phone_5_response" value="Very good" /></td>
+                    </tr>
+                    <tr><td><strong>Feedback</strong><br />Telephone interface always keeps you informed of what is going on (e.g., your progress)<input type="hidden" name="h4_phone_question" value="Feedback. Telephone interface always keeps you informed of what is going on (e.g., your progress)" /></td>
+                    <td><input name="h4_phone" type="radio" value="1"{% if form_values.h4_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="h4_phone_1_response" value="Very poor" /></td>
+                    <td><input name="h4_phone" type="radio" value="2"{% if form_values.h4_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="h4_phone_2_response" value="Poor" /></td>
+                    <td><input name="h4_phone" type="radio" value="3"{% if form_values.h4_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="h4_phone_3_response" value="Moderate" /></td>
+                    <td><input name="h4_phone" type="radio" value="4"{% if form_values.h4_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="h4_phone_4_response" value="Good" /></td>
+                    <td><input name="h4_phone" type="radio" value="5"{% if form_values.h4_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="h4_phone_5_response" value="Very good" /></td>
+                    </tr>
+                    <tr><td><strong>Clearly marked exits</strong><br />Example: The telephone interface always gives you a way out (e.g., a "Cancel" or "Withdraw" option is available at any time).<input type="hidden" name="h5_phone_question" value="Clearly marked exits. Example: The telephone interface always gives you a way out (e.g., a \"Cancel\" or \"Withdraw\" option is available at any time)." /></td>
+                    <td><input name="h5_phone" type="radio" value="1"{% if form_values.h5_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="h5_phone_1_response" value="Very poor" /></td>
+                    <td><input name="h5_phone" type="radio" value="2"{% if form_values.h5_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="h5_phone_2_response" value="Poor" /></td>
+                    <td><input name="h5_phone" type="radio" value="3"{% if form_values.h5_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="h5_phone_3_response" value="Moderate" /></td>
+                    <td><input name="h5_phone" type="radio" value="4"{% if form_values.h5_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="h5_phone_4_response" value="Good" /></td>
+                    <td><input name="h5_phone" type="radio" value="5"{% if form_values.h5_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="h5_phone_5_response" value="Very good" /></td>
+                    </tr>
+                    <tr><td><strong>Good error messages</strong><br />Error messages help you recognize, diagnose, and recover from the errors, rather than being cryptic and technical.<input type="hidden" name="h6_phone_question" value="Good error messages. Error messages help you recognize, diagnose, and recover from the errors, rather than being cryptic and technical." /></td>
+                    <td><input name="h6_phone" type="radio" value="1"{% if form_values.h6_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="h6_phone_1_response" value="Very poor" /></td>
+                    <td><input name="h6_phone" type="radio" value="2"{% if form_values.h6_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="h6_phone_2_response" value="Poor" /></td>
+                    <td><input name="h6_phone" type="radio" value="3"{% if form_values.h6_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="h6_phone_3_response" value="Moderate" /></td>
+                    <td><input name="h6_phone" type="radio" value="4"{% if form_values.h6_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="h6_phone_4_response" value="Good" /></td>
+                    <td><input name="h6_phone" type="radio" value="5"{% if form_values.h6_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="h6_phone_5_response" value="Very good" /></td>
+                    </tr>
+                    <tr><td><strong>Prevent errors</strong><br />Telephone interface minimizes the likelihood of severe errors through validation of user input (e.g., system checks if your input is blank before submission, instead of failing when it receives empty responses).<input type="hidden" name="h7_phone_question" value="Telephone interface minimizes the likelihood of severe errors through validation of user input (e.g., system checks if your input is blank before submission, instead of failing when it receives empty responses)." /></td>
+                    <td><input name="h7_phone" type="radio" value="1"{% if form_values.h7_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="h7_phone_1_response" value="Very poor" /></td>
+                    <td><input name="h7_phone" type="radio" value="2"{% if form_values.h7_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="h7_phone_2_response" value="Poor" /></td>
+                    <td><input name="h7_phone" type="radio" value="3"{% if form_values.h7_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="h7_phone_3_response" value="Moderate" /></td>
+                    <td><input name="h7_phone" type="radio" value="4"{% if form_values.h7_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="h7_phone_4_response" value="Good" /></td>
+                    <td><input name="h7_phone" type="radio" value="5"{% if form_values.h7_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="h7_phone_5_response" value="Very good" /></td>
+                    </tr>
+                    <tr><td><strong>Help and documentation</strong><br />Easy to find and to search.<input type="hidden" name="h8_phone_question" value="Help and documentation. Easy to find and to search." /></td>
+                    <td><input name="h8_phone" type="radio" value="1"{% if form_values.h8_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="h8_phone_1_response" value="Very poor" /></td>
+                    <td><input name="h8_phone" type="radio" value="2"{% if form_values.h8_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="h8_phone_2_response" value="Poor" /></td>
+                    <td><input name="h8_phone" type="radio" value="3"{% if form_values.h8_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="h8_phone_3_response" value="Moderate" /></td>
+                    <td><input name="h8_phone" type="radio" value="4"{% if form_values.h8_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="h8_phone_4_response" value="Good" /></td>
+                    <td><input name="h8_phone" type="radio" value="5"{% if form_values.h8_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="h8_phone_5_response" value="Very good" /></td>
+                    </tr>
+                </tbody>
+            </table>
+            </li>
+
+            <!-- Satisfaction -->
+            <li>On a scale from 1 (very unsatisfied) to 7 (very satisfied), please rank your <b>satisfaction</b> with the following aspects of the telephone:
+            <table class="table table-striped table-vtop">
+                <thead>
+                <tr>
+                    <th style="width: 30%;">Criterion</th>
+                    <th style="width: 15%;">1<br />(Very unsatisfied)</th>
+                    <th style="width: 8%;">2</th>
+                    <th style="width: 8%;">3</th>
+                    <th style="width: 8%;">4</th>
+                    <th style="width: 8%;">5</th>
+                    <th style="width: 8%;">6</th>
+                    <th style="width: 15%;">7<br />(Very satisfied)</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Quality of the sound of the voice.<input type="hidden" name="sat1_phone_question" value="Quality of the sound of the voice." /></td>
+                    <td><input name="sat1_phone" type="radio" value="1"{% if form_values.sat1_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="sat1_phone_1_response" value="Very unsatisfied" /></td>
+                    <td><input name="sat1_phone" type="radio" value="2"{% if form_values.sat1_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="sat1_phone_2_response" value="2" /></td>
+                    <td><input name="sat1_phone" type="radio" value="3"{% if form_values.sat1_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="sat1_phone_3_response" value="3" /></td>
+                    <td><input name="sat1_phone" type="radio" value="4"{% if form_values.sat1_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="sat1_phone_4_response" value="4" /></td>
+                    <td><input name="sat1_phone" type="radio" value="5"{% if form_values.sat1_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="sat1_phone_5_response" value="5" /></td>
+                    <td><input name="sat1_phone" type="radio" value="6"{% if form_values.sat1_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="sat1_phone_6_response" value="6" /></td>
+                    <td><input name="sat1_phone" type="radio" value="7"{% if form_values.sat1_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="sat1_phone_7_response" value="Very satisfied" /></td>
+                    </tr>
+                    <tr><td>Ease of understanding the information given.<input type="hidden" name="sat2_phone_question" value="Ease of understanding the information given." /></td>
+                    <td><input name="sat2_phone" type="radio" value="1"{% if form_values.sat2_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="sat2_phone_1_response" value="Very unsatisfied" /></td>
+                    <td><input name="sat2_phone" type="radio" value="2"{% if form_values.sat2_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="sat2_phone_2_response" value="2" /></td>
+                    <td><input name="sat2_phone" type="radio" value="3"{% if form_values.sat2_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="sat2_phone_3_response" value="3" /></td>
+                    <td><input name="sat2_phone" type="radio" value="4"{% if form_values.sat2_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="sat2_phone_4_response" value="4" /></td>
+                    <td><input name="sat2_phone" type="radio" value="5"{% if form_values.sat2_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="sat2_phone_5_response" value="5" /></td>
+                    <td><input name="sat2_phone" type="radio" value="6"{% if form_values.sat2_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="sat2_phone_6_response" value="6" /></td>
+                    <td><input name="sat2_phone" type="radio" value="7"{% if form_values.sat2_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="sat2_phone_7_response" value="Very satisfied" /></td>
+                    </tr>
+                </tbody>
+            </table>
+            </li>
+
+            <!-- Ease of use -->
+            <li>On a scale from 1 (strongly disagree) to 7 (strongly agree), please provide your opinion on the <b>ease-of-use</b> of the telephone interface:
+            <table class="table table-striped table-vtop">
+                <thead>
+                <tr>
+                    <th style="width: 40%;">Criterion</th>
+                    <th style="width: 10%;">1<br />(Strongly disagree)</th>
+                    <th style="width: 8%;">2</th>
+                    <th style="width: 8%;">3</th>
+                    <th style="width: 8%;">4</th>
+                    <th style="width: 8%;">5</th>
+                    <th style="width: 8%;">6</th>
+                    <th style="width: 10%;">7<br />(Strongly agree)</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr><td>I had to make a lot of effort to understand what was being said.<input type="hidden" name="ease1_phone_question" value="I had to make a lot of effort to understand what was being said." /></td>
+                    <td><input name="ease1_phone" type="radio" value="1"{% if form_values.ease1_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="ease1_phone_1_response" value="Very unsatisfied" /></td>
+                    <td><input name="ease1_phone" type="radio" value="2"{% if form_values.ease1_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="ease1_phone_2_response" value="2" /></td>
+                    <td><input name="ease1_phone" type="radio" value="3"{% if form_values.ease1_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="ease1_phone_3_response" value="3" /></td>
+                    <td><input name="ease1_phone" type="radio" value="4"{% if form_values.ease1_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="ease1_phone_4_response" value="4" /></td>
+                    <td><input name="ease1_phone" type="radio" value="5"{% if form_values.ease1_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="ease1_phone_5_response" value="5" /></td>
+                    <td><input name="ease1_phone" type="radio" value="6"{% if form_values.ease1_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="ease1_phone_6_response" value="6" /></td>
+                    <td><input name="ease1_phone" type="radio" value="7"{% if form_values.ease1_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="ease1_phone_7_response" value="Very satisfied" /></td>
+                    </tr>
+                    <tr><td>The words were clear and easy to understand.<input type="hidden" name="ease2_phone_question" value="The words were clear and easy to understand." /></td>
+                    <td><input name="ease2_phone" type="radio" value="1"{% if form_values.ease2_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="ease2_phone_1_response" value="Very unsatisfied" /></td>
+                    <td><input name="ease2_phone" type="radio" value="2"{% if form_values.ease2_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="ease2_phone_2_response" value="2" /></td>
+                    <td><input name="ease2_phone" type="radio" value="3"{% if form_values.ease2_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="ease2_phone_3_response" value="3" /></td>
+                    <td><input name="ease2_phone" type="radio" value="4"{% if form_values.ease2_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="ease2_phone_4_response" value="4" /></td>
+                    <td><input name="ease2_phone" type="radio" value="5"{% if form_values.ease2_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="ease2_phone_5_response" value="5" /></td>
+                    <td><input name="ease2_phone" type="radio" value="6"{% if form_values.ease2_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="ease2_phone_6_response" value="6" /></td>
+                    <td><input name="ease2_phone" type="radio" value="7"{% if form_values.ease2_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="ease2_phone_7_response" value="Very satisfied" /></td>
+                    </tr>
+
+                    <tr><td>Providing answers to questions through the phone is easy.<input type="hidden" name="ease3_phone_question" value="Providing answers to questions through the phone is easy." /></td>
+                    <td><input name="ease3_phone" type="radio" value="1"{% if form_values.ease3_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="ease3_phone_1_response" value="1 (Strongly disagree)" /></td>
+                    <td><input name="ease3_phone" type="radio" value="2"{% if form_values.ease3_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="ease3_phone_2_response" value="2" /></td>
+                    <td><input name="ease3_phone" type="radio" value="3"{% if form_values.ease3_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="ease3_phone_3_response" value="3" /></td>
+                    <td><input name="ease3_phone" type="radio" value="4"{% if form_values.ease3_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="ease3_phone_4_response" value="4" /></td>
+                    <td><input name="ease3_phone" type="radio" value="5"{% if form_values.ease3_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="ease3_phone_5_response" value="5" /></td>
+                    <td><input name="ease3_phone" type="radio" value="6"{% if form_values.ease3_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="ease3_phone_6_response" value="6" /></td>
+                    <td><input name="ease3_phone" type="radio" value="7"{% if form_values.ease3_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="ease3_phone_7_response" value="7 (Strongly agree)" /></td>
+                    </tr>
+
+                    <tr><td>Sentence pronunciation was natural and easy to understand.<input type="hidden" name="ease4_phone_question" value="Sentence pronunciation was natural and easy to understand." /></td>
+                    <td><input name="ease4_phone" type="radio" value="1"{% if form_values.ease4_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="ease4_phone_1_response" value="1 (Strongly disagree)" /></td>
+                    <td><input name="ease4_phone" type="radio" value="2"{% if form_values.ease4_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="ease4_phone_2_response" value="2" /></td>
+                    <td><input name="ease4_phone" type="radio" value="3"{% if form_values.ease4_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="ease4_phone_3_response" value="3" /></td>
+                    <td><input name="ease4_phone" type="radio" value="4"{% if form_values.ease4_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="ease4_phone_4_response" value="4" /></td>
+                    <td><input name="ease4_phone" type="radio" value="5"{% if form_values.ease4_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="ease4_phone_5_response" value="5" /></td>
+                    <td><input name="ease4_phone" type="radio" value="6"{% if form_values.ease4_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="ease4_phone_6_response" value="6" /></td>
+                    <td><input name="ease4_phone" type="radio" value="7"{% if form_values.ease4_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="ease4_phone_7_response" value="7 (Strongly agree)" /></td>
+                    </tr>
+
+                    <tr><td>The speaking rate was appropriate and easy to follow.<input type="hidden" name="ease5_phone_question" value="The speaking rate was appropriate and easy to follow." /></td>
+                    <td><input name="ease5_phone" type="radio" value="1"{% if form_values.ease5_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="ease5_phone_1_response" value="1 (Strongly disagree)" /></td>
+                    <td><input name="ease5_phone" type="radio" value="2"{% if form_values.ease5_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="ease5_phone_2_response" value="2" /></td>
+                    <td><input name="ease5_phone" type="radio" value="3"{% if form_values.ease5_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="ease5_phone_3_response" value="3" /></td>
+                    <td><input name="ease5_phone" type="radio" value="4"{% if form_values.ease5_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="ease5_phone_4_response" value="4" /></td>
+                    <td><input name="ease5_phone" type="radio" value="5"{% if form_values.ease5_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="ease5_phone_5_response" value="5" /></td>
+                    <td><input name="ease5_phone" type="radio" value="6"{% if form_values.ease5_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="ease5_phone_6_response" value="6" /></td>
+                    <td><input name="ease5_phone" type="radio" value="7"{% if form_values.ease5_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="ease5_phone_7_response" value="7 (Strongly agree)" /></td>
+                    </tr>
+
+                    <tr><td>Overall, I find the phone interface easy to use.<input type="hidden" name="ease6_phone_question" value="Overall, I find the phone interface easy to use." /></td>
+                    <td><input name="ease6_phone" type="radio" value="1"{% if form_values.ease6_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="ease6_phone_1_response" value="1 (Strongly disagree)" /></td>
+                    <td><input name="ease6_phone" type="radio" value="2"{% if form_values.ease6_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="ease6_phone_2_response" value="2" /></td>
+                    <td><input name="ease6_phone" type="radio" value="3"{% if form_values.ease6_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="ease6_phone_3_response" value="3" /></td>
+                    <td><input name="ease6_phone" type="radio" value="4"{% if form_values.ease6_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="ease6_phone_4_response" value="4" /></td>
+                    <td><input name="ease6_phone" type="radio" value="5"{% if form_values.ease6_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="ease6_phone_5_response" value="5" /></td>
+                    <td><input name="ease6_phone" type="radio" value="6"{% if form_values.ease6_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="ease6_phone_6_response" value="6" /></td>
+                    <td><input name="ease6_phone" type="radio" value="7"{% if form_values.ease6_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="ease6_phone_7_response" value="7 (Strongly agree)" /></td>
+                    </tr>
+                </tbody>
+            </table>
+            </li>
+
+            <!-- Usefulness -->
+            <li>On a scale from 1 (strongly disagree) to 7 (strongly agree), please rank your <b>usefulness</b> with the following aspects of the telephone interface:
+            <table class="table table-striped table-vtop">
+                <thead>
+                <tr>
+                    <thead>
+                <tr>
+                    <th style="width: 40%;">Criterion</th>
+                    <th style="width: 10%;">1<br />(Strongly disagree)</th>
+                    <th style="width: 8%;">2</th>
+                    <th style="width: 8%;">3</th>
+                    <th style="width: 8%;">4</th>
+                    <th style="width: 8%;">5</th>
+                    <th style="width: 8%;">6</th>
+                    <th style="width: 10%;">7<br />(Strongly agree)</th>
+                </tr>
+                </thead>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Doing these assessments over the phone will help me monitor changes in my language use.<input type="hidden" name="use1_phone_question" value="Doing these assessments over the phone will help me monitor changes in my language use." /></td>
+                    <td><input name="use1_phone" type="radio" value="1"{% if form_values.use1_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="use1_phone_1_response" value="Strongly disagree" /></td>
+                    <td><input name="use1_phone" type="radio" value="2"{% if form_values.use1_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="use1_phone_2_response" value="2" /></td>
+                    <td><input name="use1_phone" type="radio" value="3"{% if form_values.use1_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="use1_phone_3_response" value="3" /></td>
+                    <td><input name="use1_phone" type="radio" value="4"{% if form_values.use1_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="use1_phone_4_response" value="4" /></td>
+                    <td><input name="use1_phone" type="radio" value="5"{% if form_values.use1_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="use1_phone_5_response" value="5" /></td>
+                    <td><input name="use1_phone" type="radio" value="6"{% if form_values.use1_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="use1_phone_6_response" value="6" /></td>
+                    <td><input name="use1_phone" type="radio" value="7"{% if form_values.use1_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="use1_phone_7_response" value="Strongly agree" /></td>
+                    </tr>
+
+                    <tr><td>Doing these assessments over the phone will helo researchers improve their knowledge about specific health problems.<input type="hidden" name="use2_phone_question" value="Doing these assessments over the phone will helo researchers improve their knowledge about specific health problems." /></td>
+                    <td><input name="use2_phone" type="radio" value="1"{% if form_values.use2_phone == '1' %} checked="checked"{% endif %} /><input type="hidden" name="use2_phone_1_response" value="Strongly disagree" /></td>
+                    <td><input name="use2_phone" type="radio" value="2"{% if form_values.use2_phone == '2' %} checked="checked"{% endif %} /><input type="hidden" name="use2_phone_2_response" value="2" /></td>
+                    <td><input name="use2_phone" type="radio" value="3"{% if form_values.use2_phone == '3' %} checked="checked"{% endif %} /><input type="hidden" name="use2_phone_3_response" value="3" /></td>
+                    <td><input name="use2_phone" type="radio" value="4"{% if form_values.use2_phone == '4' %} checked="checked"{% endif %} /><input type="hidden" name="use2_phone_4_response" value="4" /></td>
+                    <td><input name="use2_phone" type="radio" value="5"{% if form_values.use2_phone == '5' %} checked="checked"{% endif %} /><input type="hidden" name="use2_phone_5_response" value="5" /></td>
+                    <td><input name="use2_phone" type="radio" value="6"{% if form_values.use2_phone == '6' %} checked="checked"{% endif %} /><input type="hidden" name="use2_phone_6_response" value="6" /></td>
+                    <td><input name="use2_phone" type="radio" value="7"{% if form_values.use2_phone == '7' %} checked="checked"{% endif %} /><input type="hidden" name="use2_phone_7_response" value="Strongly agree" /></td>
+                    </tr>
+                </tbody>
+            </table>
+            </li>
+
+            <li>Have you ever participated in a test for cognitive ability before? If yes, where and how was it administered?<input type="hidden" name="prev_tests_phone_question" value="Have you ever participated in a test for cognitive ability before? If yes, where and how was it administered?" />
+            <textarea name="prev_tests_phone" style="width: 100%; height: 120px;">{{ form_values.prev_tests_phone }}</textarea>
+            </li>
+
+            <li>Do you prefer a phone-based or in-person clinical examination of cognitive and linguistic ability? If you can, list 3 reasons why you prefer one method over the other.<input type="hidden" name="phone_vs_inperson_question" value="Do you prefer a phone-based or in-person clinical examination of cognitive and linguistic ability? If you can, list 3 reasons why you prefer one method over the other." />
+            <textarea name="phone_vs_inperson" style="width: 100%; height: 120px;">{{ form_values.phone_vs_inperson }}</textarea>
+            </li>
+
+            <li>What were the top 3 things you did not like about the telephone interface? For example, were there any instructions that were unclear or difficult to understand, or caused you to spend more time thatn necessary due to design complexity?<input type="hidden" name="complaints_phone_question" value="What were the top 3 things you did not like about the telephone interface? For example, were there any instructions that were unclear or difficult to understand, or caused you to spend more time thatn necessary due to design complexity?" />
+            <textarea name="complaints_phone" style="width: 100%; height: 120px;">{{ form_values.complaints_phone }}</textarea>
+            </li>
+
+            <li>How often do you use a telephone to communicate?<input type="hidden" name="phone_comm_question" value="How often do you use a telephone to communicate?" />
+            <div class="radio"><label><input name="phone_comm" value="daily" type="radio"{% if form_values.phone_comm == 'daily' %} checked="checked"{% endif %} />&nbsp;Daily<input type="hidden" name="phone_comm_daily_response" value="Daily" /></label></div>
+            <div class="radio"><label><input name="phone_comm" value="weekly" type="radio"{% if form_values.phone_comm == 'weekly' %} checked="checked"{% endif %} />&nbsp;Weekly<input type="hidden" name="phone_comm_weekly_response" value="Weekly" /></label></div>
+            <div class="radio"><label><input name="phone_comm" value="monthly" type="radio"{% if form_values.phone_comm == 'monthly' %} checked="checked"{% endif %} />&nbsp;Monthly<input type="hidden" name="phone_comm_monthly_response" value="Monthly" /></label></div>
+            <div class="radio"><label><input name="phone_comm" value="almost_never" type="radio"{% if form_values.phone_comm == 'almost_never' %} checked="checked"{% endif %} />&nbsp;Almost never<input type="hidden" name="phone_comm_almost_never_response" value="Almost never" /></label></div>
+            <div class="radio"><label><input name="phone_comm" value="never" type="radio"{% if form_values.phone_comm == 'never' %} checked="checked"{% endif %} />&nbsp;Never<input type="hidden" name="phone_comm_never_response" value="Never" /></label></div>
+            </li>
+
+            <li>How often do you experience frustration when using a telephone?<input type="hidden" name="phone_frustration_question" value="How often do you experience frustration when using a telephone?" />
+            <div class="radio"><label><input name="phone_frustration" value="every_time" type="radio"{% if form_values.phone_frustration == 'every_time' %} checked="checked"{% endif %} />&nbsp;Every time<input type="hidden" name="phone_frustration_every_time_response" value="Every time" /></label></div>
+            <div class="radio"><label><input name="phone_frustration" value="most_times" type="radio"{% if form_values.phone_frustration == 'most_times' %} checked="checked"{% endif %} />&nbsp;Most times<input type="hidden" name="phone_frustration_most_times_response" value="Most times" /></label></div>
+            <div class="radio"><label><input name="phone_frustration" value="sometimes" type="radio"{% if form_values.phone_frustration == 'sometimes' %} checked="checked"{% endif %} />&nbsp;Sometimes<input type="hidden" name="phone_frustration_sometimes_response" value="Sometimes" /></label></div>
+            <div class="radio"><label><input name="phone_frustration" value="almost_never" type="radio"{% if form_values.phone_frustration == 'almost_never' %} checked="checked"{% endif %} />&nbsp;Almost never<input type="hidden" name="phone_frustration_almost_never_response" value="Almost never" /></label></div>
+            <div class="radio"><label><input name="phone_frustration" value="never" type="radio"{% if form_values.phone_frustration == 'never' %} checked="checked"{% endif %} />&nbsp;Never<input type="hidden" name="phone_frustration_never_response" value="Never" /></label></div>
+            </li>
+
+
+            <li>How many times have you used the {{ website_name }} telephone interface to provide language data?<input type="hidden" name="t2m_phone_use_question" value="How many times have you used the {{ website_name }} telephone interface to provide language data?" />
+            <div class="radio"><label><input name="t2m_phone_use" value="once" type="radio"{% if form_values.t2m_phone_use == 'once' %} checked="checked"{% endif %} />&nbsp;Once<input type="hidden" name="t2m_phone_use_once_response" value="Once" /></label></div>
+            <div class="radio"><label><input name="t2m_phone_use" value="one_to_ten" type="radio"{% if form_values.t2m_phone_use == 'one_to_ten' %} checked="checked"{% endif %} />&nbsp;1-10 times<input type="hidden" name="t2m_phone_use_one_to_ten_response" value="1-10 times" /></label></div>
+            <div class="radio"><label><input name="t2m_phone_use" value="more_than_ten" type="radio"{% if form_values.t2m_phone_use == 'more_than_ten' %} checked="checked"{% endif %} />&nbsp;More than 10 times<input type="hidden" name="t2m_phone_use_more_than_ten_response" value="More than 10 times" /></label></div>
+            </li>
+
+            <li>Would you use the {{ website_name }} telephone interface again? Why or why not?<input type="hidden" name="future_use_phone_question" value="Would you use the {{ website_name }} Web site again? Why or why not?" />
+            <textarea name="future_use_phone" style="width: 100%; height: 120px;">{{ form_values.future_use_phone }}</textarea>
+            </li>
+        </ol>
+
+        <div><button type="button" onClick="javascript: formSubmit(this, 'Submitting data, please wait...');" class="btn btn-primary btn-lg">Submit</button><span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span></div>
+    </form>
+{% endif %}
+
+<!-- Dialog messages -->
+<div id="dialog-message"></div>
+
+{% endblock %}

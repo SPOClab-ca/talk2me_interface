@@ -91,17 +91,20 @@ def login(request):
                 subject.auth_token_expirydate = new_auth_token_expirydate
                 subject.save()
 
-                # Check if the user is part of the UHN study
+                # Check if the user is part of specific studies
                 is_uhn_study = False
+                is_wch_study = False
                 today = datetime.datetime.now().date()
                 subject_bundle = Subject_Bundle.objects.filter(Q(active_enddate__isnull=True) | Q(active_enddate__gte=today), subject=subject, active_startdate__lte=today)
                 if subject_bundle:
                     subject_bundle = subject_bundle[0]
                     if subject_bundle.bundle.name_id == 'uhn_phone':
                         is_uhn_study = True
+                    elif subject_bundle.bundle.name_id == 'wch_phone':
+                        is_wch_study = True
 
                 return HttpResponse(status=200, content=json.dumps({"status_code": "200", "access_token": new_auth_token, \
-                        "expires_in": expires_in, "token_type": "bearer", "is_uhn_study": is_uhn_study}))
+                        "expires_in": expires_in, "token_type": "bearer", "is_uhn_study": is_uhn_study, "is_wch_study": is_wch_study}))
             else:
                 # Either the user doesn't exist, the password is incorrect, or the account has been deactivated
                 return HttpResponse(status=400, content=json.dumps({"status_code": "400", "error": "invalid_grant"}))

@@ -172,3 +172,4 @@ SYSTEM_CRED = ''
 
 UHN_STUDY = 'uhn/'
 OISE_STUDY = 'oise/'
+WCH_STUDY = 'wch/'

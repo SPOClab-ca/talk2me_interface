@@ -14,7 +14,7 @@ from datacollector.forms import *
 from datacollector.models import *
 from csc2518.settings import STATIC_URL
 from csc2518.settings import SUBSITE_ID
-from csc2518.settings import UHN_STUDY, OISE_STUDY
+from csc2518.settings import UHN_STUDY, OISE_STUDY, WCH_STUDY
 
 import copy
 import datetime
@@ -35,11 +35,12 @@ website_name = Settings.objects.get(setting_name="website_name").setting_value
 
 # Globals
 global global_passed_vars, date_format, age_limit, regex_email, regex_date, colour_lookup
-global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username, "uhn_study": 'uhn', "oise_study": 'oise' }
+global_passed_vars = { "website_id": "talk2me", "website_name": website_name, "website_email": email_username, "uhn_study": 'uhn', "oise_study": 'oise', "wch_study": 'wch' }
 website_root = '/'
 if SUBSITE_ID: website_root += SUBSITE_ID
 uhn_website_root = website_root + UHN_STUDY
 OISE_WEBSITE_ROOT = website_root + OISE_STUDY
+WCH_WEBSITE_ROOT = website_root + WCH_STUDY
 
 colour_lookup = {'red': 'e41a1c', 'green': '4daf4a', 'blue': '377eb8', 'brown': '6f370f', 'purple': '984ea3'}
 
@@ -987,6 +988,10 @@ def login(request):
         if subject_bundle:
             if subject_bundle[0].bundle.name_id == 'uhn_web' or subject_bundle[0].bundle.name_id == 'uhn_phone':
                 return HttpResponseRedirect(uhn_website_root)
+            elif subject_bundle[0].bundle.name_id == 'oise':
+                return HttpResponseRedirect(OISE_WEBSITE_ROOT)
+            elif subject_bundle[0].bundle.name_id == 'wch_web' or subject_bundle[0].bundle.name_id == 'wch_phone':
+                return HttpResponseRedirect(WCH_WEBSITE_ROOT)
 
         return HttpResponseRedirect(website_root)
 
@@ -1010,6 +1015,8 @@ def login(request):
                             return HttpResponseRedirect(uhn_website_root)
                         elif subject_bundle[0].bundle.name_id == 'oise':
                             return HttpResponseRedirect(OISE_WEBSITE_ROOT)
+                        elif subject_bundle[0].bundle.name_id == 'wch_web' or subject_bundle[0].bundle.name_id == 'wch_phone':
+                            return HttpResponseRedirect(WCH_WEBSITE_ROOT)
 
                     # Success: redirect to the home page
                     return HttpResponseRedirect(website_root)
@@ -1024,7 +1031,6 @@ def login(request):
 
     passed_vars = {'form': form, 'errors': errors}
     passed_vars.update(global_passed_vars)
-
     return render_to_response('datacollector/login.html', passed_vars, context_instance=RequestContext(request))
 
 
@@ -1039,6 +1045,8 @@ def logout(request):
             return HttpResponseRedirect(uhn_website_root)
         elif subject_bundle[0].bundle.name_id == 'oise':
             return HttpResponseRedirect(OISE_WEBSITE_ROOT)
+        elif subject_bundle[0].bundle.name_id == 'wch_web' or subject_bundle[0].bundle.name_id == 'wch_phone':
+            return HttpResponseRedirect(WCH_WEBSITE_ROOT)
 
     return HttpResponseRedirect(website_root)
 
@@ -1697,6 +1705,7 @@ def survey_usability_phone(request):
     active_notifications = []
     survey_date_completed = False
     form_errors = []
+    is_wch_study = False
 
     # The HTML IDs/names of the questions in the survey template
     questions = {'radio': ['h1_phone', 'h2_phone', 'h3_phone',
@@ -1748,6 +1757,12 @@ def survey_usability_phone(request):
             # (NB: Q objects must appear before keyword parameters in the filter)
             active_notifications = notify.get_active_new(subject)
 
+            # Check for associated bundle
+            subject_bundle = Subject_Bundle.objects.filter(subject=subject)
+            if subject_bundle:
+                if subject_bundle[0].bundle.name_id == 'wch_web' or subject_bundle[0].bundle.name_id == 'wch_phone':
+                    is_wch_study = True
+
             if request.method == "POST":
                 # Check for missing responses
                 for question_type in questions:
@@ -1793,6 +1808,9 @@ def survey_usability_phone(request):
                    'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications,
                    'form_errors': form_errors, 'form_values': request.POST, 'survey_date_completed': survey_date_completed}
     passed_vars.update(global_passed_vars)
+
+    if is_wch_study:
+        return render_to_response('datacollector/wch/usabilitysurvey_phone.html', passed_vars, context_instance=RequestContext(request))
     return render_to_response('datacollector/usabilitysurvey_phone.html', passed_vars, context_instance=RequestContext(request))
 
 def survey_usability_web(request):
@@ -1802,6 +1820,8 @@ def survey_usability_web(request):
     active_notifications = []
     survey_date_completed = False
     form_errors = []
+    is_wch_study = False
+
     # The HTML IDs/names of the questions in the survey template
     questions = {'radio': ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9',
                         's1', 's2', 's3', 's4',
@@ -1855,6 +1875,12 @@ def survey_usability_web(request):
             # Fetch all notifications that are active and have not been dismissed by the user
             # (NB: Q objects must appear before keyword parameters in the filter)
             active_notifications = notify.get_active_new(subject)
+
+            # Check for associated bundle
+            subject_bundle = Subject_Bundle.objects.filter(subject=subject)
+            if subject_bundle:
+                if subject_bundle[0].bundle.name_id == 'wch_web' or subject_bundle[0].bundle.name_id == 'wch_phone':
+                    is_wch_study = True
 
             if request.method == "POST":
                 # Check for missing responses
@@ -1910,6 +1936,9 @@ def survey_usability_web(request):
 
             passed_vars = {'is_authenticated': is_authenticated, 'consent_submitted': consent_submitted, 'demographic_submitted': demographic_submitted, 'active_notifications': active_notifications, 'form_errors': form_errors, 'form_values': request.POST, 'survey_date_completed': survey_date_completed}
             passed_vars.update(global_passed_vars)
+
+            if is_wch_study:
+                return render_to_response('datacollector/wch/usabilitysurvey_web.html', passed_vars, context_instance=RequestContext(request))
             return render_to_response('datacollector/usabilitysurvey_web.html', passed_vars, context_instance=RequestContext(request))
         else:
             return HttpResponseRedirect(website_root)
@@ -2196,6 +2225,8 @@ def account(request):
                     return render_to_response('datacollector/uhn/account.html', passed_vars, context_instance=RequestContext(request))
                 elif subject_bundle.bundle.name_id == 'oise':
                     return render_to_response('datacollector/oise/account.html', passed_vars, context_instance=RequestContext(request))
+                elif subject_bundle.bundle.name_id == 'wch_web' or subject_bundle.bundle.name_id == 'wch_phone':
+                    return render_to_response('datacollector/wch/account.html', passed_vars, context_instance=RequestContext(request))
             return render_to_response('datacollector/account.html', passed_vars, context_instance=RequestContext(request))
         else:
             # If user is authenticated with as a User that doesn't exist as a Subject (i.e. for this study), then go to main page
