@@ -1,0 +1,104 @@
+<div class="unsupported_html5">
+    <p>You will find all of your sessions on this page. <span class="label label-success">Active</span> sessions are ready to be completed. If there are no available active sessions, check back at a later date. Once you begin a session, you can stop at any time and continue at a later date.</p>
+
+    <p>After having completed seven sessions, you will be prompted to complete a usability survey.</p>
+
+    <p>If you encounter any problems or have questions, do not hesitate to contact us <a href="/{{ website_id }}/{{ wch_study }}/about/#contactinfo">here</a>.
+
+    <hr/>
+
+    <div class="jumbotron">
+        <p>To complete a session, call the following number:</p>
+        <h2>1-844-257-6497</h2>
+        <p>Your credentials are:</p>
+        <h3>User ID: {{ subject_bundle.subject.user_id }}</h3>
+        <h3>Pin number: {{ subject_bundle.subject.phone_pin }}</h3>
+    </div>
+
+    <hr/>
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3 class="panel-title">Sessions</h3></div>
+        <ul class="list-group">
+
+        {% if completed_sessions %}
+            {% for session, session_counter in completed_sessions %}
+            <a href="/{{ website_id }}/{{ wch_study }}/session/{{ session.session_id }}" class="list-group-item">
+                <h4 class="list-group-item-heading">
+                    Session {{session_counter}} <span class="label label-primary">Completed</span>
+                </h4>
+                <p class="list-group-item-text">Session completed on {{ session.end_date }} Click to view a summary of your results.</p>
+            </a>
+            {% endfor %}
+        {% endif %}
+
+        {% if active_sessions %}
+            {% for session, percentage_completed, session_counter in active_sessions %}
+            <a class="list-group-item" data-toggle="modal" data-target="#phoneModal">
+                <h4 class="list-group-item-heading">Session {{session_counter}} <span class="label label-success">Active</span></h4>
+                {% if percentage_completed > 0 %}
+                    <p class="list-group-item-text">This is an active session. To continue, call 1-844-257-6497.</p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ percentage_completed }}" aria-valuemin="0" aria-valuemax="100" style="font-size: 16px; width: {{ percentage_completed }}%;">
+                            {{ percentage_completed }}%
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="list-group-item-text">This session is active. To get started, call 1-844-257-6497.</p>
+                {% endif %}
+            </a>
+            <div id="phoneModal" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <p>To complete this session, call 1-844-257-6497.</p>
+                            <p>Use the following credentials:<br>
+                            User ID: {{ subject_bundle.subject.user_id }}<br>
+                            Pin number: {{ subject_bundle.subject.phone_pin }}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if pending_sessions %}
+            {% for session, session_counter in pending_sessions %}
+            <li class="list-group-item disabled">
+                <h4 class="list-group-item-heading">Session {{session_counter}} </h4>
+                <p class="list-group-item-text">This session will be made available on {{session.start_date}}</p>
+            </li>
+            {% endfor %}
+        {% endif %}
+        </ul>
+    </div>
+    
+    <!-- Activate usability survey if all sessions were completed -->
+    <!--
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3 class="panel-title">Usability surveys</h3></div>
+        <ul class="list-group">
+            {% if not pending_sessions and not active_sessions %}
+                <li class="list-group-item disabled">
+                    <h4 class="list-group-item-heading">
+                        Complete a usability survey.
+                    </h4>
+                </li>
+            {% else %}
+                <li class="list-group-item disabled">
+                    <h4 class="list-group-item-heading">
+                        Complete a usability survey.
+                    </h4>
+                    <p class="list-group-item-text">
+                        This will be available once all sessions are completed.
+                    </p>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+    -->
+
+</div>
