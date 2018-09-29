@@ -23,6 +23,7 @@ Python 2.7.10
 mysql -u [USERNAME] -p [DATABASE_NAME] < [SCHEMA_FILE].sql
 mysql -u [USERNAME] -p [DATABASE_NAME] < [CLIENT_FILE].sql
 mysql -u [USERNAME] -p [DATABASE_NAME] < [TASK_FILE].sql
+mysql -u [USERNAME] -p [DATABASE_NAME] < [SETTINGS_FILE].sql
 ```
 
 - Copy the contents of `settings.local.py` into `settings.py` and modify accordingly. Change the database name, username, and password so that it matches your local setup.
