@@ -5,10 +5,15 @@
 - MySQL: https://dev.mysql.com/downloads/
 This is the version I have: 
 ```mysql --version
-Ver 14.14 Distrib 5.7.18, for macos10.12 (x86_64)```
+Ver 14.14 Distrib 5.7.18, for macos10.12 (x86_64)
+```
+
+
 - Python: This is the version I have: 
 ```python --version
-Python 2.7.10```
+Python 2.7.10
+```
+
 - For managing Python libraries and dependencies, I recommend using a package manager like `pip` or `conda`
 
 ## Set up database:
@@ -19,6 +24,7 @@ mysql -u [USERNAME] -p [DATABASE_NAME] < [SCHEMA_FILE].sql
 mysql -u [USERNAME] -p [DATABASE_NAME] < [CLIENT_FILE].sql
 mysql -u [USERNAME] -p [DATABASE_NAME] < [TASK_FILE].sql
 ```
+
 - Copy the contents of `settings.local.py` into `settings.py` and modify accordingly. Change the database name, username, and password so that it matches your local setup.
 
 ## Installing dependencies
@@ -31,8 +37,7 @@ pip install -r requirements.txt
 
 ## Running the application
 - Load your virtual environment: `source venv/bin/activate`
-- Start the Django server: 
-`python manage.py runserver`
+- Start the Django server: `python manage.py runserver`
 
 
 ## Testing, syntax, etc (optional)
