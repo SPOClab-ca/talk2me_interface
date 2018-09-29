@@ -26,6 +26,7 @@ mysql -u [USERNAME] -p [DATABASE_NAME] < [TASK_FILE].sql
 ```
 
 - Copy the contents of `settings.local.py` into `settings.py` and modify accordingly. Change the database name, username, and password so that it matches your local setup.
+- Copy the contents of `wsgi.local.py` into `wsgi.py` and modify accordingly.
 
 ## Installing dependencies
 - Create a virtual environment and install the dependencies. 
