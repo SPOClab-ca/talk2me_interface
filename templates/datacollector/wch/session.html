@@ -54,6 +54,9 @@
         <input id='submit_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Submitting data, please wait...', reloadPage);" value="Submit" />
         {% endif %}
 
+        <!-- Skip Task button -->
+        <input id='skip_btn' class='btn btn-primary btn-lg btn-fixedwidth' type="button" onClick="javascript: formSubmitAjax(this, 'Skipping Task, please wait...', reloadPage, true);" value="Skip Task"/>
+
         <!-- Display ajax indicator while the audio/other data is being uploaded to server -->
         <span class="ajax_loader invisible"><img src="{{ STATIC_URL }}img/ajax_loader.gif" /> <span class="ajax_loader_msg"></span></span>
         </form>

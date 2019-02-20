@@ -289,12 +289,13 @@ function formSubmit(submit_btn, ajax_msg) {
     $(submit_btn).closest("form").submit();
 }
 
-function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
+function formSubmitAjax(submit_btn, ajax_msg, success_fn, skip_task) {
 
     // As soon as the submit button is pressed, (1) disable the button to prevent resubmits,
     // (2) show an ajax indicator to the user to indicate that their data is being sent to
     // the server, and (3) clear the errors display div.
     $(submit_btn).prop("disabled", true);
+    $("#skip_btn").prop("disabled", true);
     $(submit_btn).siblings(".ajax_loader").removeClass("invisible");
     $(submit_btn).siblings(".ajax_loader").children(".ajax_loader_msg").html(ajax_msg);
     $("#form_errors").addClass("invisible");
@@ -302,24 +303,30 @@ function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
 
     var post_params = "";
     var the_form = $(submit_btn).closest("form");
-    $(the_form).find(".form-field").each(function() {
-        // If the form element is a radio element, then only add it to params if it is the selected one
-        if ($(this).is("input[type='checkbox']")) {
-            if ($(this).is(":checked") == true) {
+
+    if (skip_task) {
+        post_params = "skip_task=true";
+    }
+    else {
+        $(the_form).find(".form-field").each(function() {
+            // If the form element is a radio element, then only add it to params if it is the selected one
+            if ($(this).is("input[type='checkbox']")) {
+                if ($(this).is(":checked") == true) {
+                    if (post_params) {
+                        post_params += "&";
+                    }
+                    post_params += $(this).attr('name') + "=on";
+                }
+            }
+            else if (!($(this).is("input[type='radio']")) || $(this).is(":checked") == true) {
                 if (post_params) {
                     post_params += "&";
                 }
-                post_params += $(this).attr('name') + "=on";
+                post_params += $(this).attr('name') + "=" + encodeURIComponent($(this).val());
             }
-        }
-        else if (!($(this).is("input[type='radio']")) || $(this).is(":checked") == true) {
-            if (post_params) {
-                post_params += "&";
-            }
-            post_params += $(this).attr('name') + "=" + encodeURIComponent($(this).val());
-        }
-    });
-
+        });
+    }
+    
     $.ajax({
         async: true,
         type: 'POST',
@@ -327,8 +334,9 @@ function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
         data: post_params,
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) {
-            // (1) Re-enable submit button, (2) hide the ajax indicator
+            // (1) Re-enable submit and skip buttons, (2) hide the ajax indicator
             $(submit_btn).prop("disabled", false);
+            $("#skip_btn").prop("disabled", false);
             $(submit_btn).siblings(".ajax_loader").addClass("invisible");
 
             // (3) Display error message
@@ -336,8 +344,9 @@ function formSubmitAjax(submit_btn, ajax_msg, success_fn) {
             $("body").scrollTop(0);
         },
         success: function(data, textStatus, jqXHR) {
-            // (1) Re-enable submit button, (2) hide the ajax indicator
+            // (1) Re-enable submit and skip buttons, (2) hide the ajax indicator
             $(submit_btn).prop("disabled", false);
+            $("#skip_btn").prop("disabled", false);
             $(submit_btn).siblings(".ajax_loader").addClass("invisible");
 
             response_text = jqXHR.responseText;

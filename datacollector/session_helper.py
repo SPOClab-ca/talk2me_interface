@@ -167,11 +167,12 @@ def get_display(active_task, instance_value):
     else:
         return display_field + "<br/>" + response_field
 
-def submit_response(request, session):
+def submit_response(request, session, skip_task = False):
     """
-    Save responses to DB.
+    Save responses to DB. 
         :param request:
         :param session:
+        :param skip_task
     """
     form_errors = []
     json_data = {}
@@ -181,7 +182,16 @@ def submit_response(request, session):
                               .filter(session=session, \
                                       date_completed__isnull=True)\
                               .order_by('order')
-    if active_task:
+    if active_task and skip_task:
+        # Mark the task as submitted
+        active_task = active_task[0]
+
+        Session_Task.objects\
+            .filter(session=session, task=active_task.task)\
+            .update(date_completed=datetime.datetime.now())
+        json_data['status'] = 'success'
+        
+    elif active_task:
         active_task = active_task[0]
 
         # Validate the form first

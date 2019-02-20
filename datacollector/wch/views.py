@@ -463,7 +463,9 @@ def session(request, session_id):
             if not session.end_date:
                 if request.method == 'POST':
                     ## Submit response
-                    json_data = submit_response(request, session)
+                    skip_task = (request.POST.get("skip_task", "false").lower()) == "true"
+                    print("skip_task is: ", skip_task)
+                    json_data = submit_response(request, session, skip_task)
                     return HttpResponse(json.dumps(json_data), content_type="application/json")
 
                 # Update the date_last_session_access for the user (this drives reminder emails)
