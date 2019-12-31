@@ -1,4 +1,4 @@
-Django==1.8.7
+Django==1.11.23
 MySQL-python==1.2.5
 Naked==0.1.31
 PyYAML==3.12
