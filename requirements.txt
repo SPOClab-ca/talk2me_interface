@@ -1,7 +1,7 @@
 Django==1.8.7
 MySQL-python==1.2.5
 Naked==0.1.31
-PyYAML==3.12
+PyYAML==5.1
 astroid==1.5.3
 backports.functools-lru-cache==1.4
 bcrypt==3.1.1
