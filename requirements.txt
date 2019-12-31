@@ -22,7 +22,7 @@ pycparser==2.17
 pycrypto==2.6.1
 pylint==1.7.1
 pytz==2017.2
-requests==2.14.2
+requests==2.20.0
 shellescape==3.4.1
 simplejson==3.10.0
 singledispatch==3.4.0.3
